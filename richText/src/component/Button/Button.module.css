@@ -1,0 +1,53 @@
+.btn {
+  width: 100%;
+  /* max-width: 95%; */
+  padding: 0.7rem 1rem;
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius);
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.2s ease;
+  text-align: center;
+}
+
+.btn:hover {
+  background: #4f51e6;
+}
+
+.btn:disabled {
+  background: #7b7df7;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.one{
+  background: var(--color-primary);
+}
+.two{
+  background-color: #f87171;
+  /* width: 20%; */
+}
+.three{
+  width: 100%;
+  min-width: 30%;
+   padding: 0.7rem 1rem;
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius);
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.2s ease;
+  text-align: center;
+}
+
+.four{
+  width: 20%;
+}
+
+.five{
+  width: 99%;
+  padding:0.1rem,0.3rem;
+  font-size: 0.9rem;
+}

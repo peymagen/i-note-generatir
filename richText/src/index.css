@@ -1,0 +1,23 @@
+/* Prevent browser/system dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: light;
+  }
+}
+
+/* Your permanent light theme variables */
+:root {
+  --color-bg: #ffffff;
+  --color-text: #1f1f1f;
+  --color-card: #f7f7f7;
+  --color-border: #dcdcdc;
+  --color-primary: #007bff;
+  --radius: 0.5rem;
+}
+
+html, body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  margin: 0;
+  font-family: "Inter", sans-serif;
+}

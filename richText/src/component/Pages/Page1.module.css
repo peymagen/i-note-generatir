@@ -1,0 +1,269 @@
+.pageContainer,.page3{
+ width: 100%;    
+ height: auto;
+ padding: 2px;
+ font-size: 0.9rem;
+}
+
+
+.info{
+    display: flex;
+    gap: 5rem;
+    justify-content: space-between;
+}
+
+.file{
+    display: flex;
+    gap: 5rem;
+    justify-content: space-between;
+}
+
+.table{
+  display: flex;
+}
+
+.tableContainer {
+  font-family: Arial, sans-serif;
+  margin: 10px;
+  display: inline-block; 
+}
+
+
+.customTable {
+  width: 100%;
+  border-collapse: collapse; /* Prevents double borders */
+  margin-top: 10px;
+}
+
+.customTable th,
+.customTable td {
+  border: 1px solid #000;
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+  font-size: 1rem;
+  color: #000;
+  font-family: sans-serif; /* Adjust to match your font */
+}
+
+.customTable th {
+  background-color: #fff;
+  font-weight: normal;
+  line-height: 1.4;
+}
+
+.dateRow {
+  display: block;
+  margin-top: 8px;
+}
+
+.app{
+  display: flex;
+
+}
+
+.thank{
+  /* display: flex; */
+  position: relative;
+}
+
+.bhavday{
+  position: absolute;
+  right: 1%;
+}
+.end{
+  margin-top: 15%;
+}
+
+
+
+.DirAddress{
+  display: flex;
+  justify-content: space-between;
+}
+.warehouse{
+  display: flex;
+  justify-content: space-between;
+}
+
+.controller{
+  display: flex;
+  justify-content: space-between;
+}
+
+
+
+.page2{
+   width: 100%;    
+  height: 100%;
+  padding: 2px;
+  font-size: 0.85rem;
+}
+
+.header{
+  display: flex;
+  justify-content: space-between;
+}
+.headerchild2{
+  text-align: center;
+}
+
+.inspection{
+  text-align: center;
+}
+.inspectionInfo{
+  display: flex;
+  justify-content: space-between;
+}
+.InspectionInfo2{
+  display: flex;
+  justify-content: space-between;
+}
+
+.afterInspection{
+  position: relative;
+}
+.supply{
+  position: absolute;
+  right: 1%;
+  top: 1%;
+}
+
+.DG{
+  display: flex;
+  justify-content: space-between;
+}
+
+.naam ,.Consignee,.Indent,.IndDate,.accepted,.insideOffer{
+  display: flex;
+  justify-content: space-between;
+}
+.offer{
+  display: flex;
+  
+}
+
+.Detail{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.detailHeader{
+  text-align: center;
+  border-bottom: 1px solid #000;
+}
+.HinDescription,.EngDescription{
+  display: flex;
+  justify-content: space-between;
+  justify-items: center;
+  gap: 1rem;
+  border-bottom: 2px solid #000;
+  border-top: 2px solid #000;
+}
+
+.Remark{
+  border-bottom: 2px solid black;
+}
+
+.InspectItemHeader{
+  text-align: center;
+  /* position: relative; */
+}
+
+.placeDate{
+  display: flex;
+  justify-content: space-between;
+}
+
+.inspectionCopy{
+  display: flex;
+}
+.inspectionSign{
+  width: 100%;
+  height: auto;
+  display: flex;
+  justify-content: space-around;
+  /* justify-items: sp; */
+  position: relative;
+}
+.inspectionSignChild{
+  position: absolute;
+  right: 11%;
+  top: 50%;
+}
+
+.certificate{
+  text-align: center;
+}
+
+.certified{
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+}
+.PrmanTable{
+  display: flex;
+  justify-content: space-between;
+}
+
+.customTable2 {
+  width: 45%;
+  border-collapse: collapse; /* Prevents double borders */
+  margin-top: 10px;
+}
+
+.customTable2 th,
+.customTable2 td {
+  border: 1px solid #000;
+  padding: 8px 8px;
+  text-align: left;
+  vertical-align: top;
+  font-size: 1rem;
+  color: #000;
+  font-family: sans-serif; /* Adjust to match your font */
+}
+
+.customTable2 th {
+  background-color: #fff;
+  font-weight: normal;
+  line-height: 1.4;
+}
+.customTable2 tbody tr {
+  background-color: #fff;
+  font-weight: normal; 
+  line-height: 1.4;
+  height: 7rem;
+}
+
+.area, .Designation{
+  display: flex;
+  justify-content: space-between;
+  width: 70%;
+}
+
+.station,.rubberStamp{
+  display: flex;
+  gap: 17rem;
+  justify-content: start;
+  position: relative;
+  
+}
+.station span, .rubberStamp span{
+  position: absolute;
+  top: 50%;
+}
+
+.note{
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.note1{
+  display: flex;
+  justify-content: space-between;
+}
+.note2,.note3{
+  display: flex;
+  justify-content: start;
+}

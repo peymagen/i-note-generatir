@@ -1,0 +1,10 @@
+.error {
+    background: #ff6b6b29;
+    border: 1px solid #ff6b6b;
+    padding: 8px;
+    text-align: center;
+    border-radius: var(--radius);
+    color: #ff6b6b;
+    margin-bottom: 14px;
+  }
+  

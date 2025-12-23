@@ -1,0 +1,78 @@
+.dashboard {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  flex-direction: row;
+  gap: 10rem;
+}
+
+/* Sidebar */
+.SideBar {  
+  width: 25%;          
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+
+  color: white; 
+  box-sizing: border-box;
+ 
+}
+
+/* Main content */
+.contentArea {
+  margin-left: 20vw;  
+  width: 100%;    
+
+  height: 100%;     
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* justify-content: center; */
+  display: block;       /* This allows natural width */
+  overflow-x: auto;
+  box-sizing: border-box;
+  position: relative;
+}
+
+
+
+.mainContent {
+  margin-top: 1rem;
+}
+
+
+@media (max-width: 64rem) {
+  .SideBar {
+    width: 25%;   
+  }
+
+  .contentArea {
+    margin-top: 0rem;
+    margin-left: 17vw;
+    width: 100vw;
+  }
+}
+
+@media (max-width: 48rem) {
+  .dashboard {
+    flex-direction: column;
+  }
+
+  .SideBar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    text-align: center;
+  }
+
+  .contentArea {
+    margin-top: -10rem;
+    margin-left: 0;
+    width: 100%;
+    padding: 1rem;
+  }
+
+  
+}

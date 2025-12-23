@@ -1,0 +1,200 @@
+.container {
+  width: 100%;
+  min-height: 100vh;
+  padding: 2rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  position: relative;
+}
+
+/* HEADER CONTAINER */
+.headerContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  position: relative;
+  width: 100%;
+  min-height: 3rem; /* Ensure consistent height */
+}
+
+/* PAGE TITLE */
+.title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--color-text, #111);
+  margin: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* BUTTON WRAPPER */
+.btnWrapper {
+  margin-left: auto;
+  z-index: 1;
+  position: relative;
+}
+
+/* LOADING STATE */
+.loader {
+  width: 100%;
+  text-align: center;
+  font-size: 1.3rem;
+  color: #555;
+  padding: 3rem 0;
+  box-sizing: border-box;
+}
+
+/* ERROR MESSAGE */
+.errorMsg {
+  color: #dc2626;
+  text-align: center;
+  font-size: 1rem;
+  margin: 1rem 0;
+}
+
+/* TABLE WRAPPER */
+.tableBox {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 0.6rem;
+  box-sizing: border-box;
+  background: white;
+  padding-bottom: 1rem;
+  /* margin-top: 2rem; */
+}
+
+/* TABLE STYLING */
+.table {
+  width: 100%;
+  min-width: 90%;
+  border-collapse: collapse;
+  text-align: left;
+  background: var(--color-card, white);
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.table thead {
+  background: #f8f9fc;
+  border-bottom: 0.08rem solid #ddd;
+}
+
+.table th {
+  padding: 1em 0.7em;
+  font-size: 1em;
+  font-weight: 600;
+  color: #222;
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 0.9em 0.7em;
+  border-bottom: 0.06rem solid #eee;
+  white-space: nowrap;
+  color: #333;
+}
+
+.table tbody tr:hover {
+  background: #f3f6fa;
+  transition: 0.2s;
+}
+
+.actionsHead {
+  text-align: center;
+  width: 18vw;
+}
+
+/* ACTION BUTTON ROW */
+.actionsRow {
+  display: flex;
+  gap: 0.6em;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.actionsRow button {
+  width: 8em;
+  min-width: 8em;
+  font-size: 1em;
+  text-align: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* BADGE STATUS */
+.activeBadge {
+  background: #dcfce7;
+  color: #15803d;
+  padding: 0.4em 1.1em;
+  border-radius: 1.4em;
+  font-weight: 600;
+  font-size: 0.9em;
+  display: inline-block;
+}
+
+.inactiveBadge {
+  background: #fee2e2;
+  color: #b91c1c;
+  padding: 0.4em 1.1em;
+  border-radius: 1.4em;
+  font-weight: 600;
+  font-size: 0.9em;
+  display: inline-block;
+}
+
+/* BUTTON HOVER EFFECT */
+.actionsRow button:hover {
+  transform: scale(1.03);
+  transition: 0.18s ease-in-out;
+}
+
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 48rem) {
+  .btnWrapper {
+    position: static;
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1rem;
+  }
+
+  .table th, .table td {
+    font-size: 0.9rem;
+  }
+
+  .actionsRow {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .actionsRow button {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .actionsHead {
+    width: 28vw;
+  }
+}
+
+/* SMALL PHONE */
+@media (max-width: 30rem) {
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .table th, .table td {
+    font-size: 0.85em;
+  }
+}
