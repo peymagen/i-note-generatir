@@ -8,15 +8,24 @@ import styles from './Page1.module.css'
 
 // export default function Page1({ data, user }: { data: any, user?: any }) {
 export default function Page1({ data }: { data: any}) {
+
+const financialYear = (date:string)=>{
+    const d = new Date(date)
+    const year = d.getFullYear();
+    return year
+  }
    useEffect(() => {
     console.log("Page1 received data:", data);
+    // console.log(financialYear(data.details.OrderDate))
   }, [data]);
   if (!data) {
     return <div>Loading data or no data available...</div>;
   }
 
+  
+
   const formatDate = (dateString:string) => {
-    console.log("date",dateString)
+  // console.log("date",dateString)
   const d = new Date(dateString);
 
   const months = [
@@ -24,13 +33,14 @@ export default function Page1({ data }: { data: any}) {
     "July", "August", "September", "October", "November", "December"
   ];
 
- const day = d.getDate();
-const month = months[d.getMonth()];
-const year = d.getFullYear();
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
 
 
   return `${day}-${month}-${year}`;
 }
+
 
 
     
@@ -152,11 +162,11 @@ const year = d.getFullYear();
         </div>
 
         <div className={styles.warehouse}>
-          <p>{data.MoAddressWaarehouse}</p>
+          <p>{data.modetail.MoAddress}</p>   
           <p>ईन्सपैक्सन नोट की कापी न . 6 के साथ</p>
         </div>
         <div className={styles.controller}>
-          <p>{data.MOAddressprocurement}</p>
+          <p>{data.modetail.MoAddress}</p>
           <p>ईन्सपैक्सन नोट की कापी न . 5 के साथ</p>
         </div>
       </div>
@@ -170,7 +180,7 @@ const year = d.getFullYear();
           
 
           
-            <p className={styles.headerchild2}>निरीक्षण पत्र<br/> <strong>INSPECTION NOTE</strong> <br/>1 - निरीक्षण पत्र <br/> INSPECTION NOTE NO. {data.financialYear}-022-{data.iNote}-WP-02<br/><strong>1 - निरीक्षण प्रमाण पत्र</strong> </p>
+            <p className={styles.headerchild2}>निरीक्षण पत्र<br/> <strong>INSPECTION NOTE</strong> <br/>1 - निरीक्षण पत्र <br/> INSPECTION NOTE NO. {financialYear(data.details.OrderDate)}-022-{data.iNote}-WP-02<br/><strong>1 - निरीक्षण प्रमाण पत्र</strong> </p>
           
 
           
@@ -203,12 +213,12 @@ const year = d.getFullYear();
           </div>
           <div className={styles.DG}>
             <p>DG(S&D)/Dir.(S&D)/D.S(tax)/Rate/Running COntract/A.T.No and Date </p> 
-            <p>{data.indentNo} {data.Date}</p> 
+            <p>{data.header.IndentNo} {formatDate(data.details.OrderDate)}</p> 
           </div>
 
           <div className={styles.naam}>
             <p>2.का नाम और पता<br/>Contractor's name and Address</p>
-            <p>{data.VendorAddress}</p>
+            <p>{data.vendor.FirmAddress}</p>
           </div>
 
           <div className={styles.indent}>

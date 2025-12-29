@@ -14,6 +14,12 @@ export const moDetailApi = createApi({
         method: "GET",
       }),
     }),
+    getDatabyCon:builder.query({
+      query:(code:string)=>({
+          url:`mo-detail/code/${code}`,
+          method:"GET",
+      }),
+    }),
 
     // GET BY ID
     getMoDetailById: builder.query({
@@ -76,6 +82,7 @@ export const {
   useUpdateMoDetailMutation,
   useAddMoDetailMutation,
   useDeleteMoDetailMutation,
+  useGetDatabyConQuery,
   } = moDetailApi;
 
 export default moDetailApi;

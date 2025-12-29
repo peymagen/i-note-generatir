@@ -83,11 +83,17 @@
 }
 .warehouse{
   display: flex;
+  gap: 30rem;
   justify-content: space-between;
+}
+.warehouse p,.controller p{
+  width: 70%;
+  font-size: 0.9rem;
 }
 
 .controller{
   display: flex;
+  gap: 30rem;
   justify-content: space-between;
 }
 

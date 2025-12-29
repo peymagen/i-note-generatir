@@ -12,6 +12,7 @@ import {useGetByVendorCodeQuery} from '../../store/services/vendor-detail'
 import Page1 from "../../component/Pages/Page1";
 import styles from "./PurchaseOrder.module.css";
 import FormData from "../../component/Form/FormData";
+import {useGetDatabyConQuery} from "../../store/services/mo-detail"  
 
 
 // Validation schema
@@ -20,6 +21,19 @@ const schema = yup.object().shape({
   OrderDate: yup.string().required("Order Date is required"),
   templateType: yup.string().required("Template Type is required"),
 });
+
+
+
+function extractBracketValue(consigneeCode: string): string | null {
+  const start = consigneeCode.indexOf("(");
+  const end = consigneeCode.indexOf(")");
+
+  if (start === -1 || end === -1 || end <= start) return null;
+
+  return consigneeCode.substring(start + 1, end);
+}
+
+
 
 interface FormData {
   IndentNo: string;
@@ -36,13 +50,18 @@ const PurchaseOrder = () => {
   const [indentNo, setIndentNo] = useState<string>('');
   const [venderCode ,setVendorCode] = useState<string>('')
   const [vendorData, setVendorData] = useState<any>(null);
-  
-  const [getByIndent] = useGetByIndentMutation();
+  const[consignee,setConsignee] = useState<any>(null);
+  const[modetail, setModetail] = useState<any>(null);
+ const [getByIndent] = useGetByIndentMutation();
   const [getIndentDate] = useGetIndentDateMutation();
   const { data: vendorResponse, refetch: fetchVendor } = useGetByVendorCodeQuery(
     venderCode,
     { skip: !venderCode }
   );
+  const {data: moResposnse, refetch: fetchMo} = useGetDatabyConQuery(
+    consignee,
+    {skip: !consignee}
+  )
  
 
   const {
@@ -61,88 +80,6 @@ const PurchaseOrder = () => {
     name: "templateType",
     defaultValue: "",
   });
-
-  // Handle form submission
-//   const onSubmit = async (data: FormData) => {
-//   try {
-//     // ---------------- CLEAN DATE ----------------
-//     const cleanDate = new Date(data.OrderDate)
-//       .toISOString()
-//       .split("T")[0];
-
-//     const searchParams = {
-//       IndentNo: data.IndentNo,
-//       OrderDate: cleanDate,
-//     };
-
-//     // ---------------- GET HEADER ----------------
-//     const response = await getIndentDate(searchParams).unwrap();
-
-//     if (!response?.data?.length) {
-//       setPoFound(false);
-//       toast.error("PO Header not found");
-//       return;
-//     }
-
-//     const header = response.data[0];
-//     setPoData(header);
-
-//     // ---------------- GET INDENT NO ----------------
-//     const indentNoFromApi = header.IndentNo;
-//     setIndentNo(indentNoFromApi);
-
-//     // ---------------- GET DETAIL ----------------
-//     const detailResult = await getByIndent(indentNoFromApi).unwrap();
-
-//     if (!detailResult?.success || !detailResult.data?.length) {
-//       toast.error("Failed to fetch PO details");
-//       return;
-//     }
-
-//     const detail = detailResult.data[0]; // First row only
-//     setPoDetail(detail);
-
-//     // ---------------- GET VENDOR CODE ----------------
-//     const vendorCode = detail.VendorCode;
-
-//     if (!vendorCode) {
-//       toast.error("Vendor Code missing");
-//       return;
-//     }
-
-//     // Trigger vendor query
-//     setVendorCode(vendorCode);
-
-//     // ---------------- GET VENDOR ----------------
-//     const vendorResult = await fetchVendor();
-
-//     if (!vendorResult?.data?.success || !vendorResult.data?.data.length) {
-//       toast.error("Failed to fetch vendor details");
-//       return;
-//     }
-
-//     const vendor = vendorResult.data.data[0];
-//     setVendorData(vendor);
-
-//     // ---------------- COMBINE DATA ----------------
-//     const combined = [
-//       {
-//         header,
-//         details: detail,
-//         vendor,
-//       },
-//     ];
-
-//     setCombinedData(combined);
-//     setPoFound(true);
-
-//     toast.success("PO Header found!");
-
-//   } catch (error) {
-//     console.error("Error in onSubmit:", error);
-//     toast.error("Error fetching PO Header");
-//   }
-// };
 
 const onSubmit = async (data: FormData) => {
     try {
@@ -184,6 +121,21 @@ const onSubmit = async (data: FormData) => {
       setPoDetail(detail);
       console.log("PoDetail",poDetail)
 
+      const consigne = poDetail.ConsigneeCode
+      const con = extractBracketValue(consigne)
+      setConsignee(con)
+      console.log(consignee)
+
+      const moDetail = await fetchMo()
+      // console.log("Mo-Detail",moDetail)
+      if(!moDetail?.data.success || !moDetail.data?.data?.data?.length){
+        toast.error("Mo Not found")
+        return
+      }
+      const mo = moDetail.data.data.data[0]
+      setModetail(mo)
+      console.log("modetail",modetail)
+
       // ------------------ GET VENDOR CODE ------------------
       const code = detail.VendorCode;
 
@@ -191,11 +143,8 @@ const onSubmit = async (data: FormData) => {
         toast.error("Vendor Code not found in PO Detail");
         return;
       }
-
-      // Trigger vendor query
       setVendorCode(code);
       console.log("vendor code",venderCode)
-
       // ------------------ GET VENDOR DATA ------------------
       const vendorResult = await fetchVendor(); // no args
 
@@ -213,6 +162,7 @@ const onSubmit = async (data: FormData) => {
           header,
           details: detail,
           vendor,
+          modetail,
         },
       ];
 

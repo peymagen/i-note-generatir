@@ -209,5 +209,42 @@ export  const addData = async (userId: number, payload: any) => {
   }
 };
 
+export const getDatabyCon = async(consignee: string) => {
+  try {
+    const query = 
+      `SELECT *
+      FROM mo_details
+      WHERE MoCPRO = 'MO(' + ? + ')'
+        OR MoCPRO   = 'CPRO(' + ? + ')';`
+    ;
+    const [rows] = await pool.execute<RowDataPacket[]>(query, [consignee, consignee]);
+//     console.log(`
+      // SELECT *
+      // FROM mo_details
+      // WHERE MoCPRO = 'MO(${consignee})'
+      //    OR CPRO   = 'CPRO(${consignee})'
+      // `,);
 
-
+    // console.log("Query result:", rows);  
+    
+    if (!rows || rows.length === 0) {
+      console.log("No rows found for consignee:", consignee);
+      return {
+        success: false,
+        message: "No record found with the given code"
+      };
+    }
+    
+    return {
+      success: true,
+      data: rows
+    };
+  } catch (error) {
+    console.error("Error in getDatabyCon service:", error);
+    return {
+      success: false,
+      message: "Database error occurred",
+      error: error instanceof Error ? error.message : "Unknown error"
+    };
+  }
+}

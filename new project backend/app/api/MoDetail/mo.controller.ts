@@ -190,3 +190,39 @@ export const addData = async (req: Request, res: Response) => {
         });
     }
 }
+
+export const getDatabyCon  = async(req:Request,res:Response)=>{
+  
+  try{
+    const code = (req.params.code || req.query.code ||" ")as string
+    console.log("Received code",code)
+    if (!code || code === " ") {
+      console.log("Empty code detected");
+       res.status(400).json({
+        success: false,
+        message: "consignee code is required"
+      });
+    }
+    const data = await service.getDatabyCon(code)
+    console.log("Service response:", data);
+    if(data.success){
+      res.status(200).json({
+        success:true,
+        data:data
+      })
+    }
+    else{
+      res.status(404).json({
+        success:false,
+        message:"No record found with the given consignee code"
+      })
+    }
+  }
+
+  catch{
+    res.status(500).json({
+      success:false,
+      message:"Failed to fetch data"
+    })
+  }
+}

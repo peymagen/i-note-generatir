@@ -19,7 +19,13 @@ router.post(
   }
 );
 
+router.get(
+  '/code/:code',
+  roleAuth(),
+  catchError,
+  controller.getDatabyCon
 
+)
 router.get(
   "/",
   roleAuth(),
