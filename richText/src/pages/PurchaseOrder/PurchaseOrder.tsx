@@ -6,13 +6,13 @@ import { toast } from "react-toastify";
 import Layout from "../../component/Layout/Layout";
 import Button from "../../component/Button/Button";
 import Input from "../../component/Input/Input2";
-import { useGetIndentDateMutation } from "../../store/services/po-header";
-import {useGetByIndentMutation} from '../../store/services/po-details'
-import {useGetByVendorCodeQuery} from '../../store/services/vendor-detail'
+import { useLazyGetIndentDateQuery } from "../../store/services/po-header";
+import {useLazyGetByIndentQuery} from '../../store/services/po-details'
+import {useLazyGetByVendorCodeQuery} from '../../store/services/vendor-detail'
 import Page1 from "../../component/Pages/Page1";
 import styles from "./PurchaseOrder.module.css";
 import FormData from "../../component/Form/FormData";
-import {useGetDatabyConQuery} from "../../store/services/mo-detail"  
+import {useLazyGetDatabyConQuery} from "../../store/services/mo-detail"  
 
 
 // Validation schema
@@ -52,16 +52,29 @@ const PurchaseOrder = () => {
   const [vendorData, setVendorData] = useState<any>(null);
   const[consignee,setConsignee] = useState<any>(null);
   const[modetail, setModetail] = useState<any>(null);
- const [getByIndent] = useGetByIndentMutation();
-  const [getIndentDate] = useGetIndentDateMutation();
-  const { data: vendorResponse, refetch: fetchVendor } = useGetByVendorCodeQuery(
-    venderCode,
-    { skip: !venderCode }
-  );
-  const {data: moResposnse, refetch: fetchMo} = useGetDatabyConQuery(
-    consignee,
-    {skip: !consignee}
-  )
+
+  // const { data: indentData, refetch: refetchIndent } = useGetByIndentQuery(
+  //   indentNo,
+  //   { skip: !indentNo }
+  // );
+  // const [data:headerRes, refetch:getIndentDate] = useGetIndentDateQuery(
+  //   searchParams
+  // );
+  // const { data: vendorResponse, refetch: fetchVendor } = useGetByVendorCodeQuery(
+  //   venderCode,
+  //   { skip: !venderCode }
+  // );
+  // const {data: moResposnse, refetch: fetchMo} = useGetDatabyConQuery(
+  //   consignee,
+  //   {skip: !consignee}
+  // )
+
+
+  const [getIndentDate] = useLazyGetIndentDateQuery();
+  const [getByIndent] = useLazyGetByIndentQuery();
+  const [getVendor] = useLazyGetByVendorCodeQuery();
+  const [getMo] = useLazyGetDatabyConQuery();
+
  
 
   const {
@@ -81,101 +94,100 @@ const PurchaseOrder = () => {
     defaultValue: "",
   });
 
+
 const onSubmit = async (data: FormData) => {
-    try {
-      // Format date
-      const cleanDate = new Date(data.OrderDate)
-        .toISOString()
-        .split("T")[0];
+  try {
+    const cleanDate = new Date(data.OrderDate)
+      .toISOString()
+      .split("T")[0];
 
-      const searchParams = {
-        IndentNo: data.IndentNo,
-        OrderDate: cleanDate,
-      };
+    const searchParams = {
+      IndentNo: data.IndentNo,
+      OrderDate: cleanDate,
+    };
 
-      // ------------------ GET PO HEADER ------------------
-      const headerRes = await getIndentDate(searchParams).unwrap();
+    // ------------------ HEADER ------------------
+    const headerRes = await getIndentDate(searchParams).unwrap();
 
-      if (!headerRes?.data?.length) {
-        setPoFound(false);
-        toast.error("PO Header not found");
-        return;
-      }
-
-      const header = headerRes.data[0];
-      setPoData(header);
-      console.log("Podata",poData)
-
-      const indentNoFromApi = header.IndentNo;
-      setIndentNo(indentNoFromApi)
-      console.log("indent No", indentNo)
-      // ------------------ GET PO DETAILS ------------------
-      const detailRes = await getByIndent(indentNo).unwrap();
-
-      if (!detailRes?.success || !detailRes.data?.length) {
-        toast.error("PO Details not found");
-        return;
-      }
-
-      const detail = detailRes.data[0];
-      setPoDetail(detail);
-      console.log("PoDetail",poDetail)
-
-      const consigne = poDetail.ConsigneeCode
-      const con = extractBracketValue(consigne)
-      setConsignee(con)
-      console.log(consignee)
-
-      const moDetail = await fetchMo()
-      // console.log("Mo-Detail",moDetail)
-      if(!moDetail?.data.success || !moDetail.data?.data?.data?.length){
-        toast.error("Mo Not found")
-        return
-      }
-      const mo = moDetail.data.data.data[0]
-      setModetail(mo)
-      console.log("modetail",modetail)
-
-      // ------------------ GET VENDOR CODE ------------------
-      const code = detail.VendorCode;
-
-      if (!code) {
-        toast.error("Vendor Code not found in PO Detail");
-        return;
-      }
-      setVendorCode(code);
-      console.log("vendor code",venderCode)
-      // ------------------ GET VENDOR DATA ------------------
-      const vendorResult = await fetchVendor(); // no args
-
-      if (!vendorResult?.data?.success || !vendorResult.data?.data?.data?.length) {
-        toast.error("Vendor not found");
-        return;
-      }
-      // console.log("kuch deke toh", vendorResult)
-      const vendor = vendorResult.data.data.data[0]; 
-      setVendorData(vendor);
-      console.log("Vendor Data",vendorData)
-      // ------------------ COMBINE FINAL DATA ------------------
-      const combined = [
-        {
-          header,
-          details: detail,
-          vendor,
-          modetail,
-        },
-      ];
-
-      setCombinedData(combined);
-      console.log("combined",combinedData)
-      setPoFound(true);
-      toast.success("PO Header found!");
-
-    } catch (error) {
-      console.error("Error in onSubmit:", error);
-      // toast.error("Something went wrong");
+    if (!headerRes?.data?.length) {
+      toast.error("PO Header not found");
+      setPoFound(false);
+      return;
     }
-  };
+
+    const header = headerRes.data[0];
+    setPoData(header);
+    
+    const indentNoFromApi = header.IndentNo;
+    console.log("Indent No from API:", indentNoFromApi);
+    console.log("Header data:", header);
+
+    // ------------------ DETAIL ------------------
+    const detailRes = await getByIndent(indentNoFromApi).unwrap();
+
+    if (!detailRes?.success || !detailRes.data?.length) {
+      toast.error("PO Details not found");
+      return;
+    }
+
+    const detail = detailRes.data[0];
+    setPoDetail(detail);
+    console.log("detail", detail);
+
+    // ------------------ EXTRACT VALUES ------------------
+    const consigneeCode = (extractBracketValue(detail.ConsigneeCode)) as string;
+    const vendorCode = detail.VendorCode;
+    console.log(consigneeCode,venderCode)
+
+    // ------------------ PARALLEL CALLS ------------------   
+    const [moRes, vendorRes] = await Promise.all([
+      getMo(consigneeCode).unwrap(),
+      getVendor(vendorCode).unwrap(),
+    ]);
+
+    if (!moRes?.data?.data?.length) {
+      toast.error("MO not found");
+      return;
+    }
+
+    if (!vendorRes?.data?.data?.length) {
+      toast.error("Vendor not found");
+      return;
+    }
+
+    const mo = moRes.data.data[0];
+    const vendor = vendorRes.data.data[0];
+    console.log("MO:", mo);
+    console.log("Vendor:", vendor);
+
+    setModetail(mo);
+    setVendorData(vendor);
+
+    const currDate = new Date().toISOString().split("T")[0]; 
+
+
+    // ------------------ FINAL COMBINE ------------------
+    const combined = [
+      {
+        header,
+        details: detail,
+        vendor,
+        modetail: mo,
+        currDate
+      },
+    ];
+
+    setCombinedData(combined);
+    setPoFound(true);
+
+    toast.success("PO loaded successfully!");
+
+  } catch (error) {
+    console.error(error);
+    toast.error("Something went wrong");
+  }
+};
+
 
 
 

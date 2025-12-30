@@ -52,7 +52,7 @@ export const poDetailApi = createApi({
       }),
     }),
         
-    getByIndent: builder.mutation({ 
+    getByIndent: builder.query({ 
       query: (indentNo: string) => ({
         url: `/po-detail/getByIndent/${indentNo}`,
         method: "GET",
@@ -76,7 +76,7 @@ export const {
   useUpdatePODataMutation,
   useAddPoDetailMutation,
   useDeletePoDetailMutation,
-  useGetByIndentMutation
+  useLazyGetByIndentQuery,
 } = poDetailApi;
 
 export default poDetailApi;

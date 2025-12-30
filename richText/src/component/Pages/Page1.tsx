@@ -4,16 +4,23 @@ import styles from './Page1.module.css'
 
 
 
-// line no: 57,97
+// line no: 57,97,260,261,303,309
 
 // export default function Page1({ data, user }: { data: any, user?: any }) {
 export default function Page1({ data }: { data: any}) {
 
-const financialYear = (date:string)=>{
-    const d = new Date(date)
-    const year = d.getFullYear();
-    return year
+const financialYear = (date: string) => {
+  const d = new Date(date);
+  const year = d.getFullYear();
+  const month = d.getMonth() + 1; // Jan = 1
+
+  if (month >= 4) {
+    return `${year}`;
+  } else {
+    return `${year - 1}`;
   }
+};
+
    useEffect(() => {
     console.log("Page1 received data:", data);
     // console.log(financialYear(data.details.OrderDate))
@@ -223,18 +230,18 @@ const financialYear = (date:string)=>{
 
           <div className={styles.indent}>
             <p>3.मांगकर्ता<br/>Indentor </p>
-            <p>CPRO{data.consigneCode} consi</p>
+            <p>{data.header.IndentNo}</p>
           </div>
-
+ 
           <div className={styles.IndDate}>
             <p>4.मांग-पत्र सं. और तारीख<br/>Indent No. and date</p>
-            <p>{data.indentNo} </p>
-            <p>Dated {data.CurrentDate}</p>
+            <p>{data.details.ConsigneeCode} </p>
+            <p>Dated {formatDate(data.currDate)}</p>
           </div>
 
           <div className={styles.Consignee}>
             <p>5.प्रेषिती<br/>Consignee</p>
-            <p>CWH{data.consigneCode}</p>
+            <p>{data.details.ConsigneeCode}</p>
           </div>
 
           <div className={styles.accepted}>
@@ -293,7 +300,7 @@ const financialYear = (date:string)=>{
         </div>
 
         <div>
-          <p><span className={styles.Remark}>Remark:</span><span>TOTAL ITEMS ACCEPTED ARE {} NOS AND DETAILS ARE PLACED AT THE ANNEXURE I TO THIS I-NOTE</span></p>
+          <p><span className={styles.Remark}>Remark:</span><span>TOTAL ITEMS ACCEPTED ARE {data.something} NOS AND DETAILS ARE PLACED AT THE ANNEXURE I TO THIS I-NOTE</span></p>
           <p>टिप्पणी : अंतिम मद के बाद में तत्काल एक रेखा खींची जाएगी या टाइप की जाएगी | रेखा के नीचे "भंडार का विवरण" नाम के खाने में पृथक रूप में दी गई मदों की कुल संख्या इस प्रकार दर्ज की जाएगी | निरीक्षण की गई मदों की संख्या . . . . . . . . . . . . . . . . . . . . . . . . . . (शब्दों में)</p>
           <p>Note-- A line to be drawn or typed immediately after the last item Below the line will be entered the total no of items separately shown in the Col "DESCRIPTION OF STORES" thus---</p>
         </div>
@@ -303,7 +310,7 @@ const financialYear = (date:string)=>{
           <div className={styles.placeDate}>
             <div>
               <p>स्थान / Station Mumbai</p>
-              <p>तारीख / Date {data.orderDate}</p>
+              <p>तारीख / Date {formatDate(data.header.OrderDate)}</p>
             </div>
             <div>
               <p>निरीक्षक के हस्ताक्षर/Signature of CQAO(MS)</p>
@@ -330,7 +337,7 @@ const financialYear = (date:string)=>{
           
 
           
-            <p className={styles.headerchild2}>निरीक्षण पत्र<br/> <strong>INSPECTION NOTE</strong> <br/>1 - निरीक्षण पत्र <br/> INSPECTION NOTE NO. {data.financialYear}-022-{data.iNote}-WP-02<br/><strong>1 - निरीक्षण प्रमाण पत्र</strong> </p>
+            <p className={styles.headerchild2}>निरीक्षण पत्र<br/> <strong>INSPECTION NOTE</strong> <br/>1 - निरीक्षण पत्र <br/> INSPECTION NOTE NO. {financialYear(data.header.OrderDate)}-022-{data.iNote}-WP-02<br/><strong>1 - निरीक्षण प्रमाण पत्र</strong> </p>
           
 
           

@@ -50,7 +50,7 @@ export const vendorDetail = createApi({
 
 export const {
   useGetAllVendorQuery,
-  useGetByVendorCodeQuery,
+  useLazyGetByVendorCodeQuery,
   useUpdateVendorMutation,
   useDeleteVendorMutation,
   useAddVendorMutation,

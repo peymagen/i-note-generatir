@@ -58,7 +58,7 @@ export const poHeaderApi = createApi({
         body: data,
       }),
     }),
-    getIndentDate: builder.mutation({
+    getIndentDate: builder.query({
       query: ({ IndentNo, OrderDate }) => ({
         url: `/po-header/search?IndentNo=${IndentNo}&OrderDate=${OrderDate}`,
         method: "GET",
@@ -76,7 +76,7 @@ export const {
   useUpdatePOHeaderMutation,
   useAddPoHeaderMutation,
   useDeletePoHeaderMutation,
-  useGetIndentDateMutation,
+  useLazyGetIndentDateQuery,
   } = poHeaderApi;
 
 export default poHeaderApi;

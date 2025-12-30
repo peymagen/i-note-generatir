@@ -82,7 +82,7 @@ export const {
   useUpdateMoDetailMutation,
   useAddMoDetailMutation,
   useDeleteMoDetailMutation,
-  useGetDatabyConQuery,
+  useLazyGetDatabyConQuery,
   } = moDetailApi;
 
 export default moDetailApi;

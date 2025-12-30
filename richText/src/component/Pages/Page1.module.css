@@ -139,8 +139,12 @@
   display: flex;
   justify-content: space-between;
 }
-
-.naam ,.Consignee,.Indent,.IndDate,.accepted,.insideOffer{
+.indent,.Consignee{
+  display: flex;
+  justify-content: flex-start;
+  gap: 2rem;
+}
+.naam ,.Indent,.IndDate,.accepted,.insideOffer{
   display: flex;
   justify-content: space-between;
 }
