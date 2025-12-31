@@ -39,6 +39,7 @@ const Input = <T extends FieldValues>({
   const [show, setShow] = useState(false);
   const isPassword = type === "password";
   const finalType = isPassword && show ? "text" : type;
+  const isDate = type === "date";
 
   const error = errors?.[name];
 
@@ -60,6 +61,16 @@ const Input = <T extends FieldValues>({
           className={`${styles.input} ${error ? styles.inputError : ""}`}
           {...(register ? register(name, { required }) : {})}
           {...rest}
+           onClick={(e) => {
+            if (isDate && (e.currentTarget as any).showPicker) {
+              (e.currentTarget as any).showPicker();
+            }
+          }}
+          onFocus={(e) => {
+            if (isDate && (e.currentTarget as any).showPicker) {
+              (e.currentTarget as any).showPicker();
+            }
+          }}
         />
 
         {/* {isPassword && (

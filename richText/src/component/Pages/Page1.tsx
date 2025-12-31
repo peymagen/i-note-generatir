@@ -257,8 +257,8 @@ const financialYear = (date: string) => {
                 <p>(ख)मान निरीक्षण करने की तारीख . . . .</p>
               </div>
               <div>
-                <p>(a) Stores Offered for inspection on  {data.inspectionDate} </p>
-                <p>(b) Stores inspected on {data.inspectionEvaluation}</p>
+                <p>(a) Stores Offered for inspection on  {data.inspection.inspectedOn} </p>
+                <p>(b) Stores inspected on {data.inspection.inspectionFrom}-{data.inspection.inspectionTo}</p>
               </div>
             </div>
           </div>
