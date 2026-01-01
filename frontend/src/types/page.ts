@@ -9,4 +9,12 @@ export interface Page {
 export interface Props {
   pageId?: string;
   isNew?: boolean;
+ 
+  initialData?: {
+    title: string;
+    content: string;
+  };
+  inline?: boolean;
 }
+
+

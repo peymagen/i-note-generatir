@@ -6,11 +6,6 @@ __pycache__/
 venv/
 env/
 ENV/
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
 # Build files
 dist/
@@ -58,10 +53,6 @@ build
 
 # Misc
 .DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
 
 # Editor directories and files
 .idea
@@ -93,8 +84,7 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
-.env
+
 
 # next.js build output
 .next
@@ -126,5 +116,3 @@ jspm_packages/
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-
-.env

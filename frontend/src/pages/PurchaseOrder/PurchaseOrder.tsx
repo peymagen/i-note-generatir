@@ -16,6 +16,8 @@ import { useLazyGetByVendorCodeQuery } from "../../store/services/vendor-detail"
 import { useLazyGetDatabyConQuery } from "../../store/services/mo-detail";
 
 import styles from "./PurchaseOrder.module.css";
+import RichEditor from "../../component/RichEditor/RichEditor";
+import { renderToStaticMarkup } from "react-dom/server";
 
 /* ================= VALIDATION ================= */
 
@@ -76,6 +78,11 @@ const PurchaseOrder = () => {
   const [poFound, setPoFound] = useState(false);
   const [combinedData, setCombinedData] = useState<CombinedPOData[]>([]);
   const [inspectionFilled, setInspectionFilled] = useState<boolean>(false);
+  const [openEditor,setOpenEditor] = useState<boolean>(false)
+  const [editorContent,setEditorContent] = useState({
+    title: "",
+    content: "",
+  })
 
   const [getIndentDate] = useLazyGetIndentDateQuery();
   const [getByIndent] = useLazyGetByIndentQuery();
@@ -176,14 +183,25 @@ const PurchaseOrder = () => {
         ...updated[0],
         inspection: data,
       };
-      setInspectionFilled(true);
 
+      setInspectionFilled(true);
       return updated;
     });
+    const htmlContent = renderToStaticMarkup(
+      <Page1 data={{ ...combinedData[0], inspection: data }} />
+    );
 
+    setEditorContent({
+      title: `Inspection – ${combinedData[0].header.IndentNo}`,
+      content: htmlContent,
+    });
+
+    setOpenEditor(true);
 
     toast.success("Inspection entry saved");
   };
+
+   
 
   /* ================= UI ================= */
 
@@ -276,12 +294,19 @@ const PurchaseOrder = () => {
       )}
 
    
-      {selectedTemplate === "page1" &&
+      {/* {selectedTemplate === "page1" &&
         poFound && 
         inspectionFilled &&
         combinedData.length > 0 && (
           <Page1 data={combinedData[0]} />
-        )}
+        )} */}
+        {openEditor && (
+  <RichEditor
+    inline
+    initialData={editorContent}
+  />
+)}
+
     </Layout>
   );
 };
