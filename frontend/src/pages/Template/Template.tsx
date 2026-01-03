@@ -1,4 +1,3 @@
-import { useState } from "react";
 import styles from "./TemplatePage.module.css";
 import Page1 from "../../component/Pages/Page1";
 

@@ -26,7 +26,10 @@ export const updatePage = async (
 ) => {
   try {
     const query = "UPDATE pages SET title = ?, content = ? WHERE id = ?";
-    const values = [data.title, data.content, id];
+    const pageId = Number(id);
+    const values = [data.title, data.content, pageId];
+
+    console.log("Updating page with ID:", pageId, "Values:", values);
 
     const [result] = await pool.execute<ResultSetHeader>(query, values);
 

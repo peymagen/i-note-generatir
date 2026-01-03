@@ -18,6 +18,7 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
+  console.log(req.body)
   passport.authenticate(
     "login",
     async (err: Error | null, user: any | undefined, info: any) => {

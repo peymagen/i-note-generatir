@@ -78,6 +78,7 @@ export const createPageHandler = async (req: Request, res: Response) => {
 
 export const updatePageHandler = async (req: Request, res: Response) => {
   const { id } = req.params;
+  console.log(typeof(id))
   const { title, content } = req.body;
 
   const page = await updatePage(id, { title, content });

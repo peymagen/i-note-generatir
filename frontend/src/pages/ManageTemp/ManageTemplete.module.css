@@ -12,11 +12,12 @@
 /* HEADER CONTAINER */
 .headerContainer {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
   align-items: center;
   margin-bottom: 2rem;
   position: relative;
   width: 100%;
+  /* border: 1px solid black; */
 }
 
 /* PAGE TITLE */
@@ -31,6 +32,19 @@
   width: 100%;
   text-align: center;
   pointer-events: none;
+}
+
+.btnWrapper0{
+  width:100%;
+  /* border: 1px solid red; */
+  padding: 10px;
+  position: relative;
+}
+.btnWrapper0 Button{
+  position: absolute;
+  right: 0;
+  top: 0%;
+  transform: translateY(-50%);
 }
 
 /* BUTTON WRAPPER */
@@ -57,7 +71,7 @@
   margin-top: 1rem;
 }
 
-/* TABLE WRAPPER (RESPONSIVE SCROLL WHEN NEEDED) */
+
 .tableWrapper {
   width: 100%;
   overflow-x: auto;

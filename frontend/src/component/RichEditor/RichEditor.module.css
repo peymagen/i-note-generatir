@@ -1,37 +1,36 @@
-.editorContainer {
+/* .editorContainer {
   width: 100%;
   max-width: 60rem;
   margin: 0 auto;
   padding: 2rem;
   box-sizing: border-box;
-}
+} */
 
 /* Title Input */
-.titleInput {
+/* .titleInput {
   width: 100%;
   font-size: 1.4rem;
   padding: 0.8rem 1rem;
   margin-bottom: 1.5rem;
   box-sizing: border-box;
-}
+} */
 
 /* Quill Content Editor */
-.quillEditor {
-  height: 22rem;
-  margin-bottom: 3.5rem;
-}
+  /* .quillEditor {
+    height: 22rem;
+    margin-bottom: 3.5rem;
+  } */
 
 /* Variable chips */
-.variablesList {
+/* .variablesList {
   margin-top: 4rem;
   margin-bottom: 1.5rem;
-  /* border: 2px solid #374151; */
   display: flex;
   flex-wrap: wrap;
   gap: 0.8rem;
-}
+} */
 
-
+/* 
 
 .variableTag {
   background: var(--color-bg);
@@ -44,32 +43,32 @@
 
 .variableTag:hover {
   background: #374151;
-}
+} */
 
 /* Buttons Row */
-.buttonRow {
+/* .buttonRow {
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-top: 1.5rem;
-}
+} */
 
 /* Left side (Save) */
-.leftAction {
+/* .leftAction {
   display: flex;
   width: 50%;
-}
+} */
 
 /* Right side (Exports) */
-.rightActions {
+/* .rightActions {
   display: flex;
   gap: 1rem;
   width: 35%;
-}
+} */
 
 /* Responsive */
-@media (max-width: 48rem) {
+/* @media (max-width: 48rem) {
   .editorContainer {
     padding: 1rem;
   }
@@ -83,4 +82,73 @@
   .rightActions {
     justify-content: space-between;
   }
+} */
+.formGroup {
+  margin-bottom: 1.5rem;
+  width: 100%;
 }
+
+.label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.required {
+  color: #e53935;
+}
+
+.input {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  transition: border-color 0.2s;
+}
+
+.input:focus-within {
+  border-color: #4285f4;
+  box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+}
+
+.inputError {
+  border-color: #e53935;
+}
+
+.errorMessage {
+  color: #e53935;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+/* ================= CKEDITOR BASE ================= */
+
+.ckEditor :global(.ck-editor__editable) {
+  min-height: 250px;
+}
+
+.ckEditor :global(.ck-content) {
+  min-height: 250px;
+}
+
+
+/* .ck-content table td,
+.ck-content table th {
+  border: 1px solid #d1d5db;
+}
+
+
+.ck-content table.table-borderless td,
+.ck-content table.table-borderless th {
+  border: none !important;
+} */
+
+
+
+
+/* 
+:global(.ck-content table[borderless]),
+:global(.ck-content table[borderless] td),
+:global(.ck-content table[borderless] th) {
+  border: none !important;
+} */
+

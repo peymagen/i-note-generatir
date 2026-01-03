@@ -294,18 +294,18 @@ const PurchaseOrder = () => {
       )}
 
    
-      {/* {selectedTemplate === "page1" &&
+       {selectedTemplate === "page1" &&
         poFound && 
         inspectionFilled &&
         combinedData.length > 0 && (
           <Page1 data={combinedData[0]} />
-        )} */}
-        {openEditor && (
+        )} 
+        {/* {openEditor && (
   <RichEditor
     inline
     initialData={editorContent}
   />
-)}
+)} */}
 
     </Layout>
   );
