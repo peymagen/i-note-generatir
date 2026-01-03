@@ -1,8 +1,8 @@
-import React, { useState, useCallback,useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { DataTable } from "../../component/DataTable/DataTable"; 
 import {
     useGetAllPODataQuery,
-  useImportPODataMutation,
+  // useImportPODataMutation,
   useUpdatePODataMutation,
   useAddPoDetailMutation,
   useDeletePoDetailMutation
@@ -15,22 +15,37 @@ import Input from "../../component/Input/Input2";
 import { useForm } from "react-hook-form";
 
 
+type FormValue = string | number | null | undefined;
+
+type BaseFormData = Record<string, FormValue>;
+
+type FormData = BaseFormData & {
+  id: number;
+};
+
+
+
 interface ModalProps {
   title: string;
-  form: Record<string, any>;
-  setForm: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+  form: FormData;
+  setForm: React.Dispatch<React.SetStateAction<FormData>>;
   onClose: () => void;
-  onSave: (formData: Record<string, any>) => void;
+  onSave: (formData: FormData) => void;
 }
 
+
 const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave }) => {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, formState: { errors },reset } = useForm({
     defaultValues: initialForm
   });
 
-  const onSubmit = (data: any) => {
+  useEffect(() => {
+    reset(initialForm);
+  }, [initialForm]);
+  const onSubmit = (data: FormData) => {
     onSave(data);
   };
+  
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -39,7 +54,6 @@ const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave
           <h2>{title}</h2>
           <RxCross2 className={styles.closeIcon} onClick={onClose} />
         </div>
-
         <form onSubmit={handleSubmit(onSubmit)}>
           {Object.keys(initialForm).map((field) => (
             <Input
@@ -51,7 +65,6 @@ const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave
               fullWidth
             />
           ))}
-
           <div className={styles.modalActions}>
             <Button 
               type="button" 
@@ -72,7 +85,6 @@ const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave
 };
 
 
-
 // ------------------------------
 // MAIN PAGE
 // ------------------------------
@@ -82,44 +94,49 @@ const PoDetail = () => {
   });
 
   
-  const [form, setForm] = useState<Record<string, any>>({
-        IndentNo:"",
-        VendorCode:"",
-        OrderDate:"",
-        OrderLineNo:"",
-        ItemCode:"",
-        ConsigneeCode:"",
-        OrderLineDRB:"",
-        Specs:"",
-        Qty:"",
-        UniCostCC:"",
-        PilotSampleDRb:"",
-        MIQPQty:"",
-        PackType:"",
-        StationCode:"",
-        ReReferencedItemCode:""
+  const [form, setForm] = useState<FormData>({
+        id: 0,
+        IndentNo: "",
+        VendorCode: "",
+        OrderDate: "",
+        OrderLineNo: "",
+        ItemCode: "",
+        ConsigneeCode: "",
+        OrderLineDRB: "",
+        Specs: "",
+        Qty: "",
+        UniCostCC: "",
+        PilotSampleDRb: "",
+        MIQPQty: "",
+        PackType: "",
+        StationCode: "",
+        ReReferencedItemCode: ""
   });
-const [editingRow, setEditingRow] = useState<any>(null);
-  const [editForm, setEditForm] = useState<Record<string, any>>({});
+  const [editingRow, setEditingRow] = useState<FormData | null>(null);
+  const [editForm, setEditForm] = useState<FormData>({ id: 0 });
+
   useEffect(() => {
     if (editingRow) {
-      setEditForm(editingRow);
+      setEditForm({ ...editingRow });
+    } else {
+      setEditForm({ id: 0 });
     }
   }, [editingRow]);
 
+ 
 
-  const [importExcel] = useImportPODataMutation();
+  // const [importExcel] = useImportPODataMutation();
   const [updateItem] = useUpdatePODataMutation();
   const [deleteItem] = useDeletePoDetailMutation(); 
-  const[addItem] = useAddPoDetailMutation();
+  const [addItem] = useAddPoDetailMutation();
 
   
   const [addModal, setAddModal] = useState(false);
 
-  const [file, setFile] = useState<File | null>(null);
+  // const [file, setFile] = useState<File | null>(null);
 
   // Backend nested response => actual items
-  const items = data?.data?.data ?? [];
+  const items = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
  
   // --------------------------                
   // FETCH DATA FOR DataTable (DataTable handles pagination!)
@@ -128,13 +145,15 @@ const [editingRow, setEditingRow] = useState<any>(null);
     async (params?: { page: number; search?: string }) => {
       const page = params?.page ?? 1;
       const search = params?.search?.toLowerCase() ?? "";
-
       const pageSize = 100; // rows per page
 
+      // Get current items
+      const currentItems = data?.data?.data ?? [];
+      
       // Filter by search
-      let filtered = items;
+      let filtered = currentItems;
       if (search) {
-        filtered = items.filter((item: any) =>
+        filtered = currentItems.filter((item: FormData) =>
           Object.values(item).some((v) =>
             String(v).toLowerCase().includes(search)
           )
@@ -150,65 +169,85 @@ const [editingRow, setEditingRow] = useState<any>(null);
         total: filtered.length,
       };
     },
-    [items]
+    [items, data?.data?.data]
   );
 
   // --------------------------
   // EDIT SAVE HANDLER
   // --------------------------
-  const handleSaveEdit = async (updated: any) => {
+  const handleSaveEdit = async (updated: FormData) => {
+    if (!editingRow) return;
+    
     try {
-      await updateItem({ id: updated.id, data: updated }).unwrap();
+      await updateItem({ id: editingRow.id, data: updated }).unwrap();
       toast.success("Updated successfully");
       setEditingRow(null);
       refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Update failed");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        console.error(err.message);
+        toast.error(err.message);
+      } else {
+        console.error(err);
+        toast.error("Update failed");
+      }
     }
   };
 
   // --------------------------
   // IMPORT EXCEL HANDLER
   // --------------------------
- const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const selectedFile = e.target.files?.[0];
+//  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+//   const selectedFile = e.target.files?.[0];
 
-  if (!selectedFile) return;
+//   if (!selectedFile) return;
 
-  setFile(selectedFile);
+//   setFile(selectedFile);
 
-  try {
-    await importExcel(selectedFile).unwrap();
-    toast.success("Excel imported successfully!");
-    refetch();
-  } catch (err) {
-    toast.error("Failed to import Excel!");
-  }
-};
+//   try {
+//     await importExcel(selectedFile).unwrap();
+//     toast.success("Excel imported successfully!");
+//     refetch();
+//   } catch (err) {
+//     toast.error("Failed to import Excel!");
+//   }
+// };
 
-const handleDelete = async (row: any) => {
+const handleDelete = async (row: FormData) => {
   try {
     // Extract the ID from the row object
-    const id = row.id || row.ID || row.Id; // Check common ID field names
+    const id = row.id ;
     if (!id) {
       throw new Error('No ID found in row data');
     }
     await deleteItem(id).unwrap();
     toast.success("Deleted successfully");
     refetch();
-  } catch (err: any) {
-    toast.error(err?.data?.message || err.message || "Delete failed");
+  } catch (err: unknown) {
+    if(err instanceof Error){
+      console.error(err.message);
+      toast.error(err.message);
+    }else{
+      console.error(err);
+      toast.error("Delete failed");
+    }
   }
 };
 
-const handleAdd = async (data: any) => {
+const handleAdd = async (formData: FormData) => {
   try {
-    await addItem(data).unwrap();
+    await addItem(formData).unwrap();
     toast.success("Item Added Successfully");
     setAddModal(false);
     refetch();
-  } catch (err: any) {
-    toast.error(err?.data?.message || "Add failed");
+  } catch (err: unknown) {
+    if(err instanceof Error){
+      console.error(err.message);
+      toast.error(err.message);
+    }else{
+      console.error(err);
+      toast.error("Add failed");
+    }
   }
 };
 
@@ -227,7 +266,7 @@ const handleAdd = async (data: any) => {
               onClick={() => {console.log("clicked")
               setAddModal(true)}}
             />
-        <input
+        {/* <input
           type="file"
           id="excel-upload"
           accept=".xlsx,.xls"
@@ -239,7 +278,7 @@ const handleAdd = async (data: any) => {
           buttonType="three"
           onClick={() => document.getElementById('excel-upload')?.click()}
           loading={false}
-        />
+        /> */}
 
       </div>
 
@@ -299,7 +338,7 @@ const handleAdd = async (data: any) => {
           {
             label: "Edit",
             buttonType: "one",
-            onClick: (row) => setEditingRow(row)
+            onClick: (row: FormData) => setEditingRow(row)
 
           },
           {

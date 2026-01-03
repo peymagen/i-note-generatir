@@ -10,7 +10,7 @@ export interface PoDto {
   Specs: string;
   Qty: number;  
   UniCostCC: number;
-  PilotSampleDRb: string | null | number; 
+  PilotSampleDRb: string |null; 
   MIQPQty: number; 
   PackType: string;  
   StationCode: string ;  

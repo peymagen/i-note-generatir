@@ -48,6 +48,12 @@ router.patch(
   catchError,
   controller.update
 );
+router.delete(
+  "/:id",
+  roleAuth(),
+  catchError,
+  controller.deleteDataById
+)
 
 
 

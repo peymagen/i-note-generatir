@@ -1,8 +1,8 @@
-import React, { useState, useCallback,useEffect } from "react";
+import React, { useState, useCallback,useEffect, useMemo } from "react";
 import { DataTable } from "../../component/DataTable/DataTable"; 
 import {
   useGetAllPOHeaderQuery,
-  useImportPOHeaderMutation,
+  // useImportPOHeaderMutation,
   useUpdatePOHeaderMutation,
   useAddPoHeaderMutation,
   useDeletePoHeaderMutation
@@ -15,21 +15,35 @@ import Input from "../../component/Input/Input2";
 import { useForm } from "react-hook-form";
 
 
+type FormValue = string | number | null | undefined;
+
+type BaseFormData = Record<string, FormValue>;
+
+type FormData = BaseFormData & {
+  id: number;
+};
+
 interface ModalProps {
-  title: string;
-  form: Record<string, any>;
-  onClose: () => void;
-  onSave: (formData: Record<string, any>) => void;
+   title: string;
+   form: FormData;
+   setForm: React.Dispatch<React.SetStateAction<FormData>>;
+   onClose: () => void;
+   onSave: (formData: FormData) => void;
 }
 
+
 const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave }) => {
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, formState: { errors },reset } = useForm({
     defaultValues: initialForm
   });
 
-  const onSubmit = (data: any) => {
+  useEffect(() => {
+    reset(initialForm);
+  }, [initialForm]);
+  const onSubmit = (data: FormData) => {
     onSave(data);
   };
+  
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -38,7 +52,6 @@ const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave
           <h2>{title}</h2>
           <RxCross2 className={styles.closeIcon} onClick={onClose} />
         </div>
-
         <form onSubmit={handleSubmit(onSubmit)}>
           {Object.keys(initialForm).map((field) => (
             <Input
@@ -50,7 +63,6 @@ const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave
               fullWidth
             />
           ))}
-
           <div className={styles.modalActions}>
             <Button 
               type="button" 
@@ -81,7 +93,8 @@ const PoDetail = () => {
   });
 
   
-  const [form, setForm] = useState<Record<string, any>>({
+  const [form, setForm] = useState<FormData>({
+      id: 0,
       IndentNo:"",
       VendorCode:"",
       OrderDate:"",
@@ -106,8 +119,8 @@ const PoDetail = () => {
       City:"",
       State:""
   });
-const [editingRow, setEditingRow] = useState<any>(null);
-  const [editForm, setEditForm] = useState<Record<string, any>>({});
+const [editingRow, setEditingRow] = useState<FormData |null>(null);
+  const [editForm, setEditForm] = useState<FormData>({id:0});
   useEffect(() => {
     if (editingRow) {
       setEditForm(editingRow);
@@ -115,7 +128,7 @@ const [editingRow, setEditingRow] = useState<any>(null);
   }, [editingRow]);
 
 
-  const [importExcel] = useImportPOHeaderMutation();
+  // const [importExcel] = useImportPOHeaderMutation();
   const [updateItem] = useUpdatePOHeaderMutation();
   const [deleteItem] = useDeletePoHeaderMutation(); 
   const[addItem] = useAddPoHeaderMutation();
@@ -123,10 +136,11 @@ const [editingRow, setEditingRow] = useState<any>(null);
   
   const [addModal, setAddModal] = useState(false);
 
-  const [file, setFile] = useState<File | null>(null);
+  // const [file, setFile] = useState<File | null>(null);
 
   // Backend nested response => actual items
-  const items = data?.data?.data ?? [];
+  // const items = data?.data?.data ?? [];
+  const items = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
  
   // --------------------------                
   // FETCH DATA FOR DataTable (DataTable handles pagination!)
@@ -141,7 +155,7 @@ const [editingRow, setEditingRow] = useState<any>(null);
       // Filter by search
       let filtered = items;
       if (search) {
-        filtered = items.filter((item: any) =>
+        filtered = items.filter((item: FormData) =>
           Object.values(item).some((v) =>
             String(v).toLowerCase().includes(search)
           )
@@ -163,59 +177,80 @@ const [editingRow, setEditingRow] = useState<any>(null);
   // --------------------------
   // EDIT SAVE HANDLER
   // --------------------------
-  const handleSaveEdit = async (updated: any) => {
+  const handleSaveEdit = async (updated: FormData) => {
     try {
       await updateItem({ id: updated.id, data: updated }).unwrap();
       toast.success("Updated successfully");
       setEditingRow(null);
       refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Update failed");
+    } catch (err: unknown) {
+      if(err instanceof Error){
+        console.error(err.message);
+        toast.error(err.message);
+      }else{
+        console.error(err);
+        toast.error("Update failed");
+      }
     }
   };
 
   // --------------------------
   // IMPORT EXCEL HANDLER
   // --------------------------
- const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const selectedFile = e.target.files?.[0];
+//  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+//   const selectedFile = e.target.files?.[0];
 
-  if (!selectedFile) return;
+//   if (!selectedFile) return;
 
-  setFile(selectedFile);
+//   setFile(selectedFile);
 
+//   try {
+//     await importExcel(selectedFile).unwrap();
+//     toast.success("Excel imported successfully!");
+//     refetch();
+//   } catch (err) {
+//     toast.error("Failed to import Excel!");
+//   }
+// };
+
+const handleDelete = async (row: FormData) => {
   try {
-    await importExcel(selectedFile).unwrap();
-    toast.success("Excel imported successfully!");
-    refetch();
-  } catch (err) {
-    toast.error("Failed to import Excel!");
-  }
-};
-
-const handleDelete = async (row: any) => {
-  try {
-    // Extract the ID from the row object
-    const id = row.id || row.ID || row.Id; // Check common ID field names
-    if (!id) {
-      throw new Error('No ID found in row data');
+    // Ensure ID is a number
+    const id = Number(row.id || row.ID || row.Id);
+    if (isNaN(id)) {
+      throw new Error('Invalid ID in row data');
     }
-    await deleteItem(id).unwrap();
+    console.log("id",id)
+    const result = await deleteItem(id).unwrap();
+    console.log("result",result)
     toast.success("Deleted successfully");
     refetch();
-  } catch (err: any) {
-    toast.error(err?.data?.message || err.message || "Delete failed");
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error(err.message);
+      toast.error(err.message);
+    } else {
+      console.error(err);
+      toast.error("Delete failed");
+    }
   }
 };
 
-const handleAdd = async (data: any) => {
+const handleAdd = async (data: FormData) => {
   try {
     await addItem(data).unwrap();
     toast.success("Item Added Successfully");
     setAddModal(false);
     refetch();
-  } catch (err: any) {
-    toast.error(err?.data?.message || "Add failed");
+  } catch (err: unknown) {
+    if(err instanceof Error){
+      console.error(err.message);
+      toast.error(err.message);
+    }else{
+      console.error(err);
+      toast.error("Add failed");
+    }
+    
   }
 };
 
@@ -234,7 +269,7 @@ const handleAdd = async (data: any) => {
             onClick={() => {console.log("clicked")
             setAddModal(true)}}
           />
-        <input
+        {/* <input
           type="file"
           id="excel-upload"
           accept=".xlsx,.xls"
@@ -246,7 +281,7 @@ const handleAdd = async (data: any) => {
           buttonType="three"
           onClick={() => document.getElementById('excel-upload')?.click()}
           loading={false}
-        />
+        /> */}
 
       </div>
 
@@ -312,7 +347,7 @@ const handleAdd = async (data: any) => {
           {
             label: "Edit",
             buttonType: "one",
-            onClick: (row) => setEditingRow(row)
+            onClick: (row: FormData) => setEditingRow(row)
 
           },
           {
@@ -333,6 +368,7 @@ const handleAdd = async (data: any) => {
         <Modal
           title="Edit Item"
           form={editForm}
+          setForm={setEditForm}
           onClose={() => setEditingRow(null)}
           onSave={handleSaveEdit}
         />
@@ -342,11 +378,9 @@ const handleAdd = async (data: any) => {
         <Modal
           title="Add New Item"
           form={form}
+          setForm={setForm}
           onClose={() => setAddModal(false)}
-          onSave={(data) => {
-            handleAdd(data);
-            setAddModal(false);
-          }}
+          onSave={handleAdd}
         />
       )}
 
