@@ -230,6 +230,7 @@ import {
   useDeletePageMutation,
 } from "../../store/services/page.api";
 import { toast } from "react-toastify";
+import Input from "../../component/Input/Input2";
 
 type ViewMode = "list" | "edit" | "new";
 
@@ -433,7 +434,8 @@ const ManageTemplate: React.FC = () => {
           </div>
 
           {/* TITLE */}
-          <input
+          <Input
+          placeholder=" Title"
             className={styles.titleInput}
             placeholder="Template Title"
             value={watch("title")}
