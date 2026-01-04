@@ -4,7 +4,14 @@ import styles from "./Button.module.css";
 interface Props {
   label: string;
   loading?: boolean;
-  buttonType?: "one" | "two" | "three" | "four"|'five';
+  buttonType?:
+    | "one"
+    | "two"
+    | "three"
+    | "four"
+    | "five"
+    | "danger"
+    | "danger_outline";
   onClick?: (e: React.MouseEvent) => void;
   type?: "button" | "submit" | "reset";
   disabled?: boolean;
@@ -31,4 +38,3 @@ const Button: React.FC<Props> = ({
 };
 
 export default Button;
-
