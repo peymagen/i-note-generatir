@@ -1,15 +1,18 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
 import Login from "./pages/login/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import ManageTemplate from "./pages/ManageTemp/ManageTemplate";
-import ManageCreateUser from "./pages/ManageCreateuser/ManageCreateUser";
+import ManageCreateUser from "./pages/User";
 import ChangePassword from "./pages/ChangePassword/ChangePassword";
 import Dash from "./pages/Daash/Dash";
-// import ItemDetail from './pages/itemDetail/itemDetail'
 import VendorDetail from "./pages/VendorDetail/VendorDetail";
-// import PoDetail from "./pages/PoDetail/PoDetail";
-// import PoHeader from "./pages/PoHeader/PoHeader";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import styles from "./App.module.css";
@@ -17,17 +20,18 @@ import { useSelector } from "react-redux";
 import type { RootState } from "./store/store";
 import PurchaseOrder from "./pages/PurchaseOrder/PurchaseOrder";
 import MoDetail from "./pages/MoDetail/Mo";
-import TemplatePage from "./pages/Template/Template";
 import Collective from "./pages/DataCollective/Collective";
 
 
 const ProtectedRoute: React.FC = () => {
-  const { isAuthenticated, loading } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, loading } = useSelector(
+    (state: RootState) => state.auth
+  );
 
   if (loading) return <div>Loading...</div>;
   if (!isAuthenticated) return <Navigate to="/login" replace />;
 
-  return <Outlet />; 
+  return <Outlet />;
 };
 
 const App: React.FC = () => {

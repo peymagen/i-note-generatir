@@ -1,11 +1,16 @@
 import { body } from "express-validator";
-import * as Joi from 'joi';
+import * as Joi from "joi";
 export const createUser = [
   body("email")
     .notEmpty()
     .withMessage("email is required")
     .isString()
     .withMessage("email must be a string"),
+  body("name")
+    .notEmpty()
+    .withMessage("name is required")
+    .isString()
+    .withMessage("name must be a string"),
   body("password")
     .notEmpty()
     .withMessage("password is required")
@@ -30,11 +35,11 @@ export const updateUser = [
     .withMessage("email is required")
     .isString()
     .withMessage("email must be a string"),
-  body("password")
+  body("name")
     .notEmpty()
-    .withMessage("password is required")
+    .withMessage("name is required")
     .isString()
-    .withMessage("password must be a string"),
+    .withMessage("name must be a string"),
 ];
 
 export const editUser = [
@@ -42,11 +47,10 @@ export const editUser = [
   body("password").isString().withMessage("password must be a string"),
 ];
 
-
 export const changePasswordSchema = {
   body: Joi.object({
     currentPassword: Joi.string().required(),
     newPassword: Joi.string().min(8).required(),
-    confirmPassword: Joi.string().valid(Joi.ref('newPassword')).required()
-  })
+    confirmPassword: Joi.string().valid(Joi.ref("newPassword")).required(),
+  }),
 };

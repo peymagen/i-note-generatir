@@ -9,8 +9,8 @@ import Button from "../Button/Button";
 interface Action<T = { [x: string]: unknown }> {
   label: string;
   onClick: (row: T) => Promise<void> | void;
-  buttonType?: "one" | "two" | "three" | "four"; 
-  component?: (row: T) => React.ReactNode; 
+  buttonType?: "one" | "two" | "three" | "four";
+  component?: (row: T) => React.ReactNode;
 }
 
 // type addButtonType = {
@@ -20,7 +20,7 @@ interface Action<T = { [x: string]: unknown }> {
 // };
 
 interface DataTableProps<T = { [x: string]: unknown }> {
-  fetchData: ( 
+  fetchData: (
     params?: { page: number; search?: string } | undefined
   ) => Promise<{
     data: T[];
@@ -93,10 +93,7 @@ export const DataTable = <T extends { [x: string]: unknown }>({
 
   const totalPages = Math.ceil(total / limit);
 
-  const handleRowSelection = (
-    row: T,
-    isChecked: boolean
-  ) => {
+  const handleRowSelection = (row: T, isChecked: boolean) => {
     setSelectedRows((prev) => {
       if (isChecked) {
         return [...prev, row];
@@ -187,12 +184,11 @@ export const DataTable = <T extends { [x: string]: unknown }>({
             <button onClick={handlePrint}>{"\u{1F5B6}"}</button>
           </div>
         )}
-        
       </div>
-      
+
       <div className={styles.tableContainer}>
-        <table className={styles.table} ref={tableRef}>  
-          <thead>  
+        <table className={styles.table} ref={tableRef}>
+          <thead>
             <tr>
               {hasCheckbox && (
                 <th>
@@ -360,34 +356,34 @@ export const DataTable = <T extends { [x: string]: unknown }>({
                     </td>
                   )} */}
                   {actions && (
-                  <td> 
-                    <div className={styles.action}>
-                      {actions.map((action, index) => {
-                        
-                        // If custom component exists, render it
-                        if (action.component) {
-                          return <React.Fragment key={index}>
-                            {action.component(row)}
-                          </React.Fragment>
-                        }
+                    <td>
+                      <div className={styles.action}>
+                        {actions.map((action, index) => {
+                          // If custom component exists, render it
+                          if (action.component) {
+                            return (
+                              <React.Fragment key={index}>
+                                {action.component(row)}
+                              </React.Fragment>
+                            );
+                          }
 
-                        // Otherwise render default Button
-                        return (
-                          <Button
-                            key={index}
-                            label={action.label}
-                            buttonType={action.buttonType || "one"}
-                            onClick={async (e: React.MouseEvent) => {
-                              e.stopPropagation();
-                              await action.onClick(row);
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
-                  </td>
-                )}
-
+                          // Otherwise render default Button
+                          return (
+                            <Button
+                              key={index}
+                              label={action.label}
+                              buttonType={action.buttonType || "one"}
+                              onClick={async (e: React.MouseEvent) => {
+                                e.stopPropagation();
+                                await action.onClick(row);
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))
             ) : (
