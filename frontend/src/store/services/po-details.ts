@@ -1,5 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "./api";
+import type { FormData } from "../../pages/PoDetail/PoDetail";
 
 export const poDetailApi = createApi({
   reducerPath: "poDetailApi",
@@ -8,12 +9,30 @@ export const poDetailApi = createApi({
   endpoints: (builder) => ({
 
     // GET ALL
+   
+
     getAllPOData: builder.query({
-      query: () => ({
-        url: "/po-detail",
+    query: (params?: { page?: number; limit?: number; search?: string }) => {
+      const queryString = new URLSearchParams();
+
+      if (params?.page !== undefined) {
+        queryString.append('page', String(params.page));
+      }
+
+      if (params?.limit !== undefined) {
+        queryString.append('limit', String(params.limit));
+      }
+
+      if (params?.search !== undefined && params.search.trim() !== "") {
+        queryString.append('search', params.search.trim());
+      }
+
+      return {
+        url: `/po-detail${queryString.toString() ? `?${queryString}` : ''}`,
         method: "GET",
-      }),
-    }),
+      };
+    },
+  }),
 
     // GET BY ID
     getPODataById: builder.query({
@@ -39,7 +58,7 @@ export const poDetailApi = createApi({
 
     // UPDATE BY ID
     updatePOData: builder.mutation({
-      query: ({ id, data }: { id: number; data: any }) => ({
+      query: ({ id, data }: { id: number; data: FormData }) => ({
         url: `/po-detail/${id}`,
         method: "PATCH",
         body: data,
@@ -60,7 +79,7 @@ export const poDetailApi = createApi({
     }),
 
     addPoDetail:builder.mutation({
-      query: (data: any) => ({
+      query: (data: FormData) => ({
         url: "/po-detail",
         method: "POST",
         body: data,

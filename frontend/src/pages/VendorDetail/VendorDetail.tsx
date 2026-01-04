@@ -18,7 +18,7 @@ interface ModalProps {
   form: Record<string, any>;
   onClose: () => void;
   onSave: (formData: Record<string, any>) => void;
-  fields: string[];
+  fields: string[];  
 }
 
 const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave, fields }) => {

@@ -10,7 +10,7 @@ export interface ItemImportDTO {
   CountryCode: string;
   ItemDeno: string;  
   MonthsShelfLife: number;
-  CRPCategory: string; 
+  CRPCategory: string;   
   VEDCCategory: string; 
   ABCCategory: string;  
   DateTimeApproved?: string | null;  

@@ -1,6 +1,7 @@
 import xlsx from "xlsx";
 import { pool } from "../../common/services/sql.service";
 import { ItemImportDTO } from "./ItemDetail.dto";
+import { type RowDataPacket, type ResultSetHeader } from "mysql2";
 
 const formatDate = (value: any): string | null => {
   if (!value) return null;
@@ -82,7 +83,7 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
     ) VALUES ?
   `;
 
-  await pool.query(query, [insertValues]);
+  await pool.execute<ResultSetHeader>(query, [insertValues]);
 
   return {
     totalInserted: validatedRows.length,
@@ -90,23 +91,23 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
   };
 };
 
-export const getAllData = async () => {
-  try {
-    console.log("hello")
-    const [rows] = await pool.query("SELECT * FROM ITEMS_DETAILS ORDER BY id ASC");
-    return {
-      success: true,
-      data: rows
-    };
-  } catch (error: any) {
-    console.error("Error in getAllData:", error);
-    throw new Error("Failed to fetch Item Details");
-  }
-};
+// export const getAllData = async () => {
+//   try {
+//     console.log("hello")
+//     const [rows] = await pool.execute<RowDataPacket[]>("SELECT * FROM ITEMS_DETAILS ORDER BY id ASC");
+//     return {
+//       success: true,
+//       data: rows
+//     };
+//   } catch (error: any) {
+//     console.error("Error in getAllData:", error);
+//     throw new Error("Failed to fetch Item Details");
+//   }
+// };
 
 export const getDataById = async (id: number) => {
   try {
-    const [rows]: any = await pool.query(
+    const [rows] = await pool.execute<RowDataPacket[]>(
       "SELECT * FROM ITEMS_DETAILS WHERE id = ?",
       [id]
     );
@@ -229,7 +230,7 @@ export const updateDataById = async (id: number, payload: any) => {
       WHERE id = ?
     `;
 
-    const [result]: any = await pool.query(query, values);
+    const [result] = await pool.execute<ResultSetHeader>(query, values);
 
     if (result.affectedRows === 0) {
       return {
@@ -239,7 +240,7 @@ export const updateDataById = async (id: number, payload: any) => {
     }
 
     // Fetch and return the updated record
-    const [updatedRows]: any = await pool.query(
+    const [updatedRows]: any = await pool.execute<ResultSetHeader>(
       "SELECT * FROM ITEMS_DETAILS WHERE id = ?",
       [id]
     );
@@ -259,9 +260,9 @@ export const updateDataById = async (id: number, payload: any) => {
 export const deleteDataById = async (id: number) => {
   try {
     const query = "DELETE FROM ITEMS_DETAILS WHERE id = ?";
-    const [result]: any = await pool.query(query, [id]);
+    const [result] = await pool.execute<ResultSetHeader>(query, [id]);
 
-    if (result.affectedRows === 0) {
+    if ((result as ResultSetHeader).affectedRows === 0) {
       return {
         success: false,
         message: "Record not found"
@@ -282,6 +283,7 @@ export const deleteDataById = async (id: number) => {
 export const addData = async (userId: number, payload: any) => {
   try {
     const {
+      IndentNo,
       ItemDesc,
       VendorCode,
       OrderDate,
@@ -293,36 +295,61 @@ export const addData = async (userId: number, payload: any) => {
       MonthsShelfLife,
       CRPCategory,
       VEDCCategory,
-      ABCCategory
+      ABCCategory,
+      DateTimeApproved,
+      ApprovedBy,
+      ReviewSubSectionCode,
+      INCATYN
     } = payload;
 
-    if (!ItemDesc || !VendorCode || !OrderDate || !ItemCode) {
+    if (!IndentNo||!ItemDesc || !VendorCode || !OrderDate || !ItemCode) {
       throw new Error("Missing required fields");
     }
 
     const query = `
-      INSERT INTO ITEMS_DETAILS 
-      (userId, ItemDesc, VendorCode, OrderDate, OrderLineNo, ItemCode, 
-       SectionHead, CountryCode, ItemDeno, MonthsShelfLife, 
-       CRPCategory, VEDCCategory, ABCCategory)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
+  INSERT INTO ITEMS_DETAILS (
+    userId,
+    IndentNo,
+    ItemDesc,
+    VendorCode,
+    OrderDate,
+    OrderLineNo,
+    ItemCode,
+    SectionHead,
+    CountryCode,
+    ItemDeno,
+    MonthsShelfLife,
+    CRPCategory,
+    VEDCCategory,
+    ABCCategory,
+    DateTimeApproved,
+    ApprovedBy,
+    ReviewSubSectionCode,
+    INCATYN
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+`;
 
-    const [result]: any = await pool.query(query, [
-      userId,  // Use the userId from function parameters
-      ItemDesc,
-      VendorCode,
-      new Date(OrderDate),
-      OrderLineNo || null,
-      ItemCode,
-      SectionHead || null,
-      CountryCode || null,
-      ItemDeno || null,
-      MonthsShelfLife ? parseInt(MonthsShelfLife) : null,
-      CRPCategory || null,
-      VEDCCategory || null,
-      ABCCategory || null
-    ]);
+const [result] = await pool.execute<ResultSetHeader>(query, [
+  userId,
+  IndentNo,
+  ItemDesc,
+  VendorCode,
+  OrderDate,
+  OrderLineNo,
+  ItemCode,
+  SectionHead,
+  CountryCode,
+  ItemDeno,
+  MonthsShelfLife,
+  CRPCategory,
+  VEDCCategory,
+  ABCCategory,
+  DateTimeApproved,
+  ApprovedBy,
+  ReviewSubSectionCode,
+  INCATYN
+]);
+
 
     if (!result.insertId) {
       throw new Error("Failed to insert record");
@@ -340,5 +367,135 @@ export const addData = async (userId: number, payload: any) => {
   } catch (error: any) {
     console.error("Error in addData:", error);
     throw new Error("Failed to add record: " + error.message);
+  }
+};
+
+
+
+
+// export const getPaginatedData = async (
+//   page: number = 1,
+//   limit: number = 50
+// ) => {
+//   try {
+//     const offset = (page - 1) * limit;
+
+//     const [rows]: any = await pool.query(
+//       `
+//       SELECT *
+//       FROM ITEMS_DETAILS
+//       ORDER BY id ASC
+//       LIMIT ? OFFSET ?
+//       `,
+//       [limit, offset]
+//     );
+
+//     const [[countResult]]: any = await pool.query(
+//       `SELECT COUNT(*) as total FROM ITEMS_DETAILS`
+//     );
+
+//     return {
+//       success: true,
+//       data: rows,
+//       pagination: {
+//         page,
+//         limit,
+//         totalRecords: countResult.total,
+//         totalPages: Math.ceil(countResult.total / limit)
+//       },
+//       message: "Data fetched successfully"
+//     };
+
+//   } 
+//   catch (error: any) {
+//     console.error("Error in getPaginatedData:", error);
+//     throw new Error("Failed to fetch paginated Item Details");
+//   }
+// };
+
+
+
+export const getPaginatedDataWithGlobalSearch = async (
+  page?: number,
+  limit?: number,
+  search?: string
+) => {
+  try {
+    
+    const safePage = page && page > 0 ? page : 1;
+    const safeLimit = limit && limit > 0 ? limit : 50;
+    const offset = (safePage - 1) * safeLimit;
+
+    const normalizedSearch = search?.trim();
+
+    let whereClause = "";
+    const values: any[] = [];
+
+    
+    if (normalizedSearch) {
+      const [columnRows]: any = await pool.query(`
+        SELECT COLUMN_NAME
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_NAME = 'items_DETAILS'
+          AND DATA_TYPE IN ('varchar', 'text', 'char')
+      `);
+
+      const searchableColumns: string[] = columnRows.map(
+        (c: any) => c.COLUMN_NAME
+      );
+
+      if (searchableColumns.length > 0) {
+        whereClause =
+          "WHERE " +
+          searchableColumns.map(col => `${col} LIKE ?`).join(" OR ");
+
+        const searchValue = `%${normalizedSearch}%`;
+        searchableColumns.forEach(() => values.push(searchValue));
+      }
+    }
+
+    
+    const dataQuery = `
+      SELECT *
+      FROM items_DETAILS
+      ${whereClause}
+      ORDER BY id ASC
+      LIMIT ? OFFSET ?
+    `;
+
+    const [rows]: any = await pool.query(dataQuery, [
+      ...values,
+      safeLimit,
+      offset,
+    ]);
+
+    
+    const countQuery = `
+      SELECT COUNT(*) AS total
+      FROM items_DETAILS
+      ${whereClause}
+    `;
+
+    const [[countResult]]: any = await pool.query(
+      countQuery,
+      values
+    );
+
+    const totalRecords = countResult.total;
+
+    return {
+      success: true,
+      data: rows,
+      pagination: {
+        page: safePage,
+        limit: safeLimit,
+        totalRecords,
+        totalPages: Math.ceil(totalRecords / safeLimit),
+      },
+      message: "Data fetched successfully",
+    };
+  } catch (error: any) {
+    console.error("Error in getPaginatedDataWithGlobalSearch:", error);
+    throw new Error("Failed to fetch data");
   }
 };

@@ -52,16 +52,17 @@ export const uploadExcel = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllPOData =  async(req:Request,res:Response)=>{
-  try {
+// export const getAllPOData =  async(req:Request,res:Response)=>{
+//   try {
       
-      const data = await service.getAllData();
-       res.status(200).json({ success: true, data });
-    } 
-    catch (error: any) {
-       res.status(500).json({ success: false, error: error.message });
-    }
-}
+//       const data = await service.getAllData();
+//        res.status(200).json({ success: true, data });
+//     } 
+//     catch (error: any) {
+//        res.status(500).json({ success: false, error: error.message });
+//     }
+// }
+
 export const getPODataById = async(req:Request,res:Response)=>{
   try {
       const id = Number(req.params.id);
@@ -145,6 +146,7 @@ export const deleteDataById = async(req:Request,res:Response)=>{
 
 export const addData = async(req:Request,res:Response)=>{
    const userId = (req as any).user?.id;
+   console.log("Request body:", req.body);
     if (!userId) {
        res.status(401).json({
         success: false,
@@ -166,6 +168,7 @@ export const addData = async(req:Request,res:Response)=>{
         success: false, 
         message: "Record not found" });
     }
+    console.log("afteer add",record)
 
      res.status(200).json({ success: true, data: record });
   }
@@ -176,3 +179,88 @@ export const addData = async(req:Request,res:Response)=>{
       error: error.message });
     }
 }
+
+
+
+
+// export const getItemsByPage = async (req: Request, res: Response) => {
+//   const page = Number(req.query.page) || 1;
+//   const limit = Number(req.query.limit) || 50;
+//   console.log('Page:', page, 'Limit:', limit);
+
+//   try{
+//     const result = await service.getPaginatedData(page, limit);
+//     if(result.success) {
+//       res.json(result);
+//     } else {
+//       res.status(404).json({ 
+//         success: false, 
+//         message: result.message || "No records found" 
+//       });
+//     }
+//   }
+//   catch (error: any) {
+//     res.status(500).json({ 
+//       success: false, 
+//       message:"Failed to get records",
+//       error: error.message });
+//   }
+// };
+
+
+
+
+
+export const getItemPageSearch = async (req: Request, res: Response) => {
+  try {
+    
+    const pageParam = req.query.page;
+    const limitParam = req.query.limit;
+    const search = req.query.search?.toString();
+
+    
+    const page =
+      pageParam !== undefined ? Number(pageParam) : undefined;
+
+    const limit =
+      limitParam !== undefined ? Number(limitParam) : undefined;
+
+    if (page !== undefined && page <= 0) {
+       res.status(400).json({
+        success: false,
+        message: "Page must be greater than 0",
+      });
+    }
+
+    if (limit !== undefined && limit <= 0) {
+       res.status(400).json({
+        success: false,
+        message: "Limit must be greater than 0",
+      });
+    }
+
+    const result = await service.getPaginatedDataWithGlobalSearch(
+      page,
+      limit,
+      search
+    );
+
+    if(result.success){
+       res.status(200).json({ data: result });
+    }
+    else{
+       res.status(404).json({ 
+        success: false, 
+        message: result.message || "No records found" 
+      });
+    }
+  } 
+  catch (error: any) {
+    console.error("Controller error:", error);
+
+     res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch item details",
+    });
+  }
+};

@@ -25,11 +25,18 @@ router.get(
   controller.getByIndent
 );
 
+// router.get(
+//   "/",
+//   roleAuth(),
+//   catchError,
+//   controller.getAllPOData
+// );
+
 router.get(
   "/",
   roleAuth(),
   catchError,
-  controller.getAllPOData
+  controller.getItemPageSearch
 );
 
 // Get single item by ID

@@ -15,11 +15,11 @@ import Input from "../../component/Input/Input2";
 import { useForm } from "react-hook-form";
 
 
-type FormValue = string | number | null | undefined;
+export type FormValue = string | number | null | undefined;
 
-type BaseFormData = Record<string, FormValue>;
+export type BaseFormData = Record<string, FormValue>;
 
-type FormData = BaseFormData & {
+export type FormData = BaseFormData & {
   id: number;
 };
 
@@ -35,13 +35,13 @@ interface ModalProps {
 
 
 const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave }) => {
-  const { register, handleSubmit, formState: { errors },reset } = useForm({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
     defaultValues: initialForm
   });
 
   useEffect(() => {
     reset(initialForm);
-  }, [initialForm]);
+  }, [initialForm,reset]);
   const onSubmit = (data: FormData) => {
     onSave(data);
   };
@@ -89,9 +89,17 @@ const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave
 // MAIN PAGE
 // ------------------------------
 const PoDetail = () => {
-  const { data, isLoading, isError, refetch } = useGetAllPODataQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
+
+  const [page, setPage] = useState<number | undefined>(undefined);
+  const limit = 50;
+  const [search, setSearch] = useState<string | undefined>(undefined);
+  
+    const {data, isLoading, isError, refetch} = useGetAllPODataQuery(
+    { page, limit ,search},
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   
   const [form, setForm] = useState<FormData>({
@@ -133,45 +141,39 @@ const PoDetail = () => {
   
   const [addModal, setAddModal] = useState(false);
 
-  // const [file, setFile] = useState<File | null>(null);
-
   // Backend nested response => actual items
   const items = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
- 
+  const pagination = data?.data?.pagination;
+
+  const totalPages = pagination?.totalPages ?? 1;
+  const totalRecords = data?.data?.pagination?.totalRecords ?? 0;
+
+  console.log("Items:", items);
+  console.log("Pagination:", pagination);
+  console.log("Total Pages:", totalPages)
+  console.log("Total Records:", totalRecords)
   // --------------------------                
   // FETCH DATA FOR DataTable (DataTable handles pagination!)
   // --------------------------
   const fetchData = useCallback(
-    async (params?: { page: number; search?: string }) => {
-      const page = params?.page ?? 1;
-      const search = params?.search?.toLowerCase() ?? "";
-      const pageSize = 100; // rows per page
-
-      // Get current items
-      const currentItems = data?.data?.data ?? [];
-      
-      // Filter by search
-      let filtered = currentItems;
-      if (search) {
-        filtered = currentItems.filter((item: FormData) =>
-          Object.values(item).some((v) =>
-            String(v).toLowerCase().includes(search)
-          )
-        );
-      }
-
-      // Slice according to page
-      const start = (page - 1) * pageSize;
-      const end = start + pageSize;
-
-      return {
-        data: filtered.slice(start, end),
-        total: filtered.length,
-      };
-    },
-    [items, data?.data?.data]
-  );
-
+      async (params?: { page?: number; search?: string }) => {
+        if (params?.search !== undefined && params.search !== search) {
+          setSearch(params.search);
+          setPage(1);
+        }
+  
+        if (params?.page && params.page !== page) {
+          setPage(params.page);
+        }
+  
+        return {
+          data: items,
+          total: totalRecords,
+        };
+      },
+      [items, totalRecords, page, search]
+    );
+  
   // --------------------------
   // EDIT SAVE HANDLER
   // --------------------------
@@ -180,7 +182,7 @@ const PoDetail = () => {
     
     try {
       await updateItem({ id: editingRow.id, data: updated }).unwrap();
-      toast.success("Updated successfully");
+      toast.success("PO detail updated successfully");
       setEditingRow(null);
       refetch();
     } catch (err: unknown) {

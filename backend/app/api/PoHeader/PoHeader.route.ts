@@ -24,7 +24,7 @@ router.get(
   "/",
   roleAuth(),
   catchError,
-  controller.getAllPOData
+  controller.getItemPageSearch
 );
 
 router.get(

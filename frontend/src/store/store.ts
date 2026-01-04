@@ -20,7 +20,7 @@ export const store = configureStore({
     [moDetailApi.reducerPath]:moDetailApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({ serializableCheck: false })
+    getDefaultMiddleware({ serializableCheck: false,immutableCheck: false,  })
       .concat(
         pageApi.middleware,
         userApi.middleware,

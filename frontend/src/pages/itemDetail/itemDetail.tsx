@@ -15,12 +15,31 @@ import Input from "../../component/Input/Input2";
 import { useForm } from "react-hook-form";
 
 
-type FormValue = string | number | null | undefined;
 
-type BaseFormData = Record<string, FormValue>;
 
-type FormData = BaseFormData & {
+export type FormValue = string | number | null;
+
+export type BaseFormData = Record<string, FormValue>;
+
+export type FormData = BaseFormData & {
   id: number;
+  IndentNo: string;
+  VendorCode: string;
+  OrderDate: string;  
+  OrderLineNo: number;
+  ItemCode: string;
+  SectionHead: string;
+  ItemDesc: string;
+  CountryCode: string;
+  ItemDeno: string;  
+  MonthsShelfLife: number|null;
+  CRPCategory: string;   
+  VEDCCategory: string|null; 
+  ABCCategory: string;  
+  DateTimeApproved?: string | null;  
+  ApprovedBy: string;
+  ReviewSubSectionCode: string|null;
+  INCATYN: string|null;  
 };
 
 
@@ -33,12 +52,12 @@ interface ModalProps {
   onSave: (formData: FormData) => void;
 }
 const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave }) => {
-  const { register, handleSubmit, formState: { errors },reset } = useForm({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
     defaultValues: initialForm
   });
-useEffect(() => {
+  useEffect(() => {
     reset(initialForm);
-  }, [initialForm]);
+  }, [initialForm, reset]);
   const onSubmit = (data: FormData) => {
     onSave(data);
   };
@@ -87,9 +106,19 @@ useEffect(() => {
 // MAIN PAGE
 // ------------------------------
 const ItemDetail = () => {
-  const { data, isLoading, isError, refetch } = useGetAllItemDetailsQuery(undefined, {
+  
+  const [page, setPage] = useState<number>(1);
+  const limit = 50;
+  const [search, setSearch] = useState<string | undefined>(undefined);
+
+  const {data, isLoading, isError, refetch} = useGetAllItemDetailsQuery(
+  { page, limit ,search},
+  {
     refetchOnMountOrArgChange: true,
-  });
+  }
+);
+
+
 
   
 const [form, setForm] = useState<FormData>({
@@ -98,19 +127,42 @@ const [form, setForm] = useState<FormData>({
   VendorCode: "",
   OrderDate: "",
   ItemDesc: "",
-  OrderLineNo: "",
+  OrderLineNo: 0,
   ItemCode: "",
   SectionHead: "",
   DescriptionL: "",
   CountryCode: "",
   ItemDeno: "",
-  MonthsShelfLife: "",
+  MonthsShelfLife: 0,
   CRPCategory: "",
   VEDCCategory: "",
   ABCCategory: "",
+  DateTimeApproved: "",  
+  ApprovedBy: "",
+  ReviewSubSectionCode: "",
+  INCATYN: "" 
 });
 const [editingRow, setEditingRow] = useState<FormData | null>(null);
-  const [editForm, setEditForm] = useState<FormData>({id: 0});
+  const [editForm, setEditForm] = useState<FormData>({
+  id: 0,
+  IndentNo: "",
+  VendorCode: "",
+  OrderDate: "",
+  OrderLineNo: 0,
+  ItemCode: "",
+  SectionHead: "",
+  ItemDesc: "",
+  CountryCode: "",
+  ItemDeno: "",
+  MonthsShelfLife: 0,
+  CRPCategory: "",
+  VEDCCategory: "",
+  ABCCategory: "",
+  DateTimeApproved: null,
+  ApprovedBy: "",
+  ReviewSubSectionCode: "",
+  INCATYN: ""
+});
   useEffect(() => {
     if (editingRow) {
       setEditForm(editingRow);
@@ -128,44 +180,41 @@ const [editingRow, setEditingRow] = useState<FormData | null>(null);
 
   // const [file, setFile] = useState<File | null>(null);
 
-  // Backend nested response => actual items
   const items = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
+  const pagination = data?.data?.pagination;
+const totalRecords = data?.data?.pagination?.totalRecords ?? 0;
+  const totalPages = pagination?.totalPages ?? 1;
+
+  console.log("Items:", items);
+  console.log("Pagination:", pagination);
+  console.log("Total Records:", totalRecords);
+  console.log("Total Pages:", totalPages)
  
   // --------------------------                
   // FETCH DATA FOR DataTable (DataTable handles pagination!)
   // --------------------------
+
+
   const fetchData = useCallback(
-    async (params?: { page: number; search?: string }) => {
-      const page = params?.page ?? 1;
-      const search = params?.search?.toLowerCase() ?? "";
-
-      const pageSize = 100; // rows per page
-
-      // Filter by search
-      let filtered = items;
-      if (search) {
-        filtered = items.filter((item: FormData) =>
-          Object.values(item).some((v) =>
-            String(v).toLowerCase().includes(search)
-          )
-        );
+    async (params?: { page?: number; search?: string }) => {
+      if (params?.search !== undefined && params.search !== search) {
+        setSearch(params.search);
+        setPage(1);
       }
 
-      // Slice according to page
-      const start = (page - 1) * pageSize;
-      const end = start + pageSize;
+      if (params?.page && params.page !== page) {
+        setPage(params.page);
+      }
 
       return {
-        data: filtered.slice(start, end),
-        total: filtered.length,
+        data: items,
+        total: totalRecords,
       };
     },
-    [items]
+    [items, totalRecords, page, search]
   );
 
-  // --------------------------
-  // EDIT SAVE HANDLER
-  // --------------------------
+
   const handleSaveEdit = async (updated: FormData) => {
     try {
       await updateItem({ id: updated.id, data: updated }).unwrap();
@@ -183,24 +232,6 @@ const [editingRow, setEditingRow] = useState<FormData | null>(null);
     }
   };
 
-  // --------------------------
-  // IMPORT EXCEL HANDLER
-  // --------------------------
-//  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-//   const selectedFile = e.target.files?.[0];
-
-//   if (!selectedFile) return;
-
-//   setFile(selectedFile);
-
-//   try {
-//     await importExcel(selectedFile).unwrap();
-//     toast.success("Excel imported successfully!");
-//     refetch();
-//   } catch (err) {
-//     toast.error("Failed to import Excel!");
-//   }
-// };
 
 const handleDelete = async (row: FormData) => {
   try {
@@ -257,19 +288,7 @@ const handleAdd = async (data: FormData) => {
           onClick={() => {console.log("clicked")
           setAddModal(true)}}
         />
-        {/* <input
-          type="file"
-          id="excel-upload"
-          accept=".xlsx,.xls"
-          onChange={handleFileChange}
-          style={{ display: 'none' }}
-        />
-        <Button
-          label="Import"
-          buttonType="three"
-          onClick={() => document.getElementById('excel-upload')?.click()}
-          loading={false}
-        /> */}
+        
 
       </div>
 
@@ -282,15 +301,8 @@ const handleAdd = async (data: FormData) => {
           fetchData={fetchData}
           loading={isLoading}
           isSearch={true}
-          // addButton={{
-          //   label: "Add Item",
-          //   buttonType: "one",
-          //   onClick: () => {console.log("clicked")
-          //     setAddModal(true)},
-          // }}
-
           isExport={true}
-          isNavigate={true}   // IMPORTANT → enables built-in pagination UI!
+          isNavigate={true}   
           columns={[
             { label: "ID", accessor: "id" },
             { label: "User ID", accessor: "userId" },

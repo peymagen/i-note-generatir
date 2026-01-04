@@ -1,5 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "./api";
+import type {FormData} from "../../pages/PoHeader/PoHeader"
 
 export const poHeaderApi = createApi({
   reducerPath: "poHeaderApi",
@@ -9,11 +10,27 @@ export const poHeaderApi = createApi({
 
     // GET ALL
     getAllPOHeader: builder.query({
-      query: () => ({
-        url: "/po-header",
+    query: (params?: { page?: number; limit?: number; search?: string }) => {
+      const queryString = new URLSearchParams();
+
+      if (params?.page !== undefined) {
+        queryString.append('page', String(params.page));
+      }
+
+      if (params?.limit !== undefined) {
+        queryString.append('limit', String(params.limit));
+      }
+
+      if (params?.search !== undefined && params.search.trim() !== "") {
+        queryString.append('search', params.search.trim());
+      }
+
+      return {
+        url: `/po-header${queryString.toString() ? `?${queryString}` : ''}`,
         method: "GET",
-      }),
-    }),
+      };
+    },
+  }),
 
     // GET BY ID
     getPOHeaderById: builder.query({
@@ -39,7 +56,7 @@ export const poHeaderApi = createApi({
 
     // UPDATE BY ID
     updatePOHeader: builder.mutation({
-      query: ({ id, data }: { id: number; data: any }) => ({
+      query: ({ id, data }: { id: number; data: FormData }) => ({
         url: `/po-header/${id}`,
         method: "PATCH",
         body: data,
@@ -52,7 +69,7 @@ export const poHeaderApi = createApi({
       }),
     }),
     addPoHeader: builder.mutation({
-      query: (data: any) => ({
+      query: (data: FormData) => ({
         url: "/po-header",
         method: "POST",
         body: data,

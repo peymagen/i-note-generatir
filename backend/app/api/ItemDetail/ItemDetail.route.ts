@@ -21,11 +21,25 @@ router.post(
 );
 
 
+// router.get(
+//   "/",
+//   roleAuth(),
+//   catchError,
+//   controller.getAllPOData
+// );
+
+// router.get(
+//   '/',
+//   roleAuth(),
+//   catchError,
+//   controller.getItemsByPage
+// )
+
 router.get(
   "/",
   roleAuth(),
   catchError,
-  controller.getAllPOData
+  controller.getItemPageSearch
 );
 
 // Get single item by ID
