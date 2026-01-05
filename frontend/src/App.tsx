@@ -8,7 +8,7 @@ import {
 } from "react-router-dom";
 import Login from "./pages/login/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
-import ManageTemplate from "./pages/ManageTemp/ManageTemplate";
+import ManageTemplate from "./pages/Templates";
 import ManageCreateUser from "./pages/User";
 import ChangePassword from "./pages/ChangePassword/ChangePassword";
 import Dash from "./pages/Daash/Dash";
@@ -23,7 +23,6 @@ import { useSelector } from "react-redux";
 import type { RootState } from "./store/store";
 import PurchaseOrder from "./pages/PurchaseOrder/PurchaseOrder";
 import MoDetail from "./pages/MoDetail/Mo";
-import TemplatePage from "./pages/Template/Template";
 
 const ProtectedRoute: React.FC = () => {
   const { isAuthenticated, loading } = useSelector(
@@ -60,7 +59,7 @@ const App: React.FC = () => {
               <Route path="vendor-detail" element={<VendorDetail />} />
               <Route path="mo-detail" element={<MoDetail />} />
               <Route path="purchase-order" element={<PurchaseOrder />} />
-              <Route path="page" element={<TemplatePage />} />
+              {/* <Route path="page" element={<TemplatePage />} /> */}
             </Route>
           </Route>
 

@@ -318,6 +318,20 @@ export const DataTable = <T extends { [x: string]: unknown }>({
                             );
                           }
 
+                          if (
+                            (col.accessor.toLowerCase().startsWith("create") ||
+                              col.accessor
+                                .toLowerCase()
+                                .startsWith("update")) &&
+                            !isNaN(Date.parse(value))
+                          ) {
+                            return new Date(value).toLocaleString("en-IN", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            });
+                          }
+
                           // Otherwise treat as text
                           return value;
                         }

@@ -15,7 +15,7 @@ const htmlDocx = require("html-docx-js");
 export const getAllPagesHandler = async (req: Request, res: Response) => {
   const pages = await getAllPages();
 
-   res.json({
+  res.json({
     success: true,
     data: pages,
   });
@@ -26,14 +26,14 @@ export const getPageByIdHandler = async (req: Request, res: Response) => {
   const page = await getPageById(id);
 
   if (!page) {
-     res.status(404).json({
+    res.status(404).json({
       success: false,
       error: "Page not found",
       message: "Page not found",
     });
   }
 
-   res.json({
+  res.json({
     success: true,
     data: page,
   });
@@ -41,35 +41,32 @@ export const getPageByIdHandler = async (req: Request, res: Response) => {
 
 export const createPageHandler = async (req: Request, res: Response) => {
   try {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:5173');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    
     const { title, content } = req.body;
     const userId = Number((req.user as any)?.id);
-    
+    console.log("Creating page for user ID:", req.user);
     if (!userId) {
-       res.status(401).json({
+      res.status(401).json({
         success: false,
-        message: "User not authenticated or user ID not found"
+        message: "User not authenticated or user ID not found",
       });
     }
 
     const page = await createPage({ title, content, userId });
 
     if (!page) {
-       res.status(400).json({
+      res.status(400).json({
         success: false,
         message: "Unable to create page",
       });
     }
 
-     res.status(201).json({
+    res.status(201).json({
       success: true,
       data: page,
     });
   } catch (error) {
     console.error(error);
-     res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Internal server error",
     });
@@ -78,20 +75,20 @@ export const createPageHandler = async (req: Request, res: Response) => {
 
 export const updatePageHandler = async (req: Request, res: Response) => {
   const { id } = req.params;
-  console.log(typeof(id))
+  console.log(typeof id);
   const { title, content } = req.body;
 
   const page = await updatePage(id, { title, content });
 
   if (!page) {
-     res.status(404).json({
+    res.status(404).json({
       success: false,
       error: "Page not found",
       message: "Page not found",
     });
   }
 
-   res.json({
+  res.json({
     success: true,
     data: page,
   });
@@ -122,7 +119,7 @@ export const exportPagePdfHandler = async (req: Request, res: Response) => {
   const page = await getPageById(id);
 
   if (!page) {
-     res.status(404).json({
+    res.status(404).json({
       success: false,
       error: "Page not found",
       message: "Page not found",
@@ -145,7 +142,7 @@ export const exportPagePdfHandler = async (req: Request, res: Response) => {
   pdf.create(html).toBuffer((err: any, buffer: Buffer) => {
     if (err) {
       console.log(err);
-       res.status(500).json({
+      res.status(500).json({
         success: false,
         error: "PDF_ERROR",
         message: "Unable to generate PDF",
@@ -168,7 +165,7 @@ export const exportPageDocxHandler = async (req: Request, res: Response) => {
   const page = await getPageById(id);
 
   if (!page) {
-     res.status(404).json({
+    res.status(404).json({
       success: false,
       error: "Page not found",
       message: "Page not found",
@@ -197,5 +194,5 @@ export const exportPageDocxHandler = async (req: Request, res: Response) => {
     "Content-Length": docxBuffer.length,
   });
 
-   res.end(docxBuffer);
+  res.end(docxBuffer);
 };

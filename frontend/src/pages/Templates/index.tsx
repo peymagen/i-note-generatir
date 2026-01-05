@@ -1,233 +1,166 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import React, { useCallback, useState } from "react";
 import styles from "./ManageTemplete.module.css";
 import Button from "../../component/Button/Button";
-import RichTextEditor from "../../component/RichEditor/RichEditor";
 import { DataTable } from "../../component/DataTable/DataTable";
+import Modal from "../../component/Modal";
+import { toast } from "react-toastify";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
+
 import {
   useGetPageQuery,
-  useGetPageByIdQuery,
-  useCreatePageMutation,
-  useUpdatePageMutation,
   useDeletePageMutation,
 } from "../../store/services/page.api";
-import { toast } from "react-toastify";
-import Input from "../../component/Input/Input2";
 
-type ViewMode = "list" | "edit" | "new";
-
-interface TemplateForm {
-  title: string;
-  content: string;
-}
+import TemplateFormModal from "./Manipulate";
+import type { ITemplate } from "../../types/templates";
 
 const ManageTemplate: React.FC = () => {
-  const { pageId } = useParams();
-  const navigate = useNavigate();
+  /* ================= STATE ================= */
 
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
 
-  const { data, isFetching, refetch } = useGetPageQuery(undefined, {
-    refetchOnMountOrArgChange: true,
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editTemplate, setEditTemplate] = useState<ITemplate | null>(null);
+
+  /* ================= API ================= */
+
+  const limit = 10;
+  const offset = (page - 1) * limit;
+
+  const { data, isFetching, refetch } = useGetPageQuery({
+    limit,
+    offset,
+    search,
   });
 
-  const { data: pageData } = useGetPageByIdQuery(pageId!, {
-    skip: !pageId,
-  });
-
-  const [createPage] = useCreatePageMutation();
-  const [updatePage] = useUpdatePageMutation();
   const [deletePage] = useDeletePageMutation();
 
-  /* ================= FORM ================= */
+  /* ================= FETCH FOR TABLE ================= */
 
-  const {
-    watch,
-    setValue,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<TemplateForm>({
-    defaultValues: {
-      title: "",
-      content: "",
+  const fetchData = useCallback(
+    async (params?: { page: number; search?: string }) => {
+      const newPage = params?.page || 1;
+      const newSearch = params?.search ?? "";
+
+      setPage(newPage);
+      setSearch(newSearch);
+
+      return {
+        data: data?.data ?? [],
+        total: data?.total ?? 0,
+      };
     },
-  });
+    [data]
+  );
 
-  /* ================= MODE HANDLING ================= */
+  /* ================= DELETE ================= */
 
-  useEffect(() => {
-    if (pageId) setViewMode("edit");
-    else if (window.location.pathname.includes("/new")) setViewMode("new");
-    else setViewMode("list");
-  }, [pageId]);
-
-  /* ================= LOAD EDIT DATA ================= */
-
-  useEffect(() => {
-    if (!pageData?.data || viewMode !== "edit") return;
-
-    reset({
-      title: pageData.data.title,
-      content: pageData.data.content,
-    });
-  }, [pageData, viewMode, reset]);
-
-  /* ================= SAVE HANDLER ================= */
-
-  const onSubmit = async (formData: TemplateForm) => {
-    if (!formData.title.trim()) {
-      toast.error("Title is required");
-      return;
-    }
+  const handleDelete = async (template: ITemplate) => {
+    if (!window.confirm("Delete this template?")) return;
 
     try {
-      if (viewMode === "edit" && pageId) {
-        await updatePage({
-          id: pageId,
-          data: formData,
-        }).unwrap();
-
-        toast.success("Template updated successfully");
-      } else {
-        await createPage(formData).unwrap();
-        toast.success("Template created successfully");
-      }
-
-      reset();
-      setViewMode("list");
-      navigate("/manage-template");
+      await deletePage({ id: template.id }).unwrap();
+      toast.success("Template deleted");
       refetch();
-    } catch (err: unknown) {
-      const message =
-        typeof err === "string"
-          ? err
-          : (err as { message?: string })?.message || "Save failed";
-      toast.error(message);
-      console.error("Save error:", err);
+    } catch {
+      toast.error("Delete failed");
     }
   };
 
-  /* ================= TABLE HELPERS ================= */
+  const actions = [
+    {
+      label: "Edit",
+      onClick: () => {},
+      component: (row: ITemplate) => (
+        <button
+          className={`${styles.iconBtn} ${styles.edit}`}
+          title="Edit Template"
+          onClick={() => setEditTemplate(row)}
+        >
+          <FiEdit size={18} />
+        </button>
+      ),
+    },
+    {
+      label: "Delete",
+      onClick: () => {},
+      component: (row: ITemplate) => (
+        <button
+          className={`${styles.iconBtn} ${styles.delete}`}
+          title="Delete Template"
+          onClick={() => handleDelete(row)}
+        >
+          <FiTrash2 size={18} />
+        </button>
+      ),
+    },
+  ];
 
-  const stripHtml = (html: string) => html?.replace(/<[^>]*>?/gm, "") || "";
-
-  const fetchPages = async (params?: { search?: string; page?: number }) => {
-    if (!data?.data) return { data: [], total: 0 };
-
-    let rows = data.data;
-
-    if (params?.search) {
-      rows = rows.filter((r: { title: string }) =>
-        r.title.toLowerCase().includes(params.search!.toLowerCase())
-      );
-    }
-
-    const page = params?.page || 1;
-    const pageSize = 10;
-    const start = (page - 1) * pageSize;
-
-    return {
-      data: rows.slice(start, start + pageSize).map((r) => ({
-        id: r.id,
-        title: stripHtml(r.title),
-        created_on: r.created_on,
-        updated_on: r.updated_on,
-        rawData: r,
-      })),
-      total: rows.length,
-    };
-  };
-
-  /* ================= UI ================= */
+  /* ================= RENDER ================= */
 
   return (
     <div className={styles.container}>
-      {/* LIST VIEW */}
-      {viewMode === "list" && (
-        <>
-          <div className={styles.headerContainer}>
-            <h1 className={styles.pageTitle}>Manage Templates</h1>
-            <div className={styles.btnWrapper0}>
-              <Button
-                label="+ New Template"
-                buttonType="four"
-                onClick={() => {
-                  setViewMode("new");
-                  navigate("/new");
-                }}
-              />
-            </div>
-          </div>
+      {/* ---------- HEADER ---------- */}
+      <div className={styles.headerContainer}>
+        <h1 className={styles.pageTitle}>Templates</h1>
 
-          <DataTable
-            fetchData={fetchPages}
-            loading={isFetching}
-            columns={[
-              { label: "Title", accessor: "title" },
-              { label: "Created On", accessor: "created_on" },
-              { label: "Updated On", accessor: "updated_on" },
-            ]}
-            actions={[
-              {
-                label: "Edit",
-                onClick: (row: string) => navigate(`/edit/${row.rawData.id}`),
-              },
-              {
-                label: "Delete",
-                onClick: async (row: string) => {
-                  if (!window.confirm("Delete template?")) return;
-                  await deletePage({ id: row.rawData.id });
-                  toast.success("Template deleted");
-                  refetch();
-                },
-              },
-            ]}
-            isSearch
+        <div className={styles.btnWrapper}>
+          <Button
+            label="Create Template"
+            buttonType="one"
+            onClick={() => setShowCreateModal(true)}
           />
-        </>
+        </div>
+      </div>
+
+      {/* ---------- TABLE ---------- */}
+      <div className={styles.tableBox}>
+        <DataTable<ITemplate & { [x: string]: unknown }>
+          fetchData={fetchData}
+          loading={isFetching}
+          isSearch
+          columns={[
+            { label: "Title", accessor: "title" },
+            { label: "Created On", accessor: "created_on" },
+            { label: "Last Updated On", accessor: "updated_on" },
+          ]}
+          actions={actions}
+        />
+      </div>
+      {/* ---------- CREATE MODAL ---------- */}
+      {showCreateModal && (
+        <Modal
+          size="xl"
+          title="Create Template"
+          onClose={() => setShowCreateModal(false)}
+        >
+          <TemplateFormModal
+            mode="create"
+            onSuccess={() => {
+              setShowCreateModal(false);
+              refetch();
+            }}
+          />
+        </Modal>
       )}
 
-      {/* CREATE / EDIT VIEW */}
-      {(viewMode === "new" || viewMode === "edit") && (
-        <form className={styles.editorArea} onSubmit={handleSubmit(onSubmit)}>
-          <div className={styles.headerContainer}>
-            <h1 className={styles.pageTitle}>
-              {viewMode === "edit" ? "Edit Template" : "Create Template"}
-            </h1>
-
-            <div className={styles.btnWrapper}>
-              <Button
-                label="← Back"
-                buttonType="one"
-                onClick={() => {
-                  setViewMode("list");
-                  navigate("/manage-template");
-                }}
-              />
-            </div>
-          </div>
-
-          {/* TITLE */}
-          <Input
-            placeholder=" Title"
-            className={styles.titleInput}
-            value={watch("title")}
-            onChange={(e) => setValue("title", e.target.value)}
+      {/* ---------- EDIT MODAL ---------- */}
+      {editTemplate && (
+        <Modal
+          title="Edit Template"
+          size="xl"
+          onClose={() => setEditTemplate(null)}
+        >
+          <TemplateFormModal
+            mode="edit"
+            defaultValues={editTemplate}
+            onSuccess={() => {
+              setEditTemplate(null);
+              refetch();
+            }}
           />
-
-          {/* CONTENT */}
-          <RichTextEditor
-            label="Template Content"
-            name="content"
-            watch={watch}
-            setValue={setValue}
-            errors={errors}
-            required
-          />
-          <Button label="Save Template" buttonType="three" type="submit" />
-        </form>
+        </Modal>
       )}
     </div>
   );
