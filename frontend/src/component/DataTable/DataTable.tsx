@@ -19,6 +19,12 @@ interface Action<T = { [x: string]: unknown }> {
 //   onClick: () => void;
 // };
 
+// interface Column<T = any> {
+//   label: string;
+//   accessor: string;
+//   render?: (row: T) => React.ReactNode;
+// }
+
 interface DataTableProps<T = { [x: string]: unknown }> {
   fetchData: (
     params?: { page: number; search?: string } | undefined
@@ -26,7 +32,7 @@ interface DataTableProps<T = { [x: string]: unknown }> {
     data: T[];
     total?: number;
   }>;
-  columns: { label: string; accessor: string }[];
+  columns: { label: string; accessor: string;render?: (row: T) => React.ReactNode; }[];
   actions?: Action<T>[];
   loading: boolean;
   isNavigate?: boolean;
@@ -246,12 +252,20 @@ export const DataTable = <T extends { [x: string]: unknown }>({
                   {columns.map((col) => (
                     <td key={col.accessor}>
                       {(() => {
-                        const value = row[col.accessor];
+                        // const value = row[col.accessor];
 
-                        if (!value) return " -";
+                        // if (!value) return " -";
 
-                        if (typeof value === "string") {
-                          const lower = value.toLowerCase();
+                        // if (typeof value === "string") {
+                        //   const lower = value.toLowerCase();
+                         const value = row[col.accessor];
+                          if (!value && value !== 0 && value !== false) return " -";
+                          // Check if this column has a custom render function
+                          if (col.render) {
+                            return col.render(row);
+                          }
+                          if (typeof value === "string") {
+                            const lower = value.toLowerCase();
 
                           // Check for image
                           if (/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(lower)) {

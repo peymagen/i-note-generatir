@@ -1,18 +1,36 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "./api";
+import type { FormData, EditableFormData } from "../../pages/VendorDetail/VendorDetail";
 
 export const vendorDetail = createApi({
   reducerPath: "vendorDetailApi",
   baseQuery: baseQueryWithReauth,
+  tagTypes: ['Vendor'],
 
   endpoints: (builder) => ({
 
     getAllVendor: builder.query({
-      query: () => ({
-        url: "/vendor-detail",
+    query: (params?: { page?: number; limit?: number; search?: string }) => {
+      const queryString = new URLSearchParams();
+
+      if (params?.page !== undefined) {
+        queryString.append('page', String(params.page));
+      }
+
+      if (params?.limit !== undefined) {
+        queryString.append('limit', String(params.limit));
+      }
+
+      if (params?.search !== undefined && params.search.trim() !== "") {
+        queryString.append('search', params.search.trim());
+      }
+
+      return {
+        url: `/vendor-detail${queryString.toString() ? `?${queryString}` : ''}`,
         method: "GET",
-      }),
-    }),
+      };
+    },
+  }),
 
    getByVendorCode: builder.query({  
       query: (vendorCode: string) => ({
@@ -22,9 +40,9 @@ export const vendorDetail = createApi({
     }),
 
     updateVendor: builder.mutation({
-      query: ({ id, data }: { id: number; data: any }) => ({
+      query: ({ id, data }: { id: number; data: FormData }) => ({
         url: `/vendor-detail/${id}`,
-        method: "PUT",
+        method: "PATCH",
         body: data,
       }),
     }),
@@ -36,12 +54,13 @@ export const vendorDetail = createApi({
       }),
     }),
 
-    addVendor:builder.mutation({
-      query: (data: any) => ({
+    addVendor:builder.mutation<FormData, EditableFormData>({
+      query: (data) => ({
         url: "/vendor-detail/create",
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ['Vendor'],
     })
   }),
 });

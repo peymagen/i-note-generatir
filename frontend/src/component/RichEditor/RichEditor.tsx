@@ -321,13 +321,15 @@ const RichTextEditor = <T extends FieldValues>({
   /* ================= INITIAL DATA LOAD ================= */
 
   useEffect(() => {
-    if (!editorRef.current) return;
-    if (initializedRef.current) return;
-    if (!value) return;
+  if (!editorRef.current) return;
+  if (initializedRef.current) return;
+  if (value === undefined || value === null) return;
 
-    editorRef.current.setData(value);
-    initializedRef.current = true;
-  }, [value]);
+  editorRef.current.setData(value);
+  initializedRef.current = true;
+}, [value]);
+
+
 
   /* ================= UI ================= */
 
@@ -370,8 +372,23 @@ const RichTextEditor = <T extends FieldValues>({
               ],
             },
           }}
+          // onReady={(editor) => {
+          //   editorRef.current = editor;
+
+          //   editor.editing.view.change((writer: ViewDowncastWriter) => {
+          //     writer.setStyle(
+          //       "min-height",
+          //       "250px",
+          //       editor.editing.view.document.getRoot()!
+          //     );
+          //   });
+          // }}
           onReady={(editor) => {
             editorRef.current = editor;
+            const currentValue = watch(name);
+            if (currentValue) {
+              editor.setData(currentValue);
+            }
 
             editor.editing.view.change((writer: ViewDowncastWriter) => {
               writer.setStyle(
@@ -381,6 +398,7 @@ const RichTextEditor = <T extends FieldValues>({
               );
             });
           }}
+
           onChange={(_, editor) => {
             const data = editor.getData();
             setValue(name, data as PathValue<T, typeof name>, {

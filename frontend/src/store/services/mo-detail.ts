@@ -1,5 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "./api";
+import type{FormData} from "../../pages/MoDetail/Mo";
 
 export const moDetailApi = createApi({
   reducerPath: "moDetailApi",
@@ -9,11 +10,27 @@ export const moDetailApi = createApi({
 
     // GET ALL
     getAllMoDetail: builder.query({
-      query: () => ({
-        url: "/mo-detail",
+    query: (params?: { page?: number; limit?: number; search?: string }) => {
+      const queryString = new URLSearchParams();
+
+      if (params?.page !== undefined) {
+        queryString.append('page', String(params.page));
+      }
+
+      if (params?.limit !== undefined) {
+        queryString.append('limit', String(params.limit));
+      }
+
+      if (params?.search !== undefined && params.search.trim() !== "") {
+        queryString.append('search', params.search.trim());
+      }
+
+      return {
+        url: `/mo-detail${queryString.toString() ? `?${queryString}` : ''}`,
         method: "GET",
-      }),
-    }),
+      };
+    },
+  }),
     getDatabyCon:builder.query({
       query:(code:string)=>({
           url:`mo-detail/code/${code}`,
@@ -45,7 +62,7 @@ export const moDetailApi = createApi({
 
     // UPDATE BY ID
     updateMoDetail: builder.mutation({
-      query: ({ id, data }: { id: number; data: any }) => ({
+      query: ({ id, data }: { id: number; data: FormData }) => ({
         url: `/mo-detail/${id}`,
         method: "PATCH",
         body: data,
@@ -58,7 +75,7 @@ export const moDetailApi = createApi({
       }),
     }),
     addMoDetail: builder.mutation({
-      query: (data: any) => ({
+      query: (data: FormData) => ({
         url: "/mo-detail",
         method: "POST",
         body: data,

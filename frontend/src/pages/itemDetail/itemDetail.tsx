@@ -358,14 +358,14 @@ const handleAdd = async (data: FormData) => {
 
       {/* Edit Modal */}
       {editingRow && (
-      <Modal
-        title="Edit Item"
-        form={editForm}
-        setForm={setEditForm}
-        onClose={() => setEditingRow(null)}
-        onSave={handleSaveEdit}
-      />
-    )}
+        <Modal
+          title="Edit Item"
+          form={editForm}
+          setForm={setEditForm}
+          onClose={() => setEditingRow(null)}
+          onSave={handleSaveEdit}
+        />
+      )}
 
 
       {addModal && (

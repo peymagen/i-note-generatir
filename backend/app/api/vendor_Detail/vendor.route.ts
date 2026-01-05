@@ -3,13 +3,14 @@ import { catchError } from "../../common/middleware/cath-error.middleware";
 import * as controller from './vendor.controller'
 import { upload } from "../../common/middleware/multer.middleware";
 import { roleAuth } from "../../common/middleware/role-auth.middleware";
+import * as validator from "./vendor.validator"
 
 const router = Router();
 
  router
 .get(
     "/",
-    controller.getAllData
+    controller.getItemPageSearch
 )
 .get(
     '/vendorCode/:vendorCode', 
@@ -21,16 +22,21 @@ const router = Router();
     '/create',
     upload.none(),
     roleAuth(),
+    validator.createVendor,
     catchError,
     controller.createRow
 )
-.put(
+.patch(
     "/:id",
     roleAuth(),
+    validator.updateVendor,
+    catchError,
     controller.updateRow 
 )
 .delete(
     '/:id',
+    roleAuth(), 
+    catchError,
     controller.deleteById
 )
 export default router

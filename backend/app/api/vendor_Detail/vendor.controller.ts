@@ -53,6 +53,7 @@ export const updateRow = async (req: Request, res: Response) => {
     }
 
     const payload = req.body;
+    console.log(payload)
     const Id = Number(req.params.id);
     
     if (!Id || isNaN(Id)) {
@@ -122,23 +123,23 @@ export const deleteById = async(req:Request,res:Response)=>{
     }
 }
 
-export const getAllData= async(req:Request, res:Response)=>{
-    try{
-        const data = await service.getAll()
+// export const getAllData= async(req:Request, res:Response)=>{
+//     try{
+//         const data = await service.getAll()
 
-        // if()
-        res.status(200).json({
-            success:true,
-            data:data
-        })
-    }
-    catch{
-        res.status(500).json({
-            success:false,
-            message:"Failed to fetch data"
-        })
-    }
-}
+//         // if()
+//         res.status(200).json({
+//             success:true,
+//             data:data
+//         })
+//     }
+//     catch{
+//         res.status(500).json({
+//             success:false,
+//             message:"Failed to fetch data"
+//         })
+//     }
+// }
 
 export const getByVendorCode = async(req:Request,res:Response)=>{
   try{
@@ -172,3 +173,60 @@ export const getByVendorCode = async(req:Request,res:Response)=>{
     })
   }
 }
+
+
+
+
+export const getItemPageSearch = async (req: Request, res: Response) => {
+  try {
+    
+    const pageParam = req.query.page;
+    const limitParam = req.query.limit;
+    const search = req.query.search?.toString();
+
+    
+    const page =
+      pageParam !== undefined ? Number(pageParam) : undefined;
+
+    const limit =
+      limitParam !== undefined ? Number(limitParam) : undefined;
+
+    if (page !== undefined && page <= 0) {
+       res.status(400).json({
+        success: false,
+        message: "Page must be greater than 0",
+      });
+    }
+
+    if (limit !== undefined && limit <= 0) {
+       res.status(400).json({
+        success: false,
+        message: "Limit must be greater than 0",
+      });
+    }
+
+    const result = await service.getPaginatedDataWithGlobalSearch(
+      page,
+      limit,
+      search
+    );
+
+    if(result.success){
+       res.status(200).json({ data: result });
+    }
+    else{
+       res.status(404).json({ 
+        success: false, 
+        message: result.message || "No records found" 
+      });
+    }
+  } 
+  catch (error: any) {
+    console.error("Controller error:", error);
+
+     res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch item details",
+    });
+  }
+};

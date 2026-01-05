@@ -122,20 +122,20 @@ export const updateData = async (
   }
 };
 
-export const getAll = async()=>{
-    try{
-        const [rows] = await pool.execute<RowDataPacket[]>("SELECT * FROM vendor_Detail order By id ASC");
-        return {
-            success: true,
-            message: "Record fetched successfully",
-            data: rows
-        }
-    }
-    catch(error:any){
-        console.log(error)
-        throw new Error(error)
-    }
-}
+// export const getAll = async()=>{
+//     try{
+//         const [rows] = await pool.execute<RowDataPacket[]>("SELECT * FROM vendor_Detail order By id ASC");
+//         return {
+//             success: true,
+//             message: "Record fetched successfully",
+//             data: rows
+//         }
+//     }
+//     catch(error:any){
+//         console.log(error)
+//         throw new Error(error)
+//     }
+// }
 
 export const getByVendorCode = async(vendorCode:string)=>{
   try{
@@ -158,3 +158,93 @@ export const getByVendorCode = async(vendorCode:string)=>{
     throw new Error(error)
   }
 }
+
+
+
+
+
+
+export const getPaginatedDataWithGlobalSearch = async (
+  page?: number,
+  limit?: number,
+  search?: string
+) => {
+  try {
+    
+    const safePage = page && page > 0 ? page : 1;
+    const safeLimit = limit && limit > 0 ? limit : 50;
+    const offset = (safePage - 1) * safeLimit;
+
+    const normalizedSearch = search?.trim();
+
+    let whereClause = "";
+    const values: any[] = [];
+
+    
+    if (normalizedSearch) {
+      const [columnRows]: any = await pool.query(`
+        SELECT COLUMN_NAME
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_NAME = 'vendor_Detail'
+          AND DATA_TYPE IN ('varchar', 'text', 'char')
+      `);
+
+      const searchableColumns: string[] = columnRows.map(
+        (c: any) => c.COLUMN_NAME
+      );
+
+      if (searchableColumns.length > 0) {
+        whereClause =
+          "WHERE " +
+          searchableColumns.map(col => `${col} LIKE ?`).join(" OR ");
+
+        const searchValue = `%${normalizedSearch}%`;
+        searchableColumns.forEach(() => values.push(searchValue));
+      }
+    }
+
+    
+    const dataQuery = `
+      SELECT *
+      FROM vendor_Detail
+      ${whereClause}
+      ORDER BY id ASC
+      LIMIT ? OFFSET ?
+    `;
+
+    const [rows]: any = await pool.query(dataQuery, [
+      ...values,
+      safeLimit,
+      offset,
+    ]);
+
+    
+    const countQuery = `
+      SELECT COUNT(*) AS total
+      FROM vendor_Detail
+      ${whereClause}
+    `;
+
+    const [[countResult]]: any = await pool.query(
+      countQuery,
+      values
+    );
+
+    const totalRecords = countResult.total;
+
+    return {
+      success: true,
+      data: rows,
+      pagination: {
+        page: safePage,
+        limit: safeLimit,
+        totalRecords,
+        totalPages: Math.ceil(totalRecords / safeLimit),
+      },
+      message: "Data fetched successfully",
+    };
+  } catch (error: any) {
+    console.error("Error in getPaginatedDataWithGlobalSearch:", error);
+    throw new Error("Failed to fetch data");
+  }
+};

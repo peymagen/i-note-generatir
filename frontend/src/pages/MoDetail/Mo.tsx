@@ -1,35 +1,53 @@
-import React, { useState, useCallback,useEffect } from "react";
-import { DataTable } from "../../component/DataTable/DataTable"; 
+import React, { useState, useCallback, useEffect, useMemo } from "react";
+import { DataTable } from "../../component/DataTable/DataTable";
 import {
-    useGetAllMoDetailQuery,
+  useGetAllMoDetailQuery,
   useImportMoDetailMutation,
   useUpdateMoDetailMutation,
   useAddMoDetailMutation,
-  useDeleteMoDetailMutation
+  useDeleteMoDetailMutation,
 } from "../../store/services/mo-detail";
 import styles from "./Mo.module.css";
 import { toast } from "react-toastify";
 import Button from "../../component/Button/Button";
 import { RxCross2 } from "react-icons/rx";
-import Input from "../../component/Input/Input2"; 
+import Input from "../../component/Input/Input2";
 import { useForm } from "react-hook-form";
+import { stripHtml } from "../../utils/stripHtml";
+import RichTextEditor from "../../component/RichEditor/RichEditor";
 
+
+/* ================= TYPES ================= */
+
+export interface FormData {
+  id: number;
+  MoCPRO: string;
+  MoAddress: string;
+};
+
+const EDITABLE_FIELDS: Array<keyof Pick<FormData, "MoCPRO" | "MoAddress">> = [
+  "MoCPRO",
+  "MoAddress",
+];
+
+/* ================= MODAL ================= */
 
 interface ModalProps {
   title: string;
-  form: Record<string, any>;
-  setForm: React.Dispatch<React.SetStateAction<Record<string, any>>>; // Add this line
+  form: FormData;
   onClose: () => void;
-  onSave: (formData: Record<string, any>) => void;
+  onSave: (data: FormData) => void;
 }
 
-const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave }) => {
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    defaultValues: initialForm
-  });
+const Modal: React.FC<ModalProps> = ({ title, form, onClose, onSave }) => {
+  const { register, handleSubmit, reset,watch,setValue } = useForm<FormData>();
 
-  const onSubmit = (data: any) => {
-    onSave(data);
+  useEffect(() => {
+    reset(form);
+  }, [form, reset]);
+
+  const onSubmit = (data: FormData) => {
+    onSave({ ...form, ...data }); // keep id
   };
 
   return (
@@ -41,29 +59,53 @@ const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          {Object.keys(initialForm).map((field) => (
+          {/* {EDITABLE_FIELDS.map((field) => (
             <Input
               key={field}
-              label={field}
               name={field}
+              label={field}
               register={register}
-              errors={errors}
               fullWidth
+              required
             />
-          ))}
+          ))} */}
+
+          {EDITABLE_FIELDS.map((field) => {
+            const name = field as keyof FormData;
+          
+                      if (name === "MoAddress") {
+                        return (
+                          <RichTextEditor<FormData>
+                            key={name}
+                            label="Firm Address"
+                            name={name}
+                            watch={watch}
+                            setValue={setValue}
+                            required
+                          />
+                        );
+                      }
+          
+                      return (
+                        <Input
+                          key={name}
+                          label={name}
+                          name={name}
+                          register={register}
+                          fullWidth
+                          required
+                        />
+                      );
+                    })}
 
           <div className={styles.modalActions}>
-            <Button 
-              type="button" 
-              label="Cancel" 
-              buttonType="three" 
-              onClick={onClose} 
+            <Button
+              type="button"
+              label="Cancel"
+              buttonType="three"
+              onClick={onClose}
             />
-            <Button 
-              type="submit" 
-              label="Save" 
-              buttonType="one" 
-            />
+            <Button type="submit" label="Save" buttonType="one" />
           </div>
         </form>
       </div>
@@ -71,94 +113,49 @@ const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave
   );
 };
 
+/* ================= MAIN PAGE ================= */
 
-
-// ------------------------------
-// MAIN PAGE
-// ------------------------------
 const Mo = () => {
-  const { data, isLoading, isError, refetch } = useGetAllMoDetailQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
+  const [page, setPage] = useState(1);
+  const limit = 50;
+  const [search, setSearch] = useState<string | undefined>(undefined);
 
-  
-  const [form, setForm] = useState<Record<string, any>>({
-        MOCPRO:"",
-        MOAddress:"",
-        
-  });
-const [editingRow, setEditingRow] = useState<any>(null);
-  const [editForm, setEditForm] = useState<Record<string, any>>({});
-  useEffect(() => {
-    if (editingRow) {
-      setEditForm(editingRow);
-    }
-  }, [editingRow]);
+  const { data, isLoading, isError, refetch } = useGetAllMoDetailQuery(
+    { page, limit, search },
+    { refetchOnMountOrArgChange: true }
+  );
 
+  const [editingRow, setEditingRow] = useState<FormData | null>(null);
+  const [addModal, setAddModal] = useState(false);
 
   const [importExcel] = useImportMoDetailMutation();
   const [updateItem] = useUpdateMoDetailMutation();
-  const [deleteItem] = useDeleteMoDetailMutation(); 
-  const[addItem] = useAddMoDetailMutation();
+  const [addItem] = useAddMoDetailMutation();
+  const [deleteItem] = useDeleteMoDetailMutation();
 
-  
-  const [addModal, setAddModal] = useState(false);
+  /* ================= DATA ================= */
 
-  const [file, setFile] = useState<File | null>(null);
+  const items = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
+  const totalRecords = data?.data?.pagination?.totalRecords ?? 0;
 
-  // Backend nested response => actual items
-  const items = data?.data?.data ?? [];
- 
-  // --------------------------                
-  // FETCH DATA FOR DataTable (DataTable handles pagination!)
-  // --------------------------
   const fetchData = useCallback(
-    async (params?: { page: number; search?: string }) => {
-      const page = params?.page ?? 1;
-      const search = params?.search?.toLowerCase() ?? "";
-
-      const pageSize = 100; // rows per page
-
-      // Filter by search
-      let filtered = items;
-      if (search) {
-        filtered = items.filter((item: any) =>
-          Object.values(item).some((v) =>
-            String(v).toLowerCase().includes(search)
-          )
-        );
+    async (params?: { page?: number; search?: string }) => {
+      if (params?.search !== undefined && params.search !== search) {
+        setSearch(params.search);
+        setPage(1);
       }
-
-      // Slice according to page
-      const start = (page - 1) * pageSize;
-      const end = start + pageSize;
-
-      return {
-        data: filtered.slice(start, end),
-        total: filtered.length,
-      };
+      if (params?.page && params.page !== page) {
+        setPage(params.page);
+      }
+      return { data: items, total: totalRecords };
     },
-    [items]
+    [items, totalRecords, page, search]
   );
 
-  // --------------------------
-  // EDIT SAVE HANDLER
-  // --------------------------
-  const handleSaveEdit = async (updated: any) => {
-    try {
-      await updateItem({ id: updated.id, data: updated }).unwrap();
-      toast.success("Updated successfully");
-      setEditingRow(null);
-      refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Update failed");
-    }
-  };
+  const [file, setFile] = useState<File | null>(null);
+  /* ================= HANDLERS ================= */
 
-  // --------------------------
-  // IMPORT EXCEL HANDLER
-  // --------------------------
- const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
   const selectedFile = e.target.files?.[0];
 
   if (!selectedFile) return;
@@ -169,53 +166,57 @@ const [editingRow, setEditingRow] = useState<any>(null);
     await importExcel(selectedFile).unwrap();
     toast.success("Excel imported successfully!");
     refetch();
-  } catch (err) {
-    toast.error("Failed to import Excel!");
-  }
-};
-
-const handleDelete = async (row: any) => {
-  try {
-    // Extract the ID from the row object
-    const id = row.id || row.ID || row.Id; // Check common ID field names
-    if (!id) {
-      throw new Error('No ID found in row data');
+  } catch (err: unknown) {
+    if(err instanceof Error){
+      console.error(err.message);
+      toast.error(err.message);
+    }else{
+      console.error(err);
+      toast.error("Failed to import Excel!");
     }
-    await deleteItem(id).unwrap();
-    toast.success("Deleted successfully");
-    refetch();
-  } catch (err: any) {
-    toast.error(err?.data?.message || err.message || "Delete failed");
   }
 };
 
-const handleAdd = async (data: any) => {
-  try {
-    await addItem(data).unwrap();
-    toast.success("Item Added Successfully");
-    setAddModal(false);
+  const handleSaveEdit = async (data: FormData) => {
+    try {
+      await updateItem({ id: data.id, data }).unwrap();
+      toast.success("Updated successfully");
+      setEditingRow(null);
+      refetch();
+    } catch {
+      toast.error("Update failed");
+    }
+  };
+
+  const handleAdd = async (data: FormData) => {
+    try {
+      await addItem(data).unwrap();
+      toast.success("Added successfully");
+      setAddModal(false);
+      refetch();
+    } catch (error) {
+      console.error('Add failed:', error);
+      toast.error("Add failed");
+    }
+  };
+
+  const handleDelete = async (row: FormData) => {
+    if (!window.confirm("Are you sure?")) return;
+    await deleteItem(row.id).unwrap();
+    toast.success("Deleted");
     refetch();
-  } catch (err: any) {
-    toast.error(err?.data?.message || "Add failed");
-  }
-};
+  };
 
+  /* ================= UI ================= */
 
-  if (isLoading) return <div className={styles.loader}>Loading items...</div>;
-  if (isError) return <div className={styles.error}>Error loading items</div>;
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading data</div>;
 
   return (
     <div className={styles.container}>
-
-      {/* Import Excel */}
       <div className={styles.btnWrapper}>
-        <Button
-              label="Add"
-              buttonType= "three"
-              onClick={() => {console.log("clicked")
-              setAddModal(true)}}
-            />
-        <input
+        <Button label="Add" buttonType="three" onClick={() => setAddModal(true)} />
+          <input
           type="file"
           id="excel-upload"
           accept=".xlsx,.xls"
@@ -228,89 +229,72 @@ const handleAdd = async (data: any) => {
           onClick={() => document.getElementById('excel-upload')?.click()}
           loading={false}
         />
-
       </div>
 
-      {/* Title */}
-      <h1 className={styles.pageTitle}>PO Details</h1>
+      <h1 className={styles.pageTitle}>MO Details</h1>
 
-      {/* Data Table */}
-       <div className={styles.tableWrapper}>
-        <DataTable
-          fetchData={fetchData}
-          loading={isLoading}
-          isSearch={true}
-          // addButton={{
-          //   label: "Add Item",
-          //   buttonType: "one",
-          //   onClick: () => {console.log("clicked")
-          //     setAddModal(true)},
-          // }}
-    
-
-          isExport={true}
-          isNavigate={true}   // IMPORTANT → enables built-in pagination UI!
-          columns={[
-            { label: "ID", accessor: "id" },
-            { label: "User ID", accessor: "userId" },
-            { label: "MO Address", accessor: "MoAddress" },
-            { label: "MO (MATERIAL ORGANISATION)/CPRO", accessor: "MoCPRO" },
-            
-          ]}
-          // actions={[
-          //   {
-          //     label: "Edit",
-          //     onClick: (row) => setEditingRow(row),
-          //   },
-          //   {
-          //     label: "Delete",
-          //     onClick: handleDelete,
-          //   },
-            
-             
-          // ]}
-          actions={[
+      <DataTable
+        fetchData={fetchData}
+        loading={isLoading}
+        isSearch
+        isNavigate
+        isExport
+        columns={[
+          { label: "ID", accessor: "id" },
+          { 
+            label: "MO Address", 
+            accessor: "MoAddress", 
+            render: (row: unknown) => stripHtml((row as FormData).MoAddress) 
+          },
+          { label: "MO/CPRO", accessor: "MoCPRO" },   
+        ]}
+        actions={[
           {
             label: "Edit",
             buttonType: "one",
-            onClick: (row) => setEditingRow(row)
-
+            onClick: (row: unknown) => {
+              const data = row as FormData;
+              setEditingRow({
+                id: data.id,
+                MoCPRO: data.MoCPRO ?? "",
+                MoAddress: data.MoAddress ?? "",
+              });
+            },
           },
           {
-            label: "Delete",
+           label: "Delete",
             buttonType: "three",
-            onClick: async (row) => {
-              if (window.confirm('Are you sure you want to delete this item?')) {
-                await handleDelete(row);
-              }
+            onClick: (row: unknown) => {
+              const data = row as FormData;
+              handleDelete({
+                id: data.id,
+                MoCPRO: data.MoCPRO ?? "",
+                MoAddress: data.MoAddress ?? "",
+              })
             }
-          }
+          },
         ]}
-        />
-      </div>
+      />
 
-      {/* Edit Modal */}
+      {/* EDIT */}
       {editingRow && (
         <Modal
-            title="Edit Item"
-            form={editForm}
-            setForm={setEditForm}  
-            onClose={() => setEditingRow(null)}
-            onSave={handleSaveEdit}
+          title="Edit Item"
+          form={editingRow}
+          onClose={() => setEditingRow(null)}
+          onSave={handleSaveEdit}
         />
-        )}
+      )}
 
-        {addModal && (
+      {/* ADD */}
+      {addModal && (
         <Modal
-            title="Add New Item"
-            form={form}
-            setForm={setForm}   
-            onClose={() => setAddModal(false)}
-            onSave={handleAdd}
+          title="Add Item"
+          form={{id:0, MoCPRO: "", MoAddress: "" }}
+          onClose={() => setAddModal(false)}
+          onSave={handleAdd}
         />
-        )}
-
-     
+      )}
     </div>
   );
 };

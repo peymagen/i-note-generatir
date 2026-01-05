@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { DataTable } from "../../component/DataTable/DataTable"; 
+import React, { useState, useCallback, useEffect, useMemo } from "react";
+import { DataTable } from "../../component/DataTable/DataTable";
 import {
   useGetAllVendorQuery,
   useUpdateVendorMutation,
@@ -10,25 +10,48 @@ import styles from "./VendorDetail.module.css";
 import { toast } from "react-toastify";
 import Button from "../../component/Button/Button";
 import { RxCross2 } from "react-icons/rx";
-import Input from "../../component/Input/Input2"; 
+import Input from "../../component/Input/Input2";
 import { useForm } from "react-hook-form";
+import RichTextEditor from "../../component/RichEditor/RichEditor";
+import { stripHtml } from "../../utils/stripHtml";
 
-interface ModalProps { 
-  title: string;
-  form: Record<string, any>;
-  onClose: () => void;
-  onSave: (formData: Record<string, any>) => void;
-  fields: string[];  
+/* ---------------- TYPES ---------------- */
+
+export type FormData = {
+  Id: number;
+  FirmName: string;
+  FirmAddress: string;
+  vendorCode: string;
+  FirmEmailId: string;
+};
+
+interface VendorItem {
+  id: number;
+  FirmName: string;
+  FirmAddress: string;
+  vendorCode: string;
+  FirmEmailId: string;
 }
 
-const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave, fields }) => {
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    defaultValues: initialForm
+export type EditableFormData = Omit<FormData, "Id">;
+
+/* ---------------- MODAL ---------------- */
+
+interface ModalProps {
+  title: string;
+  form: EditableFormData;
+  onClose: () => void;
+  onSave: (formData: EditableFormData) => void;
+}
+
+const Modal: React.FC<ModalProps> = ({ title, form, onClose, onSave }) => {
+  const { register, handleSubmit, reset,watch,setValue } = useForm<EditableFormData>({
+    defaultValues: form,
   });
 
-  const onSubmit = (data: any) => {
-    onSave(data);
-  };
+  useEffect(() => {
+    reset(form);
+  }, [form, reset]);
 
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
@@ -38,30 +61,49 @@ const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave
           <RxCross2 className={styles.closeIcon} onClick={onClose} />
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {fields.map((field) => (
+        <form onSubmit={handleSubmit(onSave)}>
+          {/* {Object.keys(form).map((field) => (
             <Input
               key={field}
               label={field}
-              name={field}
+              name={field as keyof EditableFormData}
               register={register}
-              errors={errors}
               fullWidth
+              required
             />
-          ))}
+          ))} */}
+          {Object.keys(form).map((field) => {
+            const name = field as keyof EditableFormData;
+
+            if (name === "FirmAddress") {
+              return (
+                <RichTextEditor<EditableFormData>
+                  key={name}
+                  label="Firm Address"
+                  name={name}
+                  watch={watch}
+                  setValue={setValue}
+                  required
+                />
+              );
+            }
+
+            return (
+              <Input
+                key={name}
+                label={name}
+                name={name}
+                register={register}
+                fullWidth
+                required
+              />
+            );
+          })}
+
 
           <div className={styles.modalActions}>
-            <Button 
-              type="button" 
-              label="Cancel" 
-              buttonType="three" 
-              onClick={onClose} 
-            />
-            <Button 
-              type="submit" 
-              label="Save" 
-              buttonType="one" 
-            />
+            <Button type="button" label="Cancel" buttonType="three" onClick={onClose} />
+            <Button type="submit" label="Save" buttonType="one" />
           </div>
         </form>
       </div>
@@ -69,162 +111,169 @@ const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave
   );
 };
 
+
 const VendorDetail = () => {
-  const { data, isLoading, isError, refetch } = useGetAllVendorQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
+  const [page, setPage] = useState(1);
+  const limit = 50;
+  const [search, setSearch] = useState<string>();
 
-  const editableFields = {
-    FirmName: "",
-    FirmAddress: "",
-    vendorCode: "",
-    FirmEmailId: ""
-  };
+  const { data, isLoading, isError, refetch } = useGetAllVendorQuery(
+    { page, limit, search },
+    { refetchOnMountOrArgChange: true }
+  );
 
-  const [form, setForm] = useState<Record<string, any>>({...editableFields});
-  const [editingRow, setEditingRow] = useState<any>(null);
-  const [editForm, setEditForm] = useState<Record<string, any>>({...editableFields});
-  const [addModal, setAddModal] = useState(false);
   
+  const [editingId, setEditingId] = useState<number | null>(null);
+
+  const [editingForm, setEditingForm] = useState<EditableFormData | null>(null);
+  const [addModal, setAddModal] = useState(false);
+
   const [updateItem] = useUpdateVendorMutation();
-  const [deleteItem] = useDeleteVendorMutation(); 
+  const [deleteItem] = useDeleteVendorMutation();
   const [addItem] = useAddVendorMutation();
 
-  const items = data?.data?.data ?? [];
+  /* ---------------- NORMALIZE API DATA ---------------- */
 
-  useEffect(() => {
-    if (editingRow) {
-      // Only include the fields we want to be editable
-      const editableData = { ...editableFields };
-      Object.keys(editableFields).forEach(key => {
-        editableData[key] = editingRow[key] || "";
-      });
-      setEditForm(editableData);
-    }
-  }, [editingRow]);
+  const items = useMemo(() => {
+    return (data?.data?.data ?? []).map((item: VendorItem ) => ({
+      ...item,
+    id: Number(item.id),
+  }));
+  }, [data]);
+
+  const totalRecords = data?.data?.pagination?.totalRecords ?? 0;
+
+  /* ---------------- FETCH TABLE DATA ---------------- */
 
   const fetchData = useCallback(
-    async (params?: { page: number; search?: string }) => {
-      const page = params?.page ?? 1;
-      const search = params?.search?.toLowerCase() ?? "";
+    async (params?: { page?: number; search?: string }) => {
+      if (params?.search !== undefined && params.search !== search) {
+        setSearch(params.search);
+        setPage(1);
+      }
 
-      const pageSize = 100; 
-
-      // Filter by search
-      let filtered = items;
-      if (search) {
-        filtered = items.filter((item: any) =>
-          Object.values(item).some((v) =>
-            String(v).toLowerCase().includes(search)
-          )
-        );
+      if (params?.page && params.page !== page) {
+        setPage(params.page);
       }
 
       return {
-        data: filtered.slice((page - 1) * pageSize, page * pageSize),
-        total: filtered.length,
+        data: items,
+        total: totalRecords,
       };
     },
-    [items]
+    [items, totalRecords, page, search]
   );
 
-  const handleSaveEdit = async (updated: any) => {
-    try {
-      await updateItem({ id: editingRow.id, data: updated }).unwrap();
-      toast.success("Updated successfully");
-      setEditingRow(null);
-      refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Update failed");
+  /* ---------------- UPDATE ---------------- */
+
+  const handleSaveEdit = async (updated: EditableFormData) => {
+    console.log("Updated:", updated);
+    console.log("Editing ID:", editingId);
+    if (!editingId) {
+      toast.error("Invalid vendor ID");
+      return;
     }
+
+    await updateItem({
+      id: editingId,
+      data: { ...updated, Id: editingId },
+    }).unwrap();
+
+    toast.success("Updated successfully");
+    setEditingId(null);
+    setEditingForm(null);
+    refetch();
   };
 
-  const handleDelete = async (row: any) => {
-    try {
-      const id = row.id || row.ID || row.Id;
-      if (!id) {
-        throw new Error('No ID found in row data');
-      }
-      await deleteItem(id).unwrap();
-      toast.success("Deleted successfully");
-      refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || err.message || "Delete failed");
-    }
+  /* ---------------- DELETE ---------------- */
+
+  const handleDelete = async (row: FormData) => {
+    await deleteItem(row.Id).unwrap();
+    toast.success("Deleted successfully");
+    refetch();
   };
 
-  const handleAdd = async (data: any) => {
-    try {
-      await addItem(data).unwrap();
-      toast.success("Item Added Successfully");
-      setAddModal(false);
-      setForm({...editableFields}); // Reset form
-      refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Add failed");
-    }
+  /* ---------------- ADD ---------------- */
+
+  const handleAdd = async (data: EditableFormData) => {
+    await addItem(data).unwrap();
+    toast.success("Added successfully");
+    setAddModal(false);
+    refetch();
   };
 
-  const handleAddClick = () => {
-    setForm({...editableFields});
-    setAddModal(true);
-  };
-
-  if (isLoading) return <div className={styles.loader}>Loading items...</div>;
-  if (isError) return <div className={styles.error}>Error loading items</div>;
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error loading vendors</div>;
 
   return (
-    <div className={styles.container}>
+      <div className={styles.container}>
       
-      <div className={styles.btnWrapper}>
-        <Button
-          label="ADD"
-          buttonType="one"
-          onClick={handleAddClick}
-        />
-      </div>
-<h1 className={styles.pageTitle}>Vendor Detail</h1>
+        <div className={styles.btnWrapper}>
+          <Button
+            label="ADD"
+            buttonType="one"
+            onClick={() => setAddModal(true)}
+          />
+        </div>
+  <h1 className={styles.pageTitle}>Vendor Detail</h1>
       <DataTable
         fetchData={fetchData}
         columns={[
-          {label:"Id",accessor:"id"},
-          { label: "Firm Name", accessor: "FirmName" },
-          { label: "Firm Address", accessor: "FirmAddress" },
-          { label: "Vendor Code", accessor: "vendorCode" },
-          { label: "Email", accessor: "FirmEmailId" },
+          { label: "Id", accessor: "Id" },
+          { label: "Firm Name", accessor: "FirmName"},
+          { label: "Firm Address", accessor: "FirmAddress", render: (row:FormData) => stripHtml(row.FirmAddress),},
+          { label: "Vendor Code", accessor: "vendorCode"},
+          { label: "Email", accessor: "FirmEmailId"},
         ]}
         actions={[
           {
             label: "Edit",
             buttonType: "one",
-            onClick: (row: any) => setEditingRow(row)
+            onClick: (row: FormData) => {
+              setEditingId(row.Id);
+              setEditingForm({
+                FirmName: row.FirmName,
+                FirmAddress: row.FirmAddress,
+                vendorCode: row.vendorCode,
+                FirmEmailId: row.FirmEmailId,
+              });
+            },
           },
           {
             label: "Delete",
-            buttonType: "one",
-            onClick: handleDelete
-          }
+            buttonType: "three",
+            onClick: (row: FormData) => handleDelete(row),
+          },
         ]}
         loading={isLoading}
+        isSearch={true}
+        isExport={true}
+        isNavigate={true}
       />
 
-      {editingRow && (
+      {editingForm && (
         <Modal
           title="Edit Vendor"
-          form={editForm}
-          onClose={() => setEditingRow(null)}
+          form={editingForm}
+          onClose={() => {
+            setEditingId(null);
+            setEditingForm(null);
+          }}
           onSave={handleSaveEdit}
-          fields={Object.keys(editableFields)}
         />
       )}
 
       {addModal && (
         <Modal
-          title="Add New Vendor"
-          form={form}
+          title="Add Vendor"
+          form={{
+            FirmName: "",
+            FirmAddress: "",
+            vendorCode: "",
+            FirmEmailId: "",
+          }}
           onClose={() => setAddModal(false)}
           onSave={handleAdd}
-          fields={Object.keys(editableFields)}
         />
       )}
     </div>
