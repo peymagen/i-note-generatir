@@ -298,6 +298,7 @@ const RichTextEditor = <T extends FieldValues>({
   const initializedRef = useRef(false);
 
   const value = watch(name) ?? "";
+  
 
   /* ================= ERROR HANDLING ================= */
 

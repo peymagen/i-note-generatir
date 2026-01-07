@@ -170,7 +170,7 @@
   color: #222;
 }
 
-/* INPUT Styling if fallback input is used */
+
 .modalBox input {
   width: 100%;
   padding: 0.8rem 1rem;
@@ -248,4 +248,44 @@
   .closeIcon {
     font-size: 1.5rem;
   }
+}
+
+
+
+
+.iconBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+/* ================= COLOR VARIANTS ================= */
+
+/* Edit */
+.edit {
+  color: #2563eb;
+}
+.edit:hover {
+  background: #dbeafe;
+}
+
+/* Delete */
+.delete {
+  color: #dc2626;
+}
+.delete:hover {
+  background: #fee2e2;
+}
+
+.tableBox {
+  padding: 1rem;
+  box-shadow: 10px 14px 20px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
 }

@@ -10,7 +10,6 @@ import Login from "./pages/login/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import ManageTemplate from "./pages/ManageTemp/ManageTemplate";
 import ManageCreateUser from "./pages/User";
-import ChangePassword from "./pages/ChangePassword/ChangePassword";
 import Dash from "./pages/Daash/Dash";
 import VendorDetail from "./pages/VendorDetail/VendorDetail";
 import { ToastContainer } from "react-toastify";
@@ -48,7 +47,6 @@ const App: React.FC = () => {
               <Route index element={<Dash />} />
               <Route path="manage-template" element={<ManageTemplate />} />
               <Route path="manage-users" element={<ManageCreateUser />} />
-              <Route path="change-password" element={<ChangePassword />} />
               <Route path="edit/:pageId" element={<ManageTemplate />} />
               <Route path="new" element={<ManageTemplate />} />
               <Route path="dashboard" element={<Dash />} />

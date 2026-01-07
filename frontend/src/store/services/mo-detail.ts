@@ -2,6 +2,8 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "./api";
 import type{FormData} from "../../pages/MoDetail/Mo";
 
+type addMoDetailType = Omit<FormData, "id">
+
 export const moDetailApi = createApi({
   reducerPath: "moDetailApi",
   baseQuery: baseQueryWithReauth,
@@ -75,7 +77,7 @@ export const moDetailApi = createApi({
       }),
     }),
     addMoDetail: builder.mutation({
-      query: (data: FormData) => ({
+      query: (data: addMoDetailType) => ({
         url: "/mo-detail",
         method: "POST",
         body: data,
