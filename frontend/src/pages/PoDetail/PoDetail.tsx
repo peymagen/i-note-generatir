@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { DataTable } from "../../component/DataTable/DataTable"; 
 import {
     useGetAllPODataQuery,
@@ -64,85 +64,85 @@ const poDetailField : FieldConfig<EditableformData>[]=[
       name:"IndentNo",
       label:"Indent No",
       type:"input",
-      required:"false"
+      required:false
     },
       {
       name:"VendorCode",
       label:"Vendor Code",
       type:"input",
-      required:"false"
+      required:false
     },
       {
       name:"OrderDate",
       label:"Order Date",
       type:"input",
-      required:"false"
+      required:false
     },
     {
         name:"ItemCode",
         label:"Item Code",
         type:"input",
-        required:"false"
+        required:false
       },
         {
         name:"ConsigneeCode",
         label:"Consignee Code",
         type:"input",
-        required:"false"
+        required:false
       },
         {
         name:"OrderLineDRB",
         label:"Order Line DRB",
         type:"input",
-        required:"false"
+        required:false
       },
       {
           name:"Specs",
           label:"Specs",
           type:"input",
-          required:"false"
+          required:false
         },
           {
           name:"Qty",
           label:"Qty",
           type:"input",
-          required:"false"
+          required:false
         },
           {
           name:"UniCostCC",
           label:"Uni Cost CC",
           type:"input",
-          required:"false"
+          required:false
         },
         {
     name:"PilotSampleDRb",
     label:"Pilot Sample DRb",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"MIQPQty",
     label:"MI QP Qty",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"PackType",
     label:"Pack Type",
     type:"input",
-    required:"false"
+    required:false
   },
   {
     name:"StationCode",
     label:"Station Code",
     type:"input",
-    required:"false"
+    required:false
   },
   {
     name:"ReReferencedItemCode",
     label:"Re Referenced Item Code",
     type:"input",
-    required:"false"
+    required:false
   }
 ]
 
@@ -161,7 +161,7 @@ const PoDetail = () => {
   );
   const [editingId, setEditingId] = useState<number | null>(null);
 
-  const [editingForm, setEditingForm] = useState<EditableFormData | null>(null);
+  const [editingForm, setEditingForm] = useState<EditableformData | null>(null);
   const [addModal, setAddModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<FormData | null>(null);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
@@ -208,7 +208,7 @@ const PoDetail = () => {
   // --------------------------
   // EDIT SAVE HANDLER
   // --------------------------
-  const handleSaveEdit = async (updated:EditableFormData) => {
+  const handleSaveEdit = async (updated:EditableformData) => {
     if (!editingId) return;
     
     try {
@@ -254,7 +254,7 @@ const handleDelete = async () => {
   }
 };
 
-const handleAdd = async (formData: EditableFormData) => {
+const handleAdd = async (formData: EditableformData) => {
   try {
     await addItem(formData).unwrap();
     toast.success("Item Added Successfully");
@@ -384,7 +384,7 @@ const handleAdd = async (formData: EditableFormData) => {
 
       {/* Edit Modal */}
       {editingForm && (
-      <Modal<EditableFormData>
+      <Modal<EditableformData>
         title="Edit Item"
         form={editingForm} 
         fields={poDetailField}
@@ -402,15 +402,15 @@ const handleAdd = async (formData: EditableFormData) => {
             IndentNo: "",
             VendorCode: "",
             OrderDate: "",
-            OrderLineNo: "",
+            OrderLineNo: 0,
             ItemCode: "",
             ConsigneeCode: "",
             OrderLineDRB: "",
             Specs: "",
-            Qty: "",
-            UniCostCC: "",
+            Qty: 0,
+            UniCostCC: 0,
             PilotSampleDRb: "",
-            MIQPQty: "",
+            MIQPQty: 0,
             PackType: "",
             StationCode: "",
             ReReferencedItemCode: "",

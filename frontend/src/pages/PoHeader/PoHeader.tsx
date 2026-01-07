@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import  { useState, useCallback, useMemo } from "react";
 import { DataTable } from "../../component/DataTable/DataTable"; 
 import {
   useGetAllPOHeaderQuery,
@@ -19,7 +19,7 @@ import {
 } from "react-icons/fi";
 
 
-export type FormData =  {
+export type PoHeaderData =  {
   id: number;
   IndentNo?: string;
     VendorCode?: string;
@@ -38,7 +38,7 @@ export type FormData =  {
     ClosedBy?: string ; 
     PackingInstruction?:string;
     DespatchInstruction?:string;
-    InspectionInstruction?:StaticRangeInit;
+    InspectionInstruction?:string;
     StationCode?:string;
     Remarks1?:string;
     Name?:string;
@@ -50,7 +50,7 @@ const poHeaderSchema = yup.object({
   IndentNo: yup.string().optional(),
   VendorCode: yup.string().optional(),
   OrderDate: yup.string().optional(),
-  ValueRs: yup.number().optional(),
+  ValueRs: yup.string().optional(),
   InspectingAgencyType: yup.string().optional(),
   InspectorCode: yup.string().optional(),
   InspectionSiteCode: yup.string().optional(),
@@ -72,148 +72,147 @@ const poHeaderSchema = yup.object({
   State: yup.string().optional(),
 });
 
-export type EditableFormData = Omit<FormData, 'id'>;
+export type EditableFormData = Omit<PoHeaderData, 'id'>;
 
 const poHeaderField : FieldConfig<EditableFormData>[]=[
   {
     name:"IndentNo",
     label:"Indent No",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"VendorCode",
     label:"Vendor Code",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"OrderDate",
     label:"Order Date",
     type:"input",
-    required:"false"
+ required:false
   },
 
     {
     name:"ValueRs",
     label:"Value Rs",
     type:"input",
-    required:"false"
-  },
+ required:false  },
     {
     name:"InspectingAgencyType",
     label:"Inspecting Agency Type",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"InspectorCode",
     label:"Inspector Code",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"InspectionSiteCode",
     label:"Inspection Site Code",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"Remarks",
     label:"Remarks",
     type:"input",
-    required:"false"
+    required:false
   },
 
     {
     name:"QuoteKey",
     label:"Quote Key",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"SelectedQuoteDate",
     label:"Selected Quote Date",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"DateTimeApproved",
     label:"Date Time Approved",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"ApprovedBy",
     label:"Approved By",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"TypeClosing",
     label:"Type Closing",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"DateCloded",
     label:"Date Cloded",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"ClosedBy",
     label:"Closed By",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"PackingInstruction",
     label:"Packing Instruction",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"DespatchInstruction",
     label:"Despatch Instruction",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"InspectionInstruction",
     label:"Inspection Instruction",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"StationCode",
     label:"Station Code",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"Remarks1",
     label:"Remarks1",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"Name",
     label:"Name",
     type:"input",
-    required:"false"
+    required:false
   },
     {
     name:"City",
     label:"City",
     type:"input",
-    required:"false"
+    required:false
   },
   {
     name:"State",
     label:"State",
     type:"input",
-    required:"false"
+    required:false
   }
 
 ]
@@ -234,7 +233,7 @@ const PoDetail = () => {
 
   const [editingForm, setEditingForm] = useState<EditableFormData | null>(null);
   const [addModal, setAddModal] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<FormData | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PoHeaderData | null>(null);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
 
@@ -284,7 +283,7 @@ const PoDetail = () => {
   // --------------------------
   // EDIT SAVE HANDLER
   // --------------------------
-  const handleSaveEdit = async (updated: FormData) => {
+  const handleSaveEdit = async (updated: EditableFormData) => {
     if(!editingId){
           return
         }
@@ -353,7 +352,7 @@ const handleAdd = async (data: EditableFormData) => {
       label: "Edit",
       onClick: () => {},
       // Use FormData here so it matches what the DataTable expects
-      component: (row: FormData) => ( 
+      component: (row: PoHeaderData) => ( 
         <button
           className={`${styles.iconBtn} ${styles.edit}`}
           title="Edit Item"
@@ -394,7 +393,7 @@ const handleAdd = async (data: EditableFormData) => {
     {
       label: "Delete",
       onClick: () => {}, 
-      component: (row: FormData) => (
+      component: (row: PoHeaderData) => (
         <button
           className={`${styles.iconBtn} ${styles.delete}`}
           title="Delete"

@@ -66,7 +66,7 @@ export const itemDetail = createApi({
     // UPDATE ITEM DETAIL BY ID
     // ------------------------------
     updateItemDetail: builder.mutation({
-      query: ({ id, data }: { id: number; data: unknown }) => ({
+      query: ({ id, data }: { id: number; data: EditableFormData }) => ({
         url: `/item-detail/${id}`,
         method: "PATCH",
         body: data,
