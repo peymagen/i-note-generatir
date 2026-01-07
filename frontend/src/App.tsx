@@ -55,7 +55,7 @@ const App: React.FC = () => {
               <Route path="vendor-detail" element={<VendorDetail />} />
               <Route path="mo-detail" element={<MoDetail />} />
               <Route path="purchase-order" element={<PurchaseOrder />} />
-              {/* <Route path="data-collective" element={<Collective />} /> */}
+              <Route path="data-collective" element={<Collective />} />
             </Route>
           </Route>
 
