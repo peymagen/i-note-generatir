@@ -221,7 +221,8 @@ const Mo = () => {
           id="excel-upload"
           accept=".xlsx,.xls"
           onChange={handleFileChange}
-          style={{ display: 'none' }}
+          aria-label="Upload Excel File"
+          className={styles.fileInput}
         />
         <Button
           label="Import"
