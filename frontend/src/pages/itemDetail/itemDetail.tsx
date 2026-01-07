@@ -180,6 +180,7 @@ const ItemDetail = () => {
     refetchOnMountOrArgChange: true,
   }
 );
+  console.log("isError:", isError, "error:", error);
 
   const [editingId, setEditingId] = useState<number | null>(null);
 
@@ -387,12 +388,6 @@ const handleAdd = async (data: EditableFormData) => {
         
 
       </div>
-      {isError && (
-          <p className={styles.errorMsg}>
-             {"message" in error ? error.message : "Failed to load users"}
-          </p>
-      )}
-
       {/* Title */}
       <h1 className={styles.pageTitle}>Item Details</h1>
 

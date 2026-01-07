@@ -92,6 +92,7 @@ const VendorDetail = () => {
     { page, limit, search },
     { refetchOnMountOrArgChange: true }
   );
+  console.log("isError:", isError, "error:", error);
 
   
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -247,13 +248,8 @@ const VendorDetail = () => {
             buttonType="one"
             onClick={() => setAddModal(true)}
           />
-        </div>
-        {isError && (
-          <p className={styles.errorMsg}>
-            {"message" in error ? error.message : "Failed to load users"}
-          </p>
-        )}
-  <h1 className={styles.pageTitle}>Vendor Detail</h1>
+        </div> 
+      <h1 className={styles.pageTitle}>Vendor Detail</h1>
       <div className={styles.tableBox}>
         <DataTable
         fetchData={fetchData}

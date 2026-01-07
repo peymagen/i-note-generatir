@@ -64,6 +64,7 @@ const Mo = () => {
     { page, limit, search },
     { refetchOnMountOrArgChange: true }
   );
+    console.log("isError:", isError, "error:", error);
 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editingForm, setEditingForm] = useState<EditableFormData | null>(null);
@@ -225,11 +226,6 @@ const Mo = () => {
           }
         />
       </div>
-      {isError && (
-        <p className={styles.errorMsg}>
-          {"message" in error ? error.message : "Failed to load users"}
-        </p>
-      )}
 
       <h1 className={styles.pageTitle}>MO Details</h1>
     <div className={styles.tableBox}>

@@ -159,6 +159,7 @@ const PoDetail = () => {
       refetchOnMountOrArgChange: true,
     }
   );
+    console.log("isError:", isError, "error:", error);
   const [editingId, setEditingId] = useState<number | null>(null);
 
   const [editingForm, setEditingForm] = useState<EditableformData | null>(null);
@@ -354,11 +355,6 @@ const handleAdd = async (formData: EditableformData) => {
 
       {/* Title */}
       <h1 className={styles.pageTitle}>PO Details</h1>
-      {isError && (
-                <p className={styles.errorMsg}>
-                   {"message" in error ? error.message : "Failed to load users"}
-                </p>
-            )}
       {/* Data Table */}
        <div className={styles.tableWrapper}>
         <DataTable
