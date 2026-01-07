@@ -120,7 +120,7 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
 
 export const getAllData = async () => {
   try {
-    const [rows] = await pool.query("SELECT * FROM PO_HEADER ORDER BY id ASC");
+    const [rows] = await pool.execute<RowDataPacket[]>("SELECT * FROM PO_HEADER ORDER BY id ASC");
     return {
       success: true,
       data: rows

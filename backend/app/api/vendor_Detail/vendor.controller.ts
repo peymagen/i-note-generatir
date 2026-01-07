@@ -4,7 +4,7 @@ import asyncHandler from "express-async-handler";
 import { type Request, type Response } from "express";
 import { promises } from "dns";
 
-export const createRow = async(req:Request,res:Response)=>{
+export const createRow = asyncHandler(async(req:Request,res:Response)=>{
     const userId = (req as any).user?.id;
     console.log(userId)
      if (!userId) {
@@ -29,7 +29,7 @@ export const createRow = async(req:Request,res:Response)=>{
                 message: "Record not found" });
             }
         
-        res.status(200).json({ success: true, data: record });
+        res.send(createResponse(record,"Record added successfully"))
     }
     catch(error:any){
         res.status(500).json({ 
@@ -39,10 +39,10 @@ export const createRow = async(req:Request,res:Response)=>{
          });
     }
     
-}
+})
 
 // vendor.controller.ts
-export const updateRow = async (req: Request, res: Response) => {
+export const updateRow = asyncHandler(async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id;
     if (!userId) {
@@ -84,10 +84,7 @@ export const updateRow = async (req: Request, res: Response) => {
       });
     }
 
-     res.status(200).json({
-      success: true,
-      data: record
-    });
+     res.send(createResponse(record,"Record updated successfully"))
   } catch (error: any) {
      res.status(500).json({ 
       success: false, 
@@ -95,8 +92,9 @@ export const updateRow = async (req: Request, res: Response) => {
       error: error.message
     });
   }
-}
-export const deleteById = async(req:Request,res:Response)=>{
+})
+
+export const deleteById = asyncHandler(async(req:Request,res:Response)=>{
     try{
         const Id = Number(req.params.id);
         if(!Id || isNaN(Id)){
@@ -112,7 +110,7 @@ export const deleteById = async(req:Request,res:Response)=>{
           message: "Record not found" });
       }
 
-       res.status(200).json({ success: true, data: record });
+       res.send(createResponse(record,"Record deleted successfully"));
     }
     catch(error:any){
         res.status(500).json({
@@ -121,7 +119,7 @@ export const deleteById = async(req:Request,res:Response)=>{
             error:error.message
         })
     }
-}
+})
 
 // export const getAllData= async(req:Request, res:Response)=>{
 //     try{
@@ -153,16 +151,10 @@ export const getByVendorCode = async(req:Request,res:Response)=>{
     const data = await service.getByVendorCode(vendorCode)
     
     if(data.success){
-      res.status(200).json({
-        success:true,
-        data:data
-      })
+      res.send(createResponse(data,"Record fetched successfully"))
     }
     else{
-      res.status(404).json({
-        success:false,
-        message:"No record found with the given vendor code"
-      })
+      res.send(createResponse(data,"No record found with the given vendor code"))
     }
 
   }
@@ -212,17 +204,14 @@ export const getItemPageSearch = async (req: Request, res: Response) => {
     );
 
     if(result.success){
-       res.status(200).json({ data: result });
+       res.send(createResponse(result,"Data fetched successfully"))
     }
     else{
-       res.status(404).json({ 
-        success: false, 
-        message: result.message || "No records found" 
-      });
+       res.send(createResponse(result,"No records found"))
     }
   } 
   catch (error: any) {
-    console.error("Controller error:", error);
+    console.error("Controller error:", error);  
 
      res.status(500).json({
       success: false,

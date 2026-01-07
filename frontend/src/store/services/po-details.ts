@@ -1,6 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "./api";
-import type { FormData } from "../../pages/PoDetail/PoDetail";
+import type { EditableformData } from "../../pages/PoDetail/PoDetail";
 
 export const poDetailApi = createApi({
   reducerPath: "poDetailApi",
@@ -58,7 +58,7 @@ export const poDetailApi = createApi({
 
     // UPDATE BY ID
     updatePOData: builder.mutation({
-      query: ({ id, data }: { id: number; data: FormData }) => ({
+      query: ({ id, data }: { id: number; data: EditableformData }) => ({
         url: `/po-detail/${id}`,
         method: "PATCH",
         body: data,
@@ -79,7 +79,7 @@ export const poDetailApi = createApi({
     }),
 
     addPoDetail:builder.mutation({
-      query: (data: FormData) => ({
+      query: (data: EditableformData) => ({
         url: "/po-detail",
         method: "POST",
         body: data,

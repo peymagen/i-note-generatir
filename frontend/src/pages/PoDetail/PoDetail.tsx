@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { DataTable } from "../../component/DataTable/DataTable"; 
 import {
     useGetAllPODataQuery,
@@ -10,136 +10,167 @@ import {
 import styles from "./PoDetail.module.css";
 import { toast } from "react-toastify";
 import Button from "../../component/Button/Button";
-import { RxCross2 } from "react-icons/rx";
-import Input from "../../component/Input/Input2"; 
-import { useForm } from "react-hook-form";
+import * as yup from "yup";
+import type { FieldConfig } from "../../component/Model2/Model";
+import Modal from "../../component/Model2/Model";
+import ConfirmDialog from "../../component/ConfirmDialoge";
+import {
+  FiEdit,
+  FiTrash2,
+} from "react-icons/fi";
 
 
-export type FormValue = string | number | null | undefined;
-
-export type BaseFormData = Record<string, FormValue>;
-
-export type FormData = BaseFormData & {
+export type FormData =  {
   id: number;
+  IndentNo?: string;
+    VendorCode?: string;
+    OrderDate?: string;  
+    OrderLineNo?: number;
+    ItemCode?: string;
+    ConsigneeCode?: string;
+    OrderLineDRB?: string;
+    Specs?: string;
+    Qty?: number;  
+    UniCostCC?: number;
+    PilotSampleDRb?: string ; 
+    MIQPQty?: number; 
+    PackType?: string;  
+    StationCode?: string ;  
+    ReReferencedItemCode?: string;
 };
 
+const poDetainSchema = yup.object({
+    IndentNo: yup.string().optional(),
+    VendorCode: yup.string().optional(),
+    OrderDate: yup.string().optional(),
+    OrderLineNo: yup.number().optional(),
+    ItemCode: yup.string().optional(),
+    ConsigneeCode: yup.string().optional(),
+    OrderLineDRB: yup.string().optional(),
+    Specs: yup.string().optional(),
+    Qty: yup.number().optional(),
+    UniCostCC: yup.number().optional(),
+    PilotSampleDRb: yup.string().optional(),
+    MIQPQty: yup.number().optional(),
+    PackType: yup.string().optional(),
+    StationCode: yup.string().optional(),
+    ReReferencedItemCode: yup.string().optional(),
+});
+
+export type EditableformData = Omit<FormData, 'id'>;
+
+const poDetailField : FieldConfig<EditableformData>[]=[
+    {
+      name:"IndentNo",
+      label:"Indent No",
+      type:"input",
+      required:false
+    },
+      {
+      name:"VendorCode",
+      label:"Vendor Code",
+      type:"input",
+      required:false
+    },
+      {
+      name:"OrderDate",
+      label:"Order Date",
+      type:"input",
+      required:false
+    },
+    {
+        name:"ItemCode",
+        label:"Item Code",
+        type:"input",
+        required:false
+      },
+        {
+        name:"ConsigneeCode",
+        label:"Consignee Code",
+        type:"input",
+        required:false
+      },
+        {
+        name:"OrderLineDRB",
+        label:"Order Line DRB",
+        type:"input",
+        required:false
+      },
+      {
+          name:"Specs",
+          label:"Specs",
+          type:"input",
+          required:false
+        },
+          {
+          name:"Qty",
+          label:"Qty",
+          type:"input",
+          required:false
+        },
+          {
+          name:"UniCostCC",
+          label:"Uni Cost CC",
+          type:"input",
+          required:false
+        },
+        {
+    name:"PilotSampleDRb",
+    label:"Pilot Sample DRb",
+    type:"input",
+    required:false
+  },
+    {
+    name:"MIQPQty",
+    label:"MI QP Qty",
+    type:"input",
+    required:false
+  },
+    {
+    name:"PackType",
+    label:"Pack Type",
+    type:"input",
+    required:false
+  },
+  {
+    name:"StationCode",
+    label:"Station Code",
+    type:"input",
+    required:false
+  },
+  {
+    name:"ReReferencedItemCode",
+    label:"Re Referenced Item Code",
+    type:"input",
+    required:false
+  }
+]
 
 
-interface ModalProps {
-  title: string;
-  form: FormData;
-  setForm: React.Dispatch<React.SetStateAction<FormData>>;
-  onClose: () => void;
-  onSave: (formData: FormData) => void;
-}
-
-
-const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave }) => {
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
-    defaultValues: initialForm
-  });
-
-  useEffect(() => {
-    reset(initialForm);
-  }, [initialForm,reset]);
-  const onSubmit = (data: FormData) => {
-    onSave(data);
-  };
-  
-
-  return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.modalHeader}>
-          <h2>{title}</h2>
-          <RxCross2 className={styles.closeIcon} onClick={onClose} />
-        </div>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {Object.keys(initialForm).map((field) => (
-            <Input
-              key={field}
-              label={field}
-              name={field}
-              register={register}
-              errors={errors}
-              fullWidth
-            />
-          ))}
-          <div className={styles.modalActions}>
-            <Button 
-              type="button" 
-              label="Cancel" 
-              buttonType="three" 
-              onClick={onClose} 
-            />
-            <Button 
-              type="submit" 
-              label="Save" 
-              buttonType="one" 
-            />
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-
-// ------------------------------
-// MAIN PAGE
-// ------------------------------
 const PoDetail = () => {
 
   const [page, setPage] = useState<number | undefined>(undefined);
   const limit = 50;
   const [search, setSearch] = useState<string | undefined>(undefined);
   
-    const {data, isLoading, isError, refetch} = useGetAllPODataQuery(
+    const {data, isLoading, isError,error, refetch} = useGetAllPODataQuery(
     { page, limit ,search},
     {
       refetchOnMountOrArgChange: true,
     }
   );
+  const [editingId, setEditingId] = useState<number | null>(null);
 
-  
-  const [form, setForm] = useState<FormData>({
-        id: 0,
-        IndentNo: "",
-        VendorCode: "",
-        OrderDate: "",
-        OrderLineNo: "",
-        ItemCode: "",
-        ConsigneeCode: "",
-        OrderLineDRB: "",
-        Specs: "",
-        Qty: "",
-        UniCostCC: "",
-        PilotSampleDRb: "",
-        MIQPQty: "",
-        PackType: "",
-        StationCode: "",
-        ReReferencedItemCode: ""
-  });
-  const [editingRow, setEditingRow] = useState<FormData | null>(null);
-  const [editForm, setEditForm] = useState<FormData>({ id: 0 });
+  const [editingForm, setEditingForm] = useState<EditableformData | null>(null);
+  const [addModal, setAddModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<FormData | null>(null);
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (editingRow) {
-      setEditForm({ ...editingRow });
-    } else {
-      setEditForm({ id: 0 });
-    }
-  }, [editingRow]);
 
- 
 
-  // const [importExcel] = useImportPODataMutation();
   const [updateItem] = useUpdatePODataMutation();
   const [deleteItem] = useDeletePoDetailMutation(); 
   const [addItem] = useAddPoDetailMutation();
-
-  
-  const [addModal, setAddModal] = useState(false);
 
   // Backend nested response => actual items
   const items = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
@@ -177,13 +208,14 @@ const PoDetail = () => {
   // --------------------------
   // EDIT SAVE HANDLER
   // --------------------------
-  const handleSaveEdit = async (updated: FormData) => {
-    if (!editingRow) return;
+  const handleSaveEdit = async (updated:EditableformData) => {
+    if (!editingId) return;
     
     try {
-      await updateItem({ id: editingRow.id, data: updated }).unwrap();
+      await updateItem({ id: editingId, data: updated }).unwrap();
       toast.success("PO detail updated successfully");
-      setEditingRow(null);
+      setEditingId(null);
+      setEditingForm(null)
       refetch();
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -196,34 +228,20 @@ const PoDetail = () => {
     }
   };
 
-  // --------------------------
-  // IMPORT EXCEL HANDLER
-  // --------------------------
-//  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-//   const selectedFile = e.target.files?.[0];
-
-//   if (!selectedFile) return;
-
-//   setFile(selectedFile);
-
-//   try {
-//     await importExcel(selectedFile).unwrap();
-//     toast.success("Excel imported successfully!");
-//     refetch();
-//   } catch (err) {
-//     toast.error("Failed to import Excel!");
-//   }
-// };
-
-const handleDelete = async (row: FormData) => {
+  
+const handleDelete = async () => {
+  if(!deleteTarget?.id){
+    return;
+  }
   try {
-    // Extract the ID from the row object
-    const id = row.id ;
+    const id = Number(deleteTarget.id) ;
     if (!id) {
       throw new Error('No ID found in row data');
     }
     await deleteItem(id).unwrap();
     toast.success("Deleted successfully");
+    setLoadingAction(null)
+    setDeleteTarget(null)
     refetch();
   } catch (err: unknown) {
     if(err instanceof Error){
@@ -236,7 +254,7 @@ const handleDelete = async (row: FormData) => {
   }
 };
 
-const handleAdd = async (formData: FormData) => {
+const handleAdd = async (formData: EditableformData) => {
   try {
     await addItem(formData).unwrap();
     toast.success("Item Added Successfully");
@@ -252,59 +270,56 @@ const handleAdd = async (formData: FormData) => {
     }
   }
 };
-
-
-  if (isLoading) return <div className={styles.loader}>Loading items...</div>;
-  if (isError) return <div className={styles.error}>Error loading items</div>;
-
-  return (
-    <div className={styles.container}>
-
-      {/* Import Excel */}
-      <div className={styles.btnWrapper}>
-        <Button
-              label="Add"
-              buttonType= "three"
-              onClick={() => {console.log("clicked")
-              setAddModal(true)}}
-            />
-        {/* <input
-          type="file"
-          id="excel-upload"
-          accept=".xlsx,.xls"
-          onChange={handleFileChange}
-          style={{ display: 'none' }}
-        />
-        <Button
-          label="Import"
-          buttonType="three"
-          onClick={() => document.getElementById('excel-upload')?.click()}
-          loading={false}
-        /> */}
-
-      </div>
-
-      {/* Title */}
-      <h1 className={styles.pageTitle}>PO Details</h1>
-
-      {/* Data Table */}
-       <div className={styles.tableWrapper}>
-        <DataTable
-          fetchData={fetchData}
-          loading={isLoading}
-          isSearch={true}
-          // addButton={{
-          //   label: "Add Item",
-          //   buttonType: "one",
-          //   onClick: () => {console.log("clicked")
-          //     setAddModal(true)},
-          // }}
-    
-
-          isExport={true}
-          isNavigate={true}   // IMPORTANT → enables built-in pagination UI!
-          columns={[
-            { label: "ID", accessor: "id" },
+  const actions = [
+      {
+        label: "Edit",
+        onClick: () => {},
+        component: (row: FormData) => ( 
+          <button
+            className={`${styles.iconBtn} ${styles.edit}`}
+            title="Edit Item"
+            onClick={() => {
+              console.log("PPPPPP",row)
+              setEditingId(row.id);
+              setEditingForm({
+                IndentNo: row.IndentNo,
+                VendorCode: row.VendorCode,
+                OrderDate: row.OrderDate,
+                OrderLineNo:row.OrderLineNo,
+                ItemCode:row.ItemCode,
+                ConsigneeCode:row.ConsigneeCode,
+                OrderLineDRB:row.OrderLineDRB,
+                Specs:row.Specs,
+                Qty:row.Qty,
+                UniCostCC:row.UniCostCC,
+                PilotSampleDRb:row.PilotSampleDRb,
+                MIQPQty:row.MIQPQty,
+                PackType:row.PackType,
+                StationCode:row.StationCode,
+                ReReferencedItemCode:row.ReReferencedItemCode
+              });
+            }}
+          >
+            <FiEdit size={18} />
+          </button>
+        ),
+      },
+      {
+        label: "Delete",
+        onClick: () => {}, 
+        component: (row: FormData) => (
+          <button
+            className={`${styles.iconBtn} ${styles.delete}`}
+            title="Delete"
+            onClick={() => setDeleteTarget(row)}
+          >
+            <FiTrash2 size={18} />
+          </button>
+        ),
+      },
+    ];
+    const columns = [
+      { label: "ID", accessor: "id" },
             { label: "User ID", accessor: "userId" },
             { label: "Indent No", accessor: "IndentNo" },
             { label: "Vendor Code", accessor: "VendorCode" },
@@ -322,47 +337,59 @@ const handleAdd = async (formData: FormData) => {
             { label: "Station Code", accessor: "StationCode" },
             {label:"ReReferenced Item Code",accessor:"ReReferencedItemCode"},
             
+    ]
+  return (
+    <div className={styles.container}>
 
-          ]}
-          // actions={[
-          //   {
-          //     label: "Edit",
-          //     onClick: (row) => setEditingRow(row),
-          //   },
-          //   {
-          //     label: "Delete",
-          //     onClick: handleDelete,
-          //   },
-            
-             
-          // ]}
-          actions={[
-          {
-            label: "Edit",
-            buttonType: "one",
-            onClick: (row: FormData) => setEditingRow(row)
+      {/* Import Excel */}
+      <div className={styles.btnWrapper}>
+        <Button
+              label="Add"
+              buttonType= "three"
+              onClick={() => {console.log("clicked")
+              setAddModal(true)}}
+            />
+        
+      </div>
 
-          },
-          {
-            label: "Delete",
-            buttonType: "three",
-            onClick: async (row) => {
-              if (window.confirm('Are you sure you want to delete this item?')) {
-                await handleDelete(row);
-              }
-            }
-          }
-        ]}
+      {/* Title */}
+      <h1 className={styles.pageTitle}>PO Details</h1>
+      {isError && (
+                <p className={styles.errorMsg}>
+                   {"message" in error ? error.message : "Failed to load users"}
+                </p>
+            )}
+      {/* Data Table */}
+       <div className={styles.tableWrapper}>
+        <DataTable
+          fetchData={fetchData}
+          loading={isLoading}
+          isSearch={true}
+          isExport={true}
+          isNavigate={true}  
+          columns={columns}
+          actions={actions}
         />
       </div>
 
+      {deleteTarget && (
+                    <ConfirmDialog
+                      title="Delete Item"
+                      message={`Are you sure you want to delete ${deleteTarget.IndentNo}? This action cannot be undone.`}
+                      onCancel={() => setDeleteTarget(null)}
+                      onConfirm={handleDelete}
+                      loading={loadingAction === deleteTarget.id?.toString()}
+                    />
+                  )}
+
       {/* Edit Modal */}
-      {editingRow && (
-      <Modal
+      {editingForm && (
+      <Modal<EditableformData>
         title="Edit Item"
-        form={editForm}
-        setForm={setEditForm}
-        onClose={() => setEditingRow(null)}
+        form={editingForm} 
+        fields={poDetailField}
+        schema={poDetainSchema}
+        onClose={() => setEditingForm(null)}
         onSave={handleSaveEdit}
       />
     )}
@@ -371,8 +398,25 @@ const handleAdd = async (formData: FormData) => {
       {addModal && (
         <Modal
           title="Add New Item"
-          form={form}
-          setForm={setForm}
+          form={{
+            IndentNo: "",
+            VendorCode: "",
+            OrderDate: "",
+            OrderLineNo: 0,
+            ItemCode: "",
+            ConsigneeCode: "",
+            OrderLineDRB: "",
+            Specs: "",
+            Qty: 0,
+            UniCostCC: 0,
+            PilotSampleDRb: "",
+            MIQPQty: 0,
+            PackType: "",
+            StationCode: "",
+            ReReferencedItemCode: "",
+          }}
+          fields={poDetailField}
+          schema={poDetainSchema}
           onClose={() => setAddModal(false)}
           onSave={handleAdd}
         />

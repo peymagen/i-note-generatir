@@ -53,6 +53,7 @@ router.get(
 router.patch(
   "/:id",
   roleAuth(),
+  validator.itemImportValidation,
   catchError,
   controller.update
 );
@@ -67,6 +68,7 @@ router.delete(
 router.post(
   "/",
   roleAuth(),
+  validator.itemImportValidation,
   catchError,
   controller.addData
 )

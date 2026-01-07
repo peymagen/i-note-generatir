@@ -4,16 +4,17 @@ import { type RowDataPacket, type ResultSetHeader } from "mysql2";
 
 export const add = async(userId: number, payload: any) => {
     try {
-        const query = `INSERT INTO vendor_Detail(userId, FirmName, FirmAddress, vendorCode, FirmEmailId) 
-                      VALUES(?, ?, ?, ?, ?)`;
+        const query = `INSERT INTO vendor_Detail(userId, FirmName, FirmAddress, vendorCode, FirmEmailId, ContactNumber) 
+                      VALUES(?, ?, ?, ?, ?, ?)`;
         
         // Convert undefined values to null
         const values = [
             userId,
-            payload.FirmName || null,
-            payload.FirmAddress || null,
-            payload.vendorCode || null,
-            payload.FirmEmailId || null
+            payload.FirmName,
+            payload.FirmAddress,
+            payload.vendorCode,
+            payload.FirmEmailId||null,
+            payload.ContactNumber||null
         ];
 
         const [row]: any = await pool.execute<ResultSetHeader>(query, values);

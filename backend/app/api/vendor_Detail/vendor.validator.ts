@@ -7,7 +7,7 @@ export const createVendor = [
     .notEmpty().withMessage("Firm Name is required")
     .isString().withMessage("Firm Name must be a string")
     .trim()
-    .isLength({ min: 2, max: 100 }).withMessage("Firm Name must be between 2 and 100 characters"),
+    .isLength({ min: 2 }).withMessage("Firm Name must be at least 2 characters long"),
 
   body("FirmAddress")
     .notEmpty().withMessage("Firm Address is required")
@@ -19,13 +19,14 @@ export const createVendor = [
     .notEmpty().withMessage("Vendor Code is required")
     .isString().withMessage("Vendor Code must be a string")
     .trim()
-    .isLength({ min: 2, max: 50 }).withMessage("Vendor Code must be between 2 and 50 characters"),
+    .isLength({ min: 2 }).withMessage("Vendor Code must be at least 2 characters long"),
 
   body("FirmEmailId")
-    .notEmpty().withMessage("Firm Email is required")
-    .isEmail().withMessage("Please provide a valid email address")
+  .optional()
     .normalizeEmail(),
-
+  body("ContactNumber")
+    .optional()
+    
   
 ];
 
@@ -39,7 +40,7 @@ export const updateVendor = [
     .optional()
     .isString().withMessage("Firm Name must be a string")
     .trim()
-    .isLength({ min: 2, max: 100 }).withMessage("Firm Name must be between 2 and 100 characters"),
+    .isLength({ min: 2 }).withMessage("Firm Name must be at least 2 characters long"),
 
   body("FirmAddress")
     .optional()
@@ -51,19 +52,12 @@ export const updateVendor = [
     .optional()
     .isString().withMessage("Vendor Code must be a string")
     .trim()
-    .isLength({ min: 2, max: 50 }).withMessage("Vendor Code must be between 2 and 50 characters"),
+    .isLength({ min: 2 }).withMessage("Vendor Code must be at least 2 characters long"),
 
   body("FirmEmailId")
     .optional()
-    .isEmail().withMessage("Please provide a valid email address")
     .normalizeEmail(),
-
-  body("status")
+  body("ContactNumber")
     .optional()
-    .isBoolean().withMessage("Status must be a boolean value"),
-
-  body("updateBy")
-    .optional()
-    .isNumeric().withMessage("Update By must be a number")
-    .isInt({ min: 1 }).withMessage("Update By must be greater than 0")
+    
 ];
