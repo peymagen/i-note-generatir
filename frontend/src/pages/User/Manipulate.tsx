@@ -88,8 +88,20 @@ const Register: React.FC<Props> = ({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Input label="Name" name="name" register={register} errors={errors} />
-      <Input label="Email" name="email" register={register} errors={errors} />
+      <Input
+        label="Name"
+        name="name"
+        register={register}
+        errors={errors}
+        required
+      />
+      <Input
+        label="Email"
+        name="email"
+        register={register}
+        errors={errors}
+        required
+      />
 
       {mode === "create" && (
         <>
@@ -99,6 +111,7 @@ const Register: React.FC<Props> = ({
             type="password"
             register={register}
             errors={errors}
+            required
           />
           <PasswordStrength password={password} />
         </>

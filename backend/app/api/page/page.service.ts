@@ -3,16 +3,20 @@ import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { IPage } from "./page.dto";
 
 // Create Page
-export const createPage = async (data: { title: string; content: string ,userId: number}) => {
+export const createPage = async (data: {
+  title: string;
+  content: string;
+  userId: number;
+}) => {
   try {
     // const id = "page_" + Date.now();
-    const query = "INSERT INTO pages (title, content, created_by) VALUES (?, ?, ?)";
+    const query =
+      "INSERT INTO pages (title, content, created_by) VALUES (?, ?, ?)";
     const values = [data.title, data.content, data.userId];
-
 
     const [result] = await pool.execute<ResultSetHeader>(query, values);
 
-    return { id :result.insertId };
+    return { id: result.insertId };
   } catch (error) {
     console.log(error);
     return null;
@@ -86,9 +90,10 @@ export const getPageById = async (id: string): Promise<IPage | null> => {
 // Get all pages
 export const getAllPages = async () => {
   try {
-    const query = "SELECT id, title, created_on, updated_on FROM pages ORDER BY ID ASC";
+    const query =
+      "SELECT id, title, content, created_on, updated_on FROM pages ORDER BY ID ASC";
     const [rows] = await pool.execute<RowDataPacket[]>(query);
-    console.log(rows)
+    console.log(rows);
     return rows;
   } catch (error) {
     console.log(error);

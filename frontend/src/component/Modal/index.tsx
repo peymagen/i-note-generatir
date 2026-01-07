@@ -3,13 +3,13 @@ import styles from "./Modal.module.css";
 
 interface Props {
   title: string;
+  size?: "sm" | "md" | "lg" | "xl";
   onClose: () => void;
   children: React.ReactNode;
 }
 
-const Modal: React.FC<Props> = ({ title, onClose, children }) => {
+const Modal: React.FC<Props> = ({ title, size = "md", onClose, children }) => {
   const modalRef = useRef<HTMLDivElement>(null);
-
   // Focus trap
   useEffect(() => {
     const focusable = modalRef.current?.querySelectorAll<HTMLElement>(
@@ -27,7 +27,7 @@ const Modal: React.FC<Props> = ({ title, onClose, children }) => {
 
   return (
     <div className={styles.overlay}>
-      <div className={styles.modal} ref={modalRef}>
+      <div className={`${styles.modal} ${styles?.[size]}`} ref={modalRef}>
         <header className={styles.header}>
           <h3>{title}</h3>
           <button onClick={onClose}>✕</button>
