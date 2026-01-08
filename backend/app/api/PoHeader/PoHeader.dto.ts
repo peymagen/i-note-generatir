@@ -3,7 +3,7 @@ export interface PoHeader{
     IndentNo?: string;
     VendorCode?: string;
     OrderDate?: string; 
-    ValueRs?: sring;
+    ValueRs?: string;
     InspectingAgencyType?: string;
     InspectorCode?: string;
     InspectionSiteCode?: string;

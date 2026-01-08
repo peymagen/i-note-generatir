@@ -279,7 +279,6 @@ export const deleteDataById = async (id: number) => {
     throw new Error("Failed to delete PO detail: " + error.message);
   }
 }; 
-
 export const addData = async (userId: number, payload: any) => {
   try {
     const {
@@ -302,73 +301,68 @@ export const addData = async (userId: number, payload: any) => {
       INCATYN
     } = payload;
 
-    if (!IndentNo||!ItemDesc || !VendorCode || !OrderDate || !ItemCode) {
-      throw new Error("Missing required fields");
-    }
+    const toNull = (v: any) =>
+      v === undefined || v === '' ? null : v;
 
     const query = `
-  INSERT INTO ITEMS_DETAILS (
-    userId,
-    IndentNo,
-    ItemDesc,
-    VendorCode,
-    OrderDate,
-    OrderLineNo,
-    ItemCode,
-    SectionHead,
-    CountryCode,
-    ItemDeno,
-    MonthsShelfLife,
-    CRPCategory,
-    VEDCCategory,
-    ABCCategory,
-    DateTimeApproved,
-    ApprovedBy,
-    ReviewSubSectionCode,
-    INCATYN
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-`;
+      INSERT INTO ITEMS_DETAILS (
+        userId,
+        IndentNo,
+        ItemDesc,
+        VendorCode,
+        OrderDate,
+        OrderLineNo,
+        ItemCode,
+        SectionHead,
+        CountryCode,
+        ItemDeno,
+        MonthsShelfLife,
+        CRPCategory,
+        VEDCCategory,
+        ABCCategory,
+        DateTimeApproved,
+        ApprovedBy,
+        ReviewSubSectionCode,
+        INCATYN
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `;
 
-const [result] = await pool.execute<ResultSetHeader>(query, [
-  userId,
-  IndentNo,
-  ItemDesc,
-  VendorCode,
-  OrderDate,
-  OrderLineNo,
-  ItemCode,
-  SectionHead,
-  CountryCode,
-  ItemDeno,
-  MonthsShelfLife,
-  CRPCategory,
-  VEDCCategory,
-  ABCCategory,
-  DateTimeApproved,
-  ApprovedBy,
-  ReviewSubSectionCode,
-  INCATYN
-]);
-
-
-    if (!result.insertId) {
-      throw new Error("Failed to insert record");
-    }
+    const [result] = await pool.execute<ResultSetHeader>(query, [
+      userId,                 
+      toNull(IndentNo),
+      toNull(ItemDesc),
+      toNull(VendorCode),
+      toNull(OrderDate),
+      toNull(OrderLineNo),
+      toNull(ItemCode),
+      toNull(SectionHead),
+      toNull(CountryCode),
+      toNull(ItemDeno),
+      toNull(MonthsShelfLife),
+      toNull(CRPCategory),
+      toNull(VEDCCategory),
+      toNull(ABCCategory),
+      toNull(DateTimeApproved),
+      toNull(ApprovedBy),
+      toNull(ReviewSubSectionCode),
+      toNull(INCATYN),
+    ]);
 
     return {
       success: true,
       data: {
         id: result.insertId,
-        userId,  // Include userId in the response
+        userId,
         ...payload
       }
     };
 
   } catch (error: any) {
     console.error("Error in addData:", error);
-    throw new Error("Failed to add record: " + error.message);
+    throw error;
   }
 };
+
 
 
 

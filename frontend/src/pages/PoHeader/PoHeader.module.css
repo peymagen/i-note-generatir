@@ -62,6 +62,10 @@
   box-shadow: 10px 14px 20px rgba(0, 0, 0, 0.05);
   overflow-x: auto;
 }
+.tableWrapper table tbody tr:hover {
+  background: #f1f5f9;
+  transition: background 0.15s ease;
+}
 
 /* Custom scrollbars */
 .tableWrapper::-webkit-scrollbar {

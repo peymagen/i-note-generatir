@@ -2,220 +2,19 @@ import  { useState, useCallback, useMemo } from "react";
 import { DataTable } from "../../component/DataTable/DataTable"; 
 import {
   useGetAllPOHeaderQuery,
-  useUpdatePOHeaderMutation,
-  useAddPoHeaderMutation,
   useDeletePoHeaderMutation
 } from "../../store/services/po-header";
 import styles from "./PoHeader.module.css";
 import { toast } from "react-toastify";
 import Button from "../../component/Button/Button"; 
-import * as yup from "yup";
-import type { FieldConfig } from "../../component/Model2/Model";
-import Modal from "../../component/Model2/Model";
+import Modal from "../../component/Modal/index";
 import ConfirmDialog from "../../component/ConfirmDialoge";
 import {
   FiEdit,
   FiTrash2,
 } from "react-icons/fi";
-
-
-export type PoHeaderData =  {
-  id: number;
-  IndentNo?: string;
-    VendorCode?: string;
-    OrderDate?: string; 
-    ValueRs?: string;
-    InspectingAgencyType?: string;
-    InspectorCode?: string;
-    InspectionSiteCode?: string;
-    Remarks?: string;
-    QuoteKey?: number;  
-    SelectedQuoteDate?: string;
-    DateTimeApproved?: string ; 
-    ApprovedBy?: string; 
-    TypeClosing?: string;  
-    DateCloded?: string ;  
-    ClosedBy?: string ; 
-    PackingInstruction?:string;
-    DespatchInstruction?:string;
-    InspectionInstruction?:string;
-    StationCode?:string;
-    Remarks1?:string;
-    Name?:string;
-    City?:string;
-    State?:string;
-};
-
-const poHeaderSchema = yup.object({
-  IndentNo: yup.string().optional(),
-  VendorCode: yup.string().optional(),
-  OrderDate: yup.string().optional(),
-  ValueRs: yup.string().optional(),
-  InspectingAgencyType: yup.string().optional(),
-  InspectorCode: yup.string().optional(),
-  InspectionSiteCode: yup.string().optional(),
-  Remarks: yup.string().optional(),
-  QuoteKey: yup.number().optional(),
-  SelectedQuoteDate: yup.string().optional(),
-  DateTimeApproved: yup.string().optional(),
-  ApprovedBy: yup.string().optional(),
-  TypeClosing: yup.string().optional(),
-  DateCloded: yup.string().optional(),
-  ClosedBy: yup.string().optional(),
-  PackingInstruction: yup.string().optional(),
-  DespatchInstruction: yup.string().optional(),
-  InspectionInstruction: yup.string().optional(),
-  StationCode: yup.string().optional(),
-  Remarks1: yup.string().optional(),
-  Name: yup.string().optional(),
-  City: yup.string().optional(),
-  State: yup.string().optional(),
-});
-
-export type EditableFormData = Omit<PoHeaderData, 'id'>;
-
-const poHeaderField : FieldConfig<EditableFormData>[]=[
-  {
-    name:"IndentNo",
-    label:"Indent No",
-    type:"input",
-    required:false
-  },
-    {
-    name:"VendorCode",
-    label:"Vendor Code",
-    type:"input",
-    required:false
-  },
-    {
-    name:"OrderDate",
-    label:"Order Date",
-    type:"input",
- required:false
-  },
-
-    {
-    name:"ValueRs",
-    label:"Value Rs",
-    type:"input",
- required:false  },
-    {
-    name:"InspectingAgencyType",
-    label:"Inspecting Agency Type",
-    type:"input",
-    required:false
-  },
-    {
-    name:"InspectorCode",
-    label:"Inspector Code",
-    type:"input",
-    required:false
-  },
-    {
-    name:"InspectionSiteCode",
-    label:"Inspection Site Code",
-    type:"input",
-    required:false
-  },
-    {
-    name:"Remarks",
-    label:"Remarks",
-    type:"input",
-    required:false
-  },
-
-    {
-    name:"QuoteKey",
-    label:"Quote Key",
-    type:"input",
-    required:false
-  },
-    {
-    name:"SelectedQuoteDate",
-    label:"Selected Quote Date",
-    type:"input",
-    required:false
-  },
-    {
-    name:"DateTimeApproved",
-    label:"Date Time Approved",
-    type:"input",
-    required:false
-  },
-    {
-    name:"ApprovedBy",
-    label:"Approved By",
-    type:"input",
-    required:false
-  },
-    {
-    name:"TypeClosing",
-    label:"Type Closing",
-    type:"input",
-    required:false
-  },
-    {
-    name:"DateCloded",
-    label:"Date Cloded",
-    type:"input",
-    required:false
-  },
-    {
-    name:"ClosedBy",
-    label:"Closed By",
-    type:"input",
-    required:false
-  },
-    {
-    name:"PackingInstruction",
-    label:"Packing Instruction",
-    type:"input",
-    required:false
-  },
-    {
-    name:"DespatchInstruction",
-    label:"Despatch Instruction",
-    type:"input",
-    required:false
-  },
-    {
-    name:"InspectionInstruction",
-    label:"Inspection Instruction",
-    type:"input",
-    required:false
-  },
-    {
-    name:"StationCode",
-    label:"Station Code",
-    type:"input",
-    required:false
-  },
-    {
-    name:"Remarks1",
-    label:"Remarks1",
-    type:"input",
-    required:false
-  },
-    {
-    name:"Name",
-    label:"Name",
-    type:"input",
-    required:false
-  },
-    {
-    name:"City",
-    label:"City",
-    type:"input",
-    required:false
-  },
-  {
-    name:"State",
-    label:"State",
-    type:"input",
-    required:false
-  }
-
-]
+import type{PoHeaderItem} from "../../types/poHeader"
+import Manipulate from "./Manipulate"
 
 const PoDetail = () => {
 
@@ -230,18 +29,16 @@ const PoDetail = () => {
     }
   );
     console.log("isError:", isError, "error:", error);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  // const [editingId, setEditingId] = useState<number | null>(null);
 
-  const [editingForm, setEditingForm] = useState<EditableFormData | null>(null);
+  const [editingForm, setEditingForm] = useState<PoHeaderItem | null>(null);
   const [addModal, setAddModal] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<PoHeaderData | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PoHeaderItem | null>(null);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
 
-  // const [importExcel] = useImportPOHeaderMutation();
-  const [updateItem] = useUpdatePOHeaderMutation();
   const [deleteItem] = useDeletePoHeaderMutation(); 
-  const[addItem] = useAddPoHeaderMutation();
+
 
 
   // const [file, setFile] = useState<File | null>(null);
@@ -281,29 +78,6 @@ const PoDetail = () => {
     );
 
 
-  // --------------------------
-  // EDIT SAVE HANDLER
-  // --------------------------
-  const handleSaveEdit = async (updated: EditableFormData) => {
-    if(!editingId){
-          return
-        }
-    try {
-      await updateItem({ id: editingId, data: updated }).unwrap();
-      toast.success("Updated successfully");
-      setEditingId(null);
-      setEditingForm(null)
-      refetch();
-    } catch (err: unknown) {
-      if(err instanceof Error){
-        console.error(err.message);
-        toast.error(err.message);
-      }else{
-        console.error(err);
-        toast.error("Update failed");
-      }
-    }
-  };
 
 const handleDelete = async () => {
   if(!deleteTarget?.id){
@@ -329,72 +103,28 @@ const handleDelete = async () => {
   }
 };
 
-const handleAdd = async (data: EditableFormData) => {
-  try {
-    await addItem(data).unwrap();
-    toast.success("Item Added Successfully");
-    setAddModal(false);
-    refetch();
-  } catch (err: unknown) {
-    if(err instanceof Error){
-      console.error(err.message);
-      toast.error(err.message);
-    }else{
-      console.error(err);
-      toast.error("Add failed");
-    }
-    
-  }
-};
-
 
   const actions = [
     {
-      label: "Edit",
-      onClick: () => {},
-      // Use FormData here so it matches what the DataTable expects
-      component: (row: PoHeaderData) => ( 
-        <button
-          className={`${styles.iconBtn} ${styles.edit}`}
-          title="Edit Item"
-          onClick={() => {
-            console.log("PPPPPP",row)
-            setEditingId(row.id);
-            setEditingForm({
-              IndentNo: row.IndentNo,
-              VendorCode: row.VendorCode,
-              OrderDate: row.OrderDate,
-              ValueRs: row.ValueRs,
-              InspectingAgencyType: row.InspectingAgencyType,
-              InspectionSiteCode: row.InspectionSiteCode,
-              InspectorCode: row.InspectorCode,
-              Remarks: row.Remarks,
-              QuoteKey: row.QuoteKey,
-              SelectedQuoteDate: row.SelectedQuoteDate,
-              DateTimeApproved: row.DateTimeApproved,
-              ApprovedBy: row.ApprovedBy,
-              TypeClosing: row.TypeClosing,
-              DateCloded: row.DateCloded,
-              ClosedBy: row.ClosedBy,
-              PackingInstruction: row.PackingInstruction,
-              DespatchInstruction: row.DespatchInstruction,
-              InspectionInstruction: row.InspectionInstruction,
-              StationCode:row.StationCode,
-              Remarks1:row.Remarks1,
-              Name:row.Name,
-              City:row.City,
-              State:row.State
-            });
-          }}
-        >
-          <FiEdit size={18} />
-        </button>
-      ),
-    },
+        label: "Edit",
+        onClick: () => {},
+
+        component: (row: PoHeaderItem) => (
+          <button
+            className={`${styles.iconBtn} ${styles.edit}`}
+            title="Edit User"
+            onClick={()=>{setEditingForm(row)
+              console.log("row:",row);
+            }}
+          >
+            <FiEdit size={18} />
+          </button>
+        ),
+      },
     {
       label: "Delete",
       onClick: () => {}, 
-      component: (row: PoHeaderData) => (
+      component: (row: PoHeaderItem) => (
         <button
           className={`${styles.iconBtn} ${styles.delete}`}
           title="Delete"
@@ -473,55 +203,27 @@ const handleAdd = async (data: EditableFormData) => {
             )}
 
       {/* Edit Modal */}
-      {editingForm && (
-          <Modal<EditableFormData>
-                title="Edit Item"
-                form={editingForm}
-                fields={poHeaderField}
-                schema={poHeaderSchema}
-                onClose={() => {
-                  setEditingId(null);
-                  setEditingForm(null);
-                }}
-                onSave={handleSaveEdit}
-           />
-      )}
-
-      {addModal && (
-        <Modal<EditableFormData>
-          title="Add New Item"
-          form={{
-                IndentNo: "",
-                VendorCode: "",
-                OrderDate: "", 
-                ValueRs: "",
-                InspectingAgencyType: "",
-                InspectorCode: "",
-                InspectionSiteCode: "", 
-                Remarks: "",
-                QuoteKey: 0,  
-                SelectedQuoteDate: "",
-                DateTimeApproved: "" , 
-                ApprovedBy: "", 
-                TypeClosing: "",  
-                DateCloded: "" ,  
-                ClosedBy: "" , 
-                PackingInstruction:"",
-                DespatchInstruction:"",
-                InspectionInstruction:"",
-                StationCode:"",
-                Remarks1:"",
-                Name:"",
-                City:"",
-                State:"",
+      {(editingForm || addModal) && (
+          <Modal
+          title={editingForm ? "Edit PoHeader" : "Add PoHeader"}
+          onClose={()=>{
+            setAddModal(false);
+            setEditingForm(null);
           }}
-          fields={poHeaderField}
-          schema={poHeaderSchema}
-          onClose={() => setAddModal(false)}
-          onSave={handleAdd}
-        />
+        >
+          <Manipulate
+            mode={editingForm ? "edit" : "create"}
+            defaultValues={editingForm || undefined}
+            onSubmitSuccess={()=>{
+              setAddModal(false);
+              setEditingForm(null);
+              refetch();
+            }}
+            />
+          </Modal>
       )}
 
+      
      
     </div>
   );

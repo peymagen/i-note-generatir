@@ -2,85 +2,20 @@ import { useState, useCallback, useMemo } from "react";
 import { DataTable } from "../../component/DataTable/DataTable";
 import {
   useGetAllVendorQuery,
-  useUpdateVendorMutation,
   useDeleteVendorMutation,
-  useAddVendorMutation,
 } from "../../store/services/vendor-detail";
 import styles from "./VendorDetail.module.css";
 import { toast } from "react-toastify";
 import Button from "../../component/Button/Button";
 import { stripHtml } from "../../utils/stripHtml";
-import * as yup from "yup";
-import type { FieldConfig } from "../../component/Model2/Model";
-import Modal from "../../component/Model2/Model";
+import Modal from "../../component/Modal/index";
 import ConfirmDialog from "../../component/ConfirmDialoge";
 import {
   FiEdit,
   FiTrash2,
 } from "react-icons/fi";
-/* ---------------- TYPES ---------------- */
-
-export type FormData = {
-  Id: number;
-  FirmName: string;
-  FirmAddress: string;
-  vendorCode: string;
-  FirmEmailId?: string;
-  ContactNumber?: string;
-};
-
-interface VendorItem {
-  Id: number;
-  FirmName: string;
-  FirmAddress: string;
-  vendorCode: string;
-  FirmEmailId?: string;
-  ContactNumber?: string;
-}
-
-const vendorSchema = yup.object({
-  FirmName: yup.string().required("Firm Name is required"),
-  FirmAddress: yup.string().required("Firm Address is required"),
-  vendorCode: yup.string().required("Vendor Code is required"),
-  FirmEmailId: yup.string().optional(),
-  ContactNumber: yup.string().optional(),
-});
-
-// export type EditableFormData = Omit<FormData, "Id">;
-export type EditableFormData = yup.InferType<typeof vendorSchema>;
-
-const vendorFields: FieldConfig<EditableFormData>[] = [
-  {
-    name: "FirmName",
-    label: "Firm Name",
-    type: "input",
-    required: true,
-  },
-  {
-    name: "FirmAddress",
-    label: "Firm Address",
-    type: "richtext",
-    required: true,
-  },
-  {
-    name:"vendorCode",
-    label:"Vendor Code",
-    type:"input",
-    required:true
-  },
-  {
-    name:"FirmEmailId",
-    label:"Email ID",
-    type:"input",
-    required:false
-  },
-  {
-    name:"ContactNumber",
-    label:"Contact Number",
-    type:"input",
-    required:false
-  }
-];
+import type{VendorItem}from "../../types/vendor"
+import Manipulate from "./Manipulate"
 
 
 const VendorDetail = () => {
@@ -95,17 +30,17 @@ const VendorDetail = () => {
   console.log("isError:", isError, "error:", error);
 
   
-  const [editingId, setEditingId] = useState<number | null>(null);
+  // const [editingId, setEditingId] = useState<number | null>(null);
 
-  const [editingForm, setEditingForm] = useState<EditableFormData | null>(null);
+  const [editingForm, setEditingForm] = useState<VendorItem | null>(null);
   const [addModal, setAddModal] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<FormData | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<VendorItem | null>(null);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   
 
-  const [updateItem] = useUpdateVendorMutation();
+  // const [updateItem] = useUpdateVendorMutation();
   const [deleteItem] = useDeleteVendorMutation();
-  const [addItem] = useAddVendorMutation();
+  // const [addItem] = useAddVendorMutation();
 
   /* ---------------- NORMALIZE API DATA ---------------- */
 
@@ -141,32 +76,7 @@ const VendorDetail = () => {
 
   /* ---------------- UPDATE ---------------- */
 
-  const handleSaveEdit = async (updated: EditableFormData) => {
-    if(!editingId){
-      toast.error("Invalid vendor ID");
-      return;
-    }
-    console.log("Updated:", updated);
-    console.log("Editing ID:", editingId);
-    try{
-      await updateItem({
-        id: editingId,
-        data: { ...updated, Id: editingId },
-      }).unwrap();
-      
-      toast.success("Updated successfully");
-      setEditingId(null);
-      setEditingForm(null);
-      refetch();
-    }
-    catch{
-      toast.error("Update failed");
-    }
-    
-
-    
-
-  };
+  
 
   /* ---------------- DELETE ---------------- */
 
@@ -183,32 +93,18 @@ const VendorDetail = () => {
     refetch();
   };
 
-  /* ---------------- ADD ---------------- */
-
-  const handleAdd = async (data: EditableFormData) => {
-    await addItem(data).unwrap();
-    toast.success("Added successfully");
-    setAddModal(false);
-    refetch();
-  };
 
    const actions = [
       {
         label: "Edit",
         onClick: () => {},
-        component: (row: EditableFormData) => (
+
+        component: (row: VendorItem) => (
           <button
             className={`${styles.iconBtn} ${styles.edit}`}
             title="Edit User"
-            onClick={() => {
-              const r = row as FormData;
-              setEditingId(r.Id);
-              setEditingForm({
-                FirmName: r.FirmName,
-                FirmAddress: r.FirmAddress,
-                vendorCode: r.vendorCode,
-                FirmEmailId: r.FirmEmailId,
-              });
+            onClick={()=>{setEditingForm(row)
+              console.log("row:",row);
             }}
           >
             <FiEdit size={18} />
@@ -218,7 +114,7 @@ const VendorDetail = () => {
       {
         label: "Delete",
         onClick: () => {},
-        component: (row: FormData) => (
+        component: (row: VendorItem) => (
           <button
             className={`${styles.iconBtn} ${styles.delete}`} 
             title="Delete"
@@ -233,7 +129,7 @@ const VendorDetail = () => {
     const columns = [
           { label: "Id", accessor: "Id" },
           { label: "Firm Name", accessor: "FirmName"},
-          { label: "Firm Address", accessor: "FirmAddress", render: (row:FormData) => stripHtml(row.FirmAddress),},
+          { label: "Firm Address", accessor: "FirmAddress", render: (row:VendorItem) => stripHtml(row.FirmAddress),},
           { label: "Vendor Code", accessor: "vendorCode"},
           { label: "Email", accessor: "FirmEmailId"},
           {label:"Contact Number", accessor:"ContactNumber"}
@@ -246,12 +142,13 @@ const VendorDetail = () => {
           <Button
             label="ADD"
             buttonType="one"
-            onClick={() => setAddModal(true)}
+            onClick={() => setAddModal(true) 
+            }
           />
         </div> 
       <h1 className={styles.pageTitle}>Vendor Detail</h1>
       <div className={styles.tableBox}>
-        <DataTable
+        <DataTable<VendorItem & { [x: string]: unknown }>
         fetchData={fetchData}
         columns={columns}
         actions={actions}
@@ -272,35 +169,27 @@ const VendorDetail = () => {
           />
         )}
 
-      {editingForm && (
-        <Modal<EditableFormData>
-          title="Edit Vendor"
-          form={editingForm}
-          fields={vendorFields}
-          schema={vendorSchema}
-          onClose={() => {
-            setEditingId(null);
+      {(addModal || editingForm) && (
+        <Modal
+          title={editingForm ? "Edit Vendor" : "Add Vendor"}
+          onClose={()=>{
+            setAddModal(false);
             setEditingForm(null);
           }}
-          onSave={handleSaveEdit}
-        />
+        >
+          <Manipulate
+            mode={editingForm ? "edit" : "create"}
+            defaultValues={editingForm || undefined}
+            onSubmitSuccess={()=>{
+              setAddModal(false);
+              setEditingForm(null);
+              refetch();
+            }}
+            />
+          </Modal>
       )}
 
-      {addModal && (
-        <Modal<EditableFormData>
-          title="Add Vendor"
-          form={{
-            FirmName: "",
-            FirmAddress: "",
-            vendorCode: "",
-            FirmEmailId: "",
-          }}
-          fields={vendorFields}  
-          schema={vendorSchema} 
-          onClose={() => setAddModal(false)}
-          onSave={handleAdd}
-        />
-      )}
+     
     </div>
   );
 };

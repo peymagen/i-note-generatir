@@ -63,6 +63,10 @@
   overflow-x: auto;
 
 }
+.tableWrapper table tbody tr:hover {
+  background: #f1f5f9;
+  transition: background 0.15s ease;
+}
 
 /* Custom scrollbars */
 .tableWrapper::-webkit-scrollbar {

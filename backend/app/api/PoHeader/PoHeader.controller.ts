@@ -145,6 +145,7 @@ export const deleteDataById = async(req:Request,res:Response)=>{
 }
 
 export const addData = async(req:Request,res:Response)=>{
+  console.log("Req",req.body)
    const userId = (req as any).user?.id;
     if (!userId) {
        res.status(401).json({
@@ -161,7 +162,11 @@ export const addData = async(req:Request,res:Response)=>{
       });
     }
 
-    const record = await service.addData(userId,payload)
+    const dataToSave = {
+  ...req.body,
+  QuoteKey: req.body.QuoteKey || 0  
+};
+    const record = await service.addData(userId,dataToSave)
     if (!record) {
       res.status(404).json({ 
         success: false, 

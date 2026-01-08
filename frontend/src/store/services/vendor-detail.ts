@@ -1,6 +1,5 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "./api";
-import type { FormData, EditableFormData } from "../../pages/VendorDetail/VendorDetail";
 
 export const vendorDetail = createApi({
   reducerPath: "vendorDetailApi",
@@ -40,11 +39,12 @@ export const vendorDetail = createApi({
     }),
 
     updateVendor: builder.mutation({
-      query: ({ id, data }: { id: number; data: FormData }) => ({
-        url: `/vendor-detail/${id}`,
+      query: (payload) => ({
+        url: `/vendor-detail/${payload.Id}`,
         method: "PATCH",
-        body: data,
+        body: payload,
       }),
+      invalidatesTags: ['Vendor'],
     }),
 
     deleteVendor: builder.mutation({
@@ -54,7 +54,7 @@ export const vendorDetail = createApi({
       }),
     }),
 
-    addVendor:builder.mutation<FormData, EditableFormData>({
+    addVendor:builder.mutation({
       query: (data) => ({
         url: "/vendor-detail/create",
         method: "POST",

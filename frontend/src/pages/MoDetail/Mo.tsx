@@ -3,56 +3,21 @@ import { DataTable } from "../../component/DataTable/DataTable";
 import {
   useGetAllMoDetailQuery,
   useImportMoDetailMutation,
-  useUpdateMoDetailMutation,
-  useAddMoDetailMutation,
   useDeleteMoDetailMutation,
 } from "../../store/services/mo-detail";
 import styles from "./Mo.module.css";
 import { toast } from "react-toastify";
 import Button from "../../component/Button/Button";
 import { stripHtml } from "../../utils/stripHtml";
-import Modal from "../../component/Model2/Model";
-import * as yup from "yup";
+import Modal from "../../component/Modal/index";
 import {
   FiEdit,
   FiTrash2,
 } from "react-icons/fi";
 import ConfirmDialog from "../../component/ConfirmDialoge";
-import type { FieldConfig } from "../../component/Model2/Model";
+import Manipulate from "./Manipulate";
+import type{MoItem}from "../../types/mo"
 
-/* ================= TYPES ================= */
-
-export type FormData = {
-  id: number;
-  MoCPRO: string;
-  MoAddress: string;
-};
-
-/* ================= YUP SCHEMA ================= */
-
-const moSchema = yup.object({
-  MoCPRO: yup.string().required("MO / CPRO is required"),
-  MoAddress: yup.string().required("MO Address is required"),
-});
-
-export type EditableFormData = yup.InferType<typeof moSchema>;
-
-// const EDITABLE_FIELDS: (keyof EditableFormData)[] = ["MoCPRO", "MoAddress"];
-
-const moFields: FieldConfig<EditableFormData>[] = [
-  {
-    name: "MoCPRO",
-    label: "MO / CPRO",
-    type: "input",
-    required: true,
-  },
-  {
-    name: "MoAddress",
-    label: "MO Address",
-    type: "richtext",
-    required: true,
-  },
-];
 
 
 const Mo = () => {
@@ -66,15 +31,13 @@ const Mo = () => {
   );
     console.log("isError:", isError, "error:", error);
 
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editingForm, setEditingForm] = useState<EditableFormData | null>(null);
+  // const [editingId, setEditingId] = useState<number | null>(null);
+  const [editingForm, setEditingForm] = useState<MoItem | null>(null);
   const [addModal, setAddModal] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<FormData | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<MoItem | null>(null);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
   const [importExcel] = useImportMoDetailMutation();
-  const [updateItem] = useUpdateMoDetailMutation();
-  const [addItem] = useAddMoDetailMutation();
   const [deleteItem] = useDeleteMoDetailMutation();
 
   /* ================= DATA ================= */
@@ -113,34 +76,7 @@ const Mo = () => {
     }
   };
 
-  const handleSaveEdit = async (updated: EditableFormData) => {
-    if (!editingId) return;
 
-    try {
-      await updateItem({
-        id: editingId,
-        data: { ...updated, id: editingId },
-      }).unwrap();
-
-      toast.success("Updated successfully");
-      setEditingId(null);
-      setEditingForm(null);
-      refetch();
-    } catch {
-      toast.error("Update failed");
-    }
-  };
-
-  const handleAdd = async (data: EditableFormData) => {
-    try {
-      await addItem(data).unwrap();
-      toast.success("Added successfully");
-      setAddModal(false);
-      refetch();
-    } catch {
-      toast.error("Add failed");
-    }
-  };
 
   const handleDelete = async () => {
     if (!deleteTarget?.id) return;
@@ -161,34 +97,30 @@ const Mo = () => {
             label: "MO Address",
             accessor: "MoAddress",
             render: (row: unknown) =>
-              stripHtml((row as FormData).MoAddress),
+              stripHtml((row as MoItem).MoAddress),
           },
         ]
   const actions = [
     {
-      label: "Edit",
-      onClick: () => {},
-      component: (row: EditableFormData) => (
-        <button
-          className={`${styles.iconBtn} ${styles.edit}`}
-          title="Edit User"
-          onClick={() => {
-            const r = row as FormData;
-            setEditingId(r.id);
-            setEditingForm({
-              MoCPRO: r.MoCPRO,
-              MoAddress: r.MoAddress,
-            });
-          }}
-        >
-          <FiEdit size={18} />
-        </button>
-      ),
-    },
+        label: "Edit",
+        onClick: () => {},
+
+        component: (row: MoItem) => (
+          <button
+            className={`${styles.iconBtn} ${styles.edit}`}
+            title="Edit User"
+            onClick={()=>{setEditingForm(row)
+              console.log("row:",row);
+            }}
+          >
+            <FiEdit size={18} />
+          </button>
+        ),
+      },
     {
       label: "Delete",
       onClick: () => {},
-      component: (row: FormData) => (
+      component: (row: MoItem) => (
         <button
           className={`${styles.iconBtn} ${styles.delete}`} 
           title="Delete"
@@ -229,7 +161,7 @@ const Mo = () => {
 
       <h1 className={styles.pageTitle}>MO Details</h1>
     <div className={styles.tableBox}>
-      <DataTable
+      <DataTable<MoItem & { [x: string]: unknown }>
         fetchData={fetchData}
         loading={isLoading}
         isSearch
@@ -250,44 +182,27 @@ const Mo = () => {
   )}
         
 
-      {/* EDIT */}
-      {/* {editingForm && (
+     
+      {(editingForm || addModal) && (
         <Modal
-          title="Edit Item"
-          form={editingForm}
-          onClose={() => {
-            setEditingId(null);
+          title={editingForm ? "Edit Mo" : "Add Mo"}
+          onClose={()=>{
+            setAddModal(false);
             setEditingForm(null);
           }}
-          onSave={handleSaveEdit}
-        />
-      )} */}
-      {editingForm && (
-        <Modal<EditableFormData>
-          title="Edit Item"
-          form={editingForm}
-          fields={moFields}
-          schema={moSchema}
-          onClose={() => {
-            setEditingId(null);
-            setEditingForm(null);
-          }}
-          onSave={handleSaveEdit}
-        />
+        >
+          <Manipulate
+            mode={editingForm ? "edit" : "create"}
+            defaultValues={editingForm || undefined}
+            onSubmitSuccess={()=>{
+              setAddModal(false);
+              setEditingForm(null);
+              refetch();
+            }}
+            />
+          </Modal>
       )}
 
-
-      {/* ADD */}
-      {addModal && (
-        <Modal<EditableFormData>
-          title="Add Item"
-          form={{ MoCPRO: "", MoAddress: "" }}
-          fields={moFields}
-          schema={moSchema}
-          onClose={() => setAddModal(false)}
-          onSave={handleAdd}
-        />
-      )}
 
     </div>
   );

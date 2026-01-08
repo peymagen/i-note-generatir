@@ -46,38 +46,6 @@
   font-size: 1.2rem;
 }
 
-/* WRAPPER FOR TABLE */
-.tableWrapper {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: auto;
-  overflow-y: auto;
-  background: white;
-  padding: 1.2rem;
-  border-radius: 0.8rem;
-  white-space: nowrap;
-  box-sizing: border-box;
-}
-
-/* Custom scrollbars */
-.tableWrapper::-webkit-scrollbar {
-  height: 0.6rem;
-}
-
-.tableWrapper::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 0.4rem;
-}
-
-.tableWrapper::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 0.4rem;
-}
-
-.tableWrapper::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
 .iconBtn {
   width: 36px;
   height: 36px;
@@ -113,4 +81,8 @@
   padding: 1rem;
   box-shadow: 10px 14px 20px rgba(0, 0, 0, 0.05);
   overflow-x: auto;
+}
+.tableBox table tbody tr:hover {
+  background: #f1f5f9;
+  transition: background 0.15s ease;
 }

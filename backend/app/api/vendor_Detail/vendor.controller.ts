@@ -43,6 +43,7 @@ export const createRow = asyncHandler(async(req:Request,res:Response)=>{
 
 // vendor.controller.ts
 export const updateRow = asyncHandler(async (req: Request, res: Response) => {
+  console.log("Req",req.body)
   try {
     const userId = (req as any).user?.id;
     if (!userId) {

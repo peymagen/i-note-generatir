@@ -1,7 +1,5 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "./api";
-import type{FormData,EditableformData} from "../../pages/MoDetail/Mo";
-
 
 export const moDetailApi = createApi({
   reducerPath: "moDetailApi",
@@ -63,10 +61,10 @@ export const moDetailApi = createApi({
 
     // UPDATE BY ID
     updateMoDetail: builder.mutation({
-      query: ({ id, data }: { id: number; data: EditableformData }) => ({
-        url: `/mo-detail/${id}`,
+      query: (body) => ({
+        url: `/mo-detail/${body.id}`,
         method: "PATCH",
-        body: data,
+        body: body,
       }),
     }),
     deleteMoDetail: builder.mutation({
@@ -76,20 +74,12 @@ export const moDetailApi = createApi({
       }),
     }),
     addMoDetail: builder.mutation({
-      query: (data: EditableformData) => ({
+      query: (data) => ({
         url: "/mo-detail",
         method: "POST",
         body: data,
       }),
     }),
-    // getIndentDate: builder.mutation({
-    //   query: ({ IndentNo, OrderDate }) => ({
-    //     url: `/mo-detail/search?IndentNo=${IndentNo}&OrderDate=${OrderDate}`,
-    //     method: "GET",
-    //   }),
-    // })
-
-    
   }),
 });
 

@@ -2,150 +2,19 @@ import { useState, useCallback, useMemo } from "react";
 import { DataTable } from "../../component/DataTable/DataTable"; 
 import {
     useGetAllPODataQuery,
-  // useImportPODataMutation,
-  useUpdatePODataMutation,
-  useAddPoDetailMutation,
   useDeletePoDetailMutation
 } from "../../store/services/po-details";
 import styles from "./PoDetail.module.css";
 import { toast } from "react-toastify";
 import Button from "../../component/Button/Button";
-import * as yup from "yup";
-import type { FieldConfig } from "../../component/Model2/Model";
-import Modal from "../../component/Model2/Model";
+import Modal from "../../component/Modal/index";
 import ConfirmDialog from "../../component/ConfirmDialoge";
 import {
   FiEdit,
   FiTrash2,
 } from "react-icons/fi";
-
-
-export type FormData =  {
-  id: number;
-  IndentNo?: string;
-    VendorCode?: string;
-    OrderDate?: string;  
-    OrderLineNo?: number;
-    ItemCode?: string;
-    ConsigneeCode?: string;
-    OrderLineDRB?: string;
-    Specs?: string;
-    Qty?: number;  
-    UniCostCC?: number;
-    PilotSampleDRb?: string ; 
-    MIQPQty?: number; 
-    PackType?: string;  
-    StationCode?: string ;  
-    ReReferencedItemCode?: string;
-};
-
-const poDetainSchema = yup.object({
-    IndentNo: yup.string().optional(),
-    VendorCode: yup.string().optional(),
-    OrderDate: yup.string().optional(),
-    OrderLineNo: yup.number().optional(),
-    ItemCode: yup.string().optional(),
-    ConsigneeCode: yup.string().optional(),
-    OrderLineDRB: yup.string().optional(),
-    Specs: yup.string().optional(),
-    Qty: yup.number().optional(),
-    UniCostCC: yup.number().optional(),
-    PilotSampleDRb: yup.string().optional(),
-    MIQPQty: yup.number().optional(),
-    PackType: yup.string().optional(),
-    StationCode: yup.string().optional(),
-    ReReferencedItemCode: yup.string().optional(),
-});
-
-export type EditableformData = Omit<FormData, 'id'>;
-
-const poDetailField : FieldConfig<EditableformData>[]=[
-    {
-      name:"IndentNo",
-      label:"Indent No",
-      type:"input",
-      required:false
-    },
-      {
-      name:"VendorCode",
-      label:"Vendor Code",
-      type:"input",
-      required:false
-    },
-      {
-      name:"OrderDate",
-      label:"Order Date",
-      type:"input",
-      required:false
-    },
-    {
-        name:"ItemCode",
-        label:"Item Code",
-        type:"input",
-        required:false
-      },
-        {
-        name:"ConsigneeCode",
-        label:"Consignee Code",
-        type:"input",
-        required:false
-      },
-        {
-        name:"OrderLineDRB",
-        label:"Order Line DRB",
-        type:"input",
-        required:false
-      },
-      {
-          name:"Specs",
-          label:"Specs",
-          type:"input",
-          required:false
-        },
-          {
-          name:"Qty",
-          label:"Qty",
-          type:"input",
-          required:false
-        },
-          {
-          name:"UniCostCC",
-          label:"Uni Cost CC",
-          type:"input",
-          required:false
-        },
-        {
-    name:"PilotSampleDRb",
-    label:"Pilot Sample DRb",
-    type:"input",
-    required:false
-  },
-    {
-    name:"MIQPQty",
-    label:"MI QP Qty",
-    type:"input",
-    required:false
-  },
-    {
-    name:"PackType",
-    label:"Pack Type",
-    type:"input",
-    required:false
-  },
-  {
-    name:"StationCode",
-    label:"Station Code",
-    type:"input",
-    required:false
-  },
-  {
-    name:"ReReferencedItemCode",
-    label:"Re Referenced Item Code",
-    type:"input",
-    required:false
-  }
-]
-
+import type{PoDetailItem} from "../../types/poDetail"
+import Manipulate from "./manipulate"
 
 const PoDetail = () => {
 
@@ -160,18 +29,16 @@ const PoDetail = () => {
     }
   );
     console.log("isError:", isError, "error:", error);
-  const [editingId, setEditingId] = useState<number | null>(null);
+  // const [editingId, setEditingId] = useState<number | null>(null);
 
-  const [editingForm, setEditingForm] = useState<EditableformData | null>(null);
+  const [editingForm, setEditingForm] = useState<PoDetailItem | null>(null);
   const [addModal, setAddModal] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<FormData | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PoDetailItem | null>(null);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
 
-
-  const [updateItem] = useUpdatePODataMutation();
   const [deleteItem] = useDeletePoDetailMutation(); 
-  const [addItem] = useAddPoDetailMutation();
+  /* ---------------- NORMALIZE API DATA ---------------- */
 
   // Backend nested response => actual items
   const items = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
@@ -205,30 +72,7 @@ const PoDetail = () => {
       },
       [items, totalRecords, page, search]
     );
-  
-  // --------------------------
-  // EDIT SAVE HANDLER
-  // --------------------------
-  const handleSaveEdit = async (updated:EditableformData) => {
-    if (!editingId) return;
-    
-    try {
-      await updateItem({ id: editingId, data: updated }).unwrap();
-      toast.success("PO detail updated successfully");
-      setEditingId(null);
-      setEditingForm(null)
-      refetch();
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        console.error(err.message);
-        toast.error(err.message);
-      } else {
-        console.error(err);
-        toast.error("Update failed");
-      }
-    }
-  };
-
+ 
   
 const handleDelete = async () => {
   if(!deleteTarget?.id){
@@ -255,60 +99,27 @@ const handleDelete = async () => {
   }
 };
 
-const handleAdd = async (formData: EditableformData) => {
-  try {
-    await addItem(formData).unwrap();
-    toast.success("Item Added Successfully");
-    setAddModal(false);
-    refetch();
-  } catch (err: unknown) {
-    if(err instanceof Error){
-      console.error(err.message);
-      toast.error(err.message);
-    }else{
-      console.error(err);
-      toast.error("Add failed");
-    }
-  }
-};
   const actions = [
       {
-        label: "Edit",
-        onClick: () => {},
-        component: (row: FormData) => ( 
-          <button
-            className={`${styles.iconBtn} ${styles.edit}`}
-            title="Edit Item"
-            onClick={() => {
-              console.log("PPPPPP",row)
-              setEditingId(row.id);
-              setEditingForm({
-                IndentNo: row.IndentNo,
-                VendorCode: row.VendorCode,
-                OrderDate: row.OrderDate,
-                OrderLineNo:row.OrderLineNo,
-                ItemCode:row.ItemCode,
-                ConsigneeCode:row.ConsigneeCode,
-                OrderLineDRB:row.OrderLineDRB,
-                Specs:row.Specs,
-                Qty:row.Qty,
-                UniCostCC:row.UniCostCC,
-                PilotSampleDRb:row.PilotSampleDRb,
-                MIQPQty:row.MIQPQty,
-                PackType:row.PackType,
-                StationCode:row.StationCode,
-                ReReferencedItemCode:row.ReReferencedItemCode
-              });
-            }}
-          >
-            <FiEdit size={18} />
-          </button>
-        ),
-      },
+              label: "Edit",
+              onClick: () => {},
+      
+              component: (row: PoDetailItem) => (
+                <button
+                  className={`${styles.iconBtn} ${styles.edit}`}
+                  title="Edit User"
+                  onClick={()=>{setEditingForm(row)
+                    console.log("row:",row);
+                  }}
+                >
+                  <FiEdit size={18} />
+                </button>
+              ),
+            },
       {
         label: "Delete",
         onClick: () => {}, 
-        component: (row: FormData) => (
+        component: (row: PoDetailItem) => (
           <button
             className={`${styles.iconBtn} ${styles.delete}`}
             title="Delete"
@@ -379,44 +190,27 @@ const handleAdd = async (formData: EditableformData) => {
                   )}
 
       {/* Edit Modal */}
-      {editingForm && (
-      <Modal<EditableformData>
-        title="Edit Item"
-        form={editingForm} 
-        fields={poDetailField}
-        schema={poDetainSchema}
-        onClose={() => setEditingForm(null)}
-        onSave={handleSaveEdit}
-      />
-    )}
-
-
-      {addModal && (
-        <Modal
-          title="Add New Item"
-          form={{
-            IndentNo: "",
-            VendorCode: "",
-            OrderDate: "",
-            OrderLineNo: 0,
-            ItemCode: "",
-            ConsigneeCode: "",
-            OrderLineDRB: "",
-            Specs: "",
-            Qty: 0,
-            UniCostCC: 0,
-            PilotSampleDRb: "",
-            MIQPQty: 0,
-            PackType: "",
-            StationCode: "",
-            ReReferencedItemCode: "",
+      {(editingForm || addModal) && (
+      <Modal
+        title={editingForm ? "Edit PoDetail" : "Add PoDetail"}
+          onClose={()=>{
+            setAddModal(false);
+            setEditingForm(null);
           }}
-          fields={poDetailField}
-          schema={poDetainSchema}
-          onClose={() => setAddModal(false)}
-          onSave={handleAdd}
-        />
-      )}
+        >
+          <Manipulate
+            mode={editingForm ? "edit" : "create"}
+            defaultValues={editingForm || undefined}
+            onSubmitSuccess={()=>{
+              setAddModal(false);
+              setEditingForm(null);
+              refetch();
+            }}
+            />
+
+      </Modal>
+      
+    )}
 
      
     </div>

@@ -3,7 +3,7 @@ import * as controller from './PoHeader.controller';
 import { roleAuth } from '../../common/middleware/role-auth.middleware';
 import { excelUpload } from "../../common/middleware/excel-upload.middleware";
 import { catchError } from '../../common/middleware/cath-error.middleware';
-
+import * as validator from './PoHeader.validator'
 const router = Router();
 
 router.post(
@@ -18,6 +18,14 @@ router.post(
     }
   }
 );
+
+router.post(
+  "/",
+  roleAuth(),
+  catchError,
+  validator.createPoHeader,
+  controller.addData
+)
 
 
 router.get(

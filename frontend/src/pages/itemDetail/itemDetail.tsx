@@ -2,172 +2,20 @@ import { useState, useCallback,useMemo } from "react";
 import { DataTable } from "../../component/DataTable/DataTable"; 
 import {
   useGetAllItemDetailsQuery,
-  useUpdateItemDetailMutation,
   useDeleteItemDetailMutation,
-  useAddItemDetailMutation,
 } from "../../store/services/item-details";
 import styles from "./ItemDetail.module.css";
 import { toast } from "react-toastify";
 import Button from "../../component/Button/Button";
-import * as yup from "yup";
-import type { FieldConfig } from "../../component/Model2/Model";
-import Modal from "../../component/Model2/Model";
+import Modal from "../../component/Modal/index"
 import ConfirmDialog from "../../component/ConfirmDialoge";
 import {
   FiEdit,
   FiTrash2,
 } from "react-icons/fi";
+import type{itemDetail} from "../../types/itemDetail"
+import Manipulate from "./Manipulate";
 
-
-export type FormData =  {
-  id: number;
-  IndentNo?: string;
-  VendorCode?: string;
-  OrderDate?: string;  
-  OrderLineNo?: number;
-  ItemCode?: string;
-  SectionHead?: string;
-  ItemDesc?: string;
-  CountryCode?: string;
-  ItemDeno?: string;  
-  MonthsShelfLife?: number;
-  CRPCategory?: string;   
-  VEDCCategory?: string; 
-  ABCCategory?: string;  
-  DateTimeApproved?: string ;  
-  ApprovedBy?: string;
-  ReviewSubSectionCode?: string;
-  INCATYN?: string;  
-};
-
-
-const itemSchema = yup.object({
-  IndentNo: yup.string().optional(),
-  VendorCode: yup.string().optional(),
-  OrderDate: yup.string().optional(),
-  OrderLineNo: yup.number().optional(),
-  ItemCode: yup.string().optional(),
-  SectionHead: yup.string().optional(),
-  CountryCode: yup.string().optional(),
-  ItemDesc: yup.string().optional(),
-  ItemDeno: yup.string().optional(),
-  MonthsShelfLife: yup.number().optional(),
-  CRPCategory: yup.string().optional(),
-  VEDCCategory: yup.string().optional(),
-  ABCCategory: yup.string().optional(),
-  DateTimeApproved: yup.string().optional(),
-  ApprovedBy: yup.string().optional(),
-  ReviewSubSectionCode: yup.string().optional(),
-  INCATYN: yup.string().optional(),
-})
-
-export type EditableFormData = Omit<FormData, 'id'>;
-
-
-const itemField : FieldConfig<EditableFormData>[]=[
-  {
-    name:"IndentNo",
-    label:"Indent No",
-    type:"input",
-    required:false
-  },
-  {
-    name:"VendorCode",
-    label:"Vendor Code",
-    type:"input",
-    required:false
-  },
-  {
-    name:"OrderDate",
-    label:"Order Date",
-    type:"input",
-    required:false
-  },
-  {
-    name:"OrderLineNo",
-    label:"Order Line No",
-    type:"input",
-    required:false
-  },
-  {
-    name:"ItemCode",
-    label:"Item Code",
-    type:"input",
-    required:false
-  },
-  {
-    name:"SectionHead",
-    label:"Section Head",
-    type:"input",
-    required:false
-  },
-  {
-    name:"ItemDesc",
-    label:"Item Description",
-    type:"input",
-    required:false
-  },
-  {
-    name:"CountryCode",
-    label:"Country Code",
-    type:"input",
-    required:false
-  },
-  {
-    name:"ItemDeno",
-    label:"Item Deno",
-    type:"input",
-    required:false
-  },
-  {
-    name:"MonthsShelfLife",
-    label:"Months Shelf Life",
-    type:"input",
-    required:false
-  },
-  {
-    name:"CRPCategory",
-    label:"CRP Category",
-    type:"input",
-    required:false
-  },
-  {
-    name:"VEDCCategory",
-    label:"VEDC Category",
-    type:"input",
-    required:false
-  },
-  {
-    name:"ABCCategory",
-    label:"ABC Category",
-    type:"input",
-    required:false
-  },
-  {
-    name:"DateTimeApproved",
-    label:"Date Time Approved",
-    type:"input",
-    required:false
-  },
-  {
-    name:"ApprovedBy",
-    label:"Approved By",
-    type:"input",
-    required:false
-  },
-  {
-    name:"ReviewSubSectionCode",
-    label:"Review Sub Section Code",
-    type:"input",
-    required:false
-  },
-  {
-    name:"INCATYN",
-    label:"INCATYN",
-    type:"input",
-    required:false
-  }
-]
 const ItemDetail = () => {
   
   const [page, setPage] = useState<number>(1);
@@ -182,16 +30,15 @@ const ItemDetail = () => {
 );
   console.log("isError:", isError, "error:", error);
 
-  const [editingId, setEditingId] = useState<number | null>(null);
+  // const [editingId, setEditingId] = useState<number | null>(null);
 
-  const [editingForm, setEditingForm] = useState<EditableFormData | null>(null);
+  const [editingForm, setEditingForm] = useState<itemDetail | null>(null);
   const [addModal, setAddModal] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<FormData | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<itemDetail | null>(null);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
-  const [updateItem] = useUpdateItemDetailMutation();
   const [deleteItem] = useDeleteItemDetailMutation(); 
-  const[addItem] = useAddItemDetailMutation();
+
 
   // const [file, setFile] = useState<File | null>(null);
 
@@ -230,30 +77,6 @@ const totalRecords = data?.data?.pagination?.totalRecords ?? 0;
   );
 
 
-  const handleSaveEdit = async (updated: EditableFormData) => {
-    if(!editingId){
-      return
-    }
-    try {
-      await updateItem({
-         id: editingId, 
-         data: updated 
-        }).unwrap();
-      toast.success("Updated successfully");
-      setEditingId(null);
-      setEditingForm(null)
-      refetch();
-    } catch (err: unknown) {
-      if(err instanceof Error){
-        console.error(err.message);
-        toast.error(err.message);
-      }else{
-        console.error(err);
-        toast.error("Update failed");
-      }
-    }
-  };
-
 
 const handleDelete = async () => {
   if(!deleteTarget?.id){
@@ -279,64 +102,27 @@ const handleDelete = async () => {
   }
 };
 
-const handleAdd = async (data: EditableFormData) => {
-  try {
-    await addItem(data).unwrap();
-    toast.success("Item Added Successfully");
-    setAddModal(false);
-    refetch();
-  } catch (err: unknown) {
-    if(err instanceof Error){
-      console.error(err.message);
-      toast.error(err.message);
-    }else{
-      console.error(err);
-      toast.error("Add failed");
-    }
-    
-  }
-};
-
   const actions = [
   {
-    label: "Edit",
-    onClick: () => {},
-    // Use FormData here so it matches what the DataTable expects
-    component: (row: FormData) => ( 
-      <button
-        className={`${styles.iconBtn} ${styles.edit}`}
-        title="Edit Item"
-        onClick={() => {
-          setEditingId(row.id);
-          setEditingForm({
-            IndentNo: row.IndentNo,
-            VendorCode: row.VendorCode,
-            OrderDate: row.OrderDate,
-            OrderLineNo: row.OrderLineNo,
-            ItemCode: row.ItemCode,
-            SectionHead: row.SectionHead,
-            ItemDesc: row.ItemDesc,
-            CountryCode: row.CountryCode,
-            ItemDeno: row.ItemDeno,
-            MonthsShelfLife: row.MonthsShelfLife,
-            CRPCategory: row.CRPCategory,
-            VEDCCategory: row.VEDCCategory,
-            ABCCategory: row.ABCCategory,
-            DateTimeApproved: row.DateTimeApproved,
-            ApprovedBy: row.ApprovedBy,
-            ReviewSubSectionCode: row.ReviewSubSectionCode,
-            INCATYN: row.INCATYN,
-          });
-        }}
-      >
-        <FiEdit size={18} />
-      </button>
-    ),
-  },
+        label: "Edit",
+        onClick: () => {},
+
+        component: (row: itemDetail) => (
+          <button
+            className={`${styles.iconBtn} ${styles.edit}`}
+            title="Edit User"
+            onClick={()=>{setEditingForm(row)
+              console.log("row:",row);
+            }}
+          >
+            <FiEdit size={18} />
+          </button>
+        ),
+      },
   {
     label: "Delete",
     onClick: () => {}, // FIXED: Changed 'onclick' to 'onClick'
-    component: (row: FormData) => (
+    component: (row: itemDetail) => (
       <button
         className={`${styles.iconBtn} ${styles.delete}`}
         title="Delete"
@@ -415,49 +201,27 @@ const handleAdd = async (data: EditableFormData) => {
       )}
 
       {/* Edit Modal */}
-      {editingForm && (
-        <Modal<EditableFormData>
-          title="Edit Item"
-          form={editingForm}
-          fields={itemField}
-          schema={itemSchema}
-          onClose={() => {
-            setEditingId(null);
+      {(addModal || editingForm) && (
+        <Modal
+          title={editingForm ? "Edit Item" : "Add Item"}
+          onClose={()=>{
+            setAddModal(false);
             setEditingForm(null);
           }}
-          onSave={handleSaveEdit}
-        />
+        >
+          <Manipulate
+            mode={editingForm ? "edit" : "create"}
+            defaultValues={editingForm || undefined}
+            onSubmitSuccess={()=>{
+              setAddModal(false);
+              setEditingForm(null);
+              refetch();
+            }}
+            />
+          </Modal>
       )}
 
 
-      {addModal && (
-        <Modal<EditableFormData>
-          title="Add New Item"
-          form={{
-            IndentNo: "",
-            VendorCode: "",
-            OrderDate: "",
-            OrderLineNo: 0,
-            ItemCode: "",
-            SectionHead: "",
-            ItemDesc: "",
-            CountryCode:"",
-            ItemDeno:"",
-            MonthsShelfLife:0,
-            CRPCategory:"",
-            VEDCCategory:"",
-            ABCCategory:"",
-            DateTimeApproved:"",
-            ApprovedBy:"",
-            ReviewSubSectionCode:"",
-            INCATYN: "",
-          }}
-          fields={itemField}
-          schema={itemSchema}
-          onClose={() => setAddModal(false)}
-          onSave={handleAdd}
-        />
-      )}
 
      
     </div>
