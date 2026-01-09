@@ -8,7 +8,12 @@ export const pageApi = createApi({
     getPage: builder.query({
       query: () => ({ url: "/pages", method: "GET" }),
     }),
-
+    getTitle: builder.query({
+      query: () => ({ url: "/pages/titles", method: "GET" }),
+    }),
+    getContent: builder.query({
+      query: (title: string) => ({ url: `/pages/content/${title}`, method: "GET" }),
+    }),
     getPageById: builder.query({
       query: (id: string) => ({ url: `/pages/${id}`, method: "GET" }),
     }),
@@ -40,6 +45,8 @@ export const pageApi = createApi({
 
 export const {
   useGetPageQuery,
+  useGetTitleQuery,
+  useLazyGetContentQuery,
   useGetPageByIdQuery,
   useCreatePageMutation,
   useUpdatePageMutation,

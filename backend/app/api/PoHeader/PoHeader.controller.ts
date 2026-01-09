@@ -203,13 +203,14 @@ export const searchPO = async (req: Request, res: Response) => {
 
     const records = await service.searchPO(indentNo, orderDate);
 
-    if (!records || records.length === 0) {
+    if (!records) {
        res.status(404).json({
         success: false,
         message: "No records found matching the search criteria",
       });
     }
     else{
+      console.log("Records found:", records);
       res.json({
       success: true,
       data: records,

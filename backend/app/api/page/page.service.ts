@@ -1,6 +1,7 @@
 import { pool } from "../../common/services/sql.service";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { IPage } from "./page.dto";
+import { query } from "express-validator";
 
 // Create Page
 export const createPage = async (data: {
@@ -100,3 +101,52 @@ export const getAllPages = async () => {
     return [];
   }
 };
+
+
+export const getOnlyTitles = async()=>{
+  try{
+    const query = "SELECT title FROM pages ORDER BY ID ASC";
+    const [rows] = await pool.execute<RowDataPacket[]>(query);
+    console.log(rows);
+    if(!rows.length) {
+      return{
+        success: false,
+        data: []
+      }
+    }
+    else{
+      return{
+        success: true,
+        data: rows.map(row=>row.title)
+      }
+    }
+  }
+  catch(error){
+    console.log(error);
+    return [];
+  }
+}
+
+
+export  const getContent = async(title:string)=>{
+  try{
+    const query = "SELECT content FROM pages WHERE title = ?";
+    const [rows] = await pool.execute<RowDataPacket[]>(query, [title]);
+    if(!rows.length){
+      return {
+        success:false,
+        data:[]
+      }
+    }
+    else{
+      return{
+        success:true,
+        data:rows.map(row=>row.content)
+      }
+    }
+  }
+  catch(err){
+    console.log(err);
+    return null;
+  }
+}

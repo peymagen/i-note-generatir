@@ -263,7 +263,7 @@ export  const addData = async (userId: number, payload: any) => {
 };
 
 
-export const getByIndent = async (indentNo: string) => {
+export const getByIndent = async (indentNo: string, ) => {
   try {
     const [rows]: any = await pool.query(
       "SELECT * FROM PO_DETAILS WHERE indentno = ?",

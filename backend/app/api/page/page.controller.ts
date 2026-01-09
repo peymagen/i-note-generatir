@@ -5,7 +5,11 @@ import {
   getPageById,
   updatePage,
   deletePage,
+  getOnlyTitles,
+  getContent
 } from "./page.service";
+import { RowDataPacket } from "mysql2/promise";
+import { string } from "joi";
 
 // @ts-ignore – for commonjs import libs in TS
 const pdf = require("html-pdf");
@@ -195,4 +199,54 @@ export const exportPageDocxHandler = async (req: Request, res: Response) => {
   });
 
   res.end(docxBuffer);
+};
+
+
+export const getTitle = async(req:Request,res:Response)=>{
+  try{
+    const title = await getOnlyTitles();
+    res.json({
+    success: true,
+    data: title,
+  });
+  }
+  catch(error){
+    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+}
+export const getCont = async (req: Request, res: Response) => {
+  const { title } = req.params;
+  if (!title) {
+     res.status(400).json({ 
+      success: false,
+      message: "Title parameter is required",
+    });
+  }
+
+  try {
+    const content = await getContent(title);
+
+    if (content?.success === false) {
+       res.status(404).json({ 
+        success: false,
+        message: "No content found for the given title",
+      });
+    } 
+    
+   res.json({
+      success: true,
+      data: content?.data,
+    });
+
+  } catch (err) {
+    console.error(err);
+     res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
 };

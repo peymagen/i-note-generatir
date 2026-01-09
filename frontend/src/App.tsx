@@ -17,9 +17,11 @@ import "react-toastify/dist/ReactToastify.css";
 import styles from "./App.module.css";
 import { useSelector } from "react-redux";
 import type { RootState } from "./store/store";
-import PurchaseOrder from "./pages/PurchaseOrder/PurchaseOrder";
+// import PurchaseOrder from "./pages/PurchaseOrder/PurchaseOrder";
 import MoDetail from "./pages/MoDetail/Mo";
 import Collective from "./pages/DataCollective/Collective";
+// import Stepper from "./pages/inote/StepperForm";
+import Inote from "./pages/inote/Inote";
 
 const ProtectedRoute: React.FC = () => {
   const { isAuthenticated, loading } = useSelector(
@@ -54,7 +56,7 @@ const App: React.FC = () => {
               <Route path="po-header" element={<PoHeader />} /> */}
               <Route path="vendor-detail" element={<VendorDetail />} />
               <Route path="mo-detail" element={<MoDetail />} />
-              <Route path="purchase-order" element={<PurchaseOrder />} />
+              <Route path="purchase-order" element={<Inote />} />
               <Route path="data-collective" element={<Collective />} />
             </Route>
           </Route>

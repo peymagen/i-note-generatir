@@ -1,4 +1,4 @@
-import itemDetail from '../store/services/item-details';
+
 export type FormData={
   IndentNo?: string;
   VendorCode?: string;
