@@ -202,19 +202,21 @@ export const searchPO = async (req: Request, res: Response) => {
     console.log("Processed parameters:", { indentNo, orderDate });
 
     const records = await service.searchPO(indentNo, orderDate);
+    
 
-    if (!records) {
-       res.status(404).json({
-        success: false,
-        message: "No records found matching the search criteria",
-      });
-    }
-    else{
+    if(records.success){
       console.log("Records found:", records);
       res.json({
       success: true,
       data: records,
     });
+    }
+    else{
+      console.log("Records found:", records);
+        res.status(200).json({
+        success: false,
+        message: "No records found matching the search criteria",
+      });
     }
      
 

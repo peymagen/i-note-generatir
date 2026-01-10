@@ -56,7 +56,7 @@ const App: React.FC = () => {
               <Route path="po-header" element={<PoHeader />} /> */}
               <Route path="vendor-detail" element={<VendorDetail />} />
               <Route path="mo-detail" element={<MoDetail />} />
-              <Route path="purchase-order" element={<Inote />} />
+              <Route path="i-note" element={<Inote />} />
               <Route path="data-collective" element={<Collective />} />
             </Route>
           </Route>
