@@ -79,6 +79,7 @@ const StepOne: React.FC<StepOneProps> = ({ onNext, initialValues }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.formContainer}>
+      <h4>Basic Details</h4>
       <Input label="Indent No" name="IndentNo" register={register} errors={errors} />
       <Input label="Order Date" name="OrderDate" type="date" register={register} errors={errors} />
 

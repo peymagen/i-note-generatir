@@ -43,6 +43,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
   indentInfo 
 }) => {
   const headerData = indentInfo.header[0];
+  console.log("Header Data in Step Two:", headerData);
 
   const { register, handleSubmit, formState: { errors } } = useForm<formData>({
     resolver: yupResolver(Schema) as unknown as Resolver<formData>, 
@@ -51,21 +52,21 @@ const StepTwo: React.FC<StepTwoProps> = ({
 
   const onSubmit: SubmitHandler<formData> = (data) => {
     onFinish(data); 
-    toast.success("Details saved! Preparing I-Note editor...");
+    toast.success("Preparing I-Note editor...");
   };
 
   return (
     <div className={styles.formContainer}>
-      {headerData && (
+      {/* {headerData && (
         <div className={styles.infoBox}>
           <h4>Inspection Basis</h4>
           <p><strong>Vendor:</strong> {headerData.Name}</p>
           <p><strong>PO No:</strong> {initialValues.IndentNo}</p>
         </div>
-      )}
+      )} */}
 
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
-        <h3 className={styles.stepTitle}>Step 2: Inspection Details</h3>
+        <h3 className={styles.stepTitle}>Inspection Details</h3>
 
         <Input 
           label="Sequence No" 
