@@ -1,6 +1,113 @@
+.stepperFormContainer {
+  max-width: 600px;
+  margin: 0 auto;
+  margin-top: -1.4rem;
+  background: #fff;
+  border-radius: 8px;
+}
+
 .buttonGroup {
   display: flex;
   justify-content: space-between;
   margin-top: 0.5rem;
   gap: 1.5rem;
+}
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin-top: -2rem;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: row;
+  gap: 0.3rem;
+  margin-bottom: 0.9rem;
+}
+
+.stepperWrapper {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px;
+  margin-bottom: 30px;
+  background: #fff;
+}
+
+.stepItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+}
+
+/* State Colors */
+.completed {
+  background-color: #26c281;
+  color: white;
+}
+.active {
+  background-color: #fff;
+  border: 4px solid #007bff;
+  color: #007bff;
+  box-shadow: 0 0 0 2px #e1f0ff;
+}
+.upcoming {
+  background-color: #f3f4f6;
+  border: 2px solid #d1d5db;
+  color: #9ca3af;
+}
+
+.labelWrapper {
+  text-align: center;
+}
+.stepText {
+  display: block;
+  font-size: 10px;
+  color: #9ca3af;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+.labelText {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Connecting Lines */
+.lineWrapper {
+  flex: 1;
+  height: 2px;
+  background-color: #e5e7eb;
+  margin-top: 20px;
+  margin-left: -10px;
+  margin-right: -10px;
+  position: relative;
+}
+
+.line {
+  height: 100%;
+  width: 0;
+  transition: width 0.4s ease;
+}
+.lineCompleted {
+  width: 100%;
+  background-color: #26c281;
+}
+.lineHalf {
+  width: 50%;
+  background-color: #007bff;
 }

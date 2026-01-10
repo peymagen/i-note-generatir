@@ -53,7 +53,8 @@ const StepOne: React.FC<StepOneProps> = ({ onNext, initialValues }) => {
         triggerGetContent(data.template).unwrap()
       ]);
 
-      if (poResponse.success || (poResponse.data && poResponse.data.header)) {
+      console.log("PO Response:", poResponse);
+      if (poResponse.success ) {
         toast.success("Purchase Order and Content loaded!");
         
         const indentData = {
@@ -65,6 +66,7 @@ const StepOne: React.FC<StepOneProps> = ({ onNext, initialValues }) => {
 
         onNext(data, indentData, content); 
       } else {
+        console.error("No PO found:", poResponse);
         toast.error("No Purchase Order found.");
       }
     } catch (err: unknown) {
@@ -77,6 +79,7 @@ const StepOne: React.FC<StepOneProps> = ({ onNext, initialValues }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.formContainer}>
+      <h4>Basic Details</h4>
       <Input label="Indent No" name="IndentNo" register={register} errors={errors} />
       <Input label="Order Date" name="OrderDate" type="date" register={register} errors={errors} />
 

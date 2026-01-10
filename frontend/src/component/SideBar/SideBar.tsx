@@ -19,7 +19,7 @@ const Sidebar: React.FC = () => {
     {label:"Data Collective", path:"data-collective"},
     {label:"Vendor Detail", path:"vendor-detail"},
     {label:"Mo Detail", path:"mo-detail"},
-    {label:"I-Note", path:"inote"},
+    {label:"I-Note", path:"i-note"},
   ];
  
 

@@ -379,9 +379,16 @@ export const searchPO = async (IndentNo?: string, OrderDate?: string) => {
     // 2. Execute Header Query
     const [headerRows]: any = await pool.query(headerQuery, headerParams);
     console.log("Header Rows:", headerRows);
-    // 3. If no header found, return early
+
     if (!headerRows || headerRows.length === 0) {
-      return { header: null, details: [], success: false };
+      console.log("header  found",headerRows)
+      return { 
+        success: false,
+        header: null,
+        details: [], 
+        
+      };
+      console.log("No header found");
     }
 
     // 4. Fetch Details based on the IndentNo found in the Header
@@ -392,11 +399,10 @@ export const searchPO = async (IndentNo?: string, OrderDate?: string) => {
     
     const [detailRows]: any = await pool.query(detailQuery, [foundIndentNo]);
 
-    // 5. Return structured data
     return {
       success: true,
-      header: headerRows[0], // The specific PO Header
-      details: detailRows,    // Array of PO Details (line items)
+      header: headerRows[0], 
+      details: detailRows,    
     };
 
   } catch (error: any) {
