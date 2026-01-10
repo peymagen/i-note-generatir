@@ -113,7 +113,11 @@ const Inote = () => {
       )}
 
       {addModal && (
-        <Modal title="Add I-Note" onClose={() => setAddModal(false)}>
+        <Modal
+          title="Add I-Note"
+          size={"xl"}
+          onClose={() => setAddModal(false)}
+        >
           <StepperForm onComplete={handleStepperComplete} />
         </Modal>
       )}

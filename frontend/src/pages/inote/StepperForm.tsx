@@ -16,6 +16,7 @@ interface StepperFormProps {
 const steps = [
   { label: "Inspection Basis", icon: <Check size={16} /> },
   { label: "Inspection Details", icon: <Lock size={16} /> },
+  { label: "Pproduct Details", icon: <Lock size={16} /> },
 ];
 
 const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
