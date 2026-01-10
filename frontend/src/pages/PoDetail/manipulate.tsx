@@ -1,15 +1,14 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import Input from "../../component/Input/Input2"
+import Input from "../../component/Input/Input2";
 import Button from "../../component/Button/Button";
 import * as yup from "yup";
 import { toast } from "react-toastify";
-import { useUpdatePODataMutation,
+import {
+  useUpdatePODataMutation,
   useAddPoDetailMutation,
 } from "../../store/services/po-details";
-import type{FormData,PoDetailItem} from "../../types/poDetail";
-import { useEffect } from "react";
-
+import type { FormData, PoDetailItem } from "../../types/poDetail";
 
 /* ---------------- TYPES ---------------- */
 
@@ -53,12 +52,8 @@ const Manipulate: React.FC<Props> = ({
     defaultValues,
     context: { mode },
   });
-    const [updatePoDetail] = useUpdatePODataMutation();
-    const [addPoDetail] = useAddPoDetailMutation();
-
-  useEffect(()=>{
-    console.log("Default Values:", defaultValues);
-  })
+  const [updatePoDetail] = useUpdatePODataMutation();
+  const [addPoDetail] = useAddPoDetailMutation();
 
   const onSubmit: SubmitHandler<PoDetailItem> = async (data) => {
     console.log("Form Data Submitted:", data);
@@ -91,160 +86,125 @@ const Manipulate: React.FC<Props> = ({
         const response = await mutation(payload).unwrap();
 
         if (response?.data) {
-          toast.success(mode === "create" ? "Vendor created" : "Vendor updated");
+          toast.success(
+            mode === "create" ? "Vendor created" : "Vendor updated"
+          );
         }
-      } 
-      catch (err) {
+      } catch (err) {
         const error = err as { data?: { message?: string } };
         toast.error(error?.data?.message || "Failed. Please try again.");
       }
 
       onSubmitSuccess();
-    } 
-    catch {
+    } catch {
       console.log("Data ID:", data.id);
       toast.error("Failed");
     }
   };
 
-
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-    <Input
+      <Input
         label="Indent No"
         name="IndentNo"
         register={register}
         errors={errors}
-        
-        
-    />
-     <Input
+      />
+      <Input
         label="Indent No"
         name="IndentNo"
         register={register}
         errors={errors}
         required
-    />
-     <Input
+      />
+      <Input
         label="Vendor`Code"
         name="IndentNo"
         register={register}
         errors={errors}
-        
-        
-    />
-     <Input
+      />
+      <Input
         label="Order Date"
         name="OrderDate"
         register={register}
         errors={errors}
-        
-        
-    />
-     <Input
+      />
+      <Input
         label="Indent No"
         name="IndentNo"
         register={register}
         errors={errors}
-        
-        
-    />
-     <Input
+      />
+      <Input
         label="Order Line No"
         name="OrderLineNo"
         register={register}
         errors={errors}
-        
-        
-    />
-     <Input
+      />
+      <Input
         label="Indent No"
         name="IndentNo"
         register={register}
         errors={errors}
-        
-        
-    />
-     <Input
+      />
+      <Input
         label="Item Code"
         name="ItemCode"
         register={register}
         errors={errors}
-        
-        
-    />
-     <Input
+      />
+      <Input
         label="Consignee Code"
         name="ConsigneeCode"
         register={register}
         errors={errors}
-        
-    />
-     <Input
+      />
+      <Input
         label="Order Line DRB"
         name="OrderLineDRB"
         register={register}
         errors={errors}
-        
-    />
-    
-      <Input
-        label="Specs"
-        name="Specs"
-        register={register}
-        errors={errors}
-        
       />
-      <Input
-        label="Qty"
-        name="Qty"
-        register={register}
-        errors={errors}
-        
-      />
+
+      <Input label="Specs" name="Specs" register={register} errors={errors} />
+      <Input label="Qty" name="Qty" register={register} errors={errors} />
       <Input
         label="UniCost CC"
         name="UniCostCC"
         register={register}
         errors={errors}
-       
       />
-    <Input
+      <Input
         label="PilotSampleDRb"
         name="PilotSampleDRb"
         register={register}
         errors={errors}
-        
-      />  
-       <Input
+      />
+      <Input
         label="MIQPQty"
         name="MIQPQty"
         register={register}
         errors={errors}
-        
-      />  
-       <Input
+      />
+      <Input
         label="PackType"
         name="PackType"
         register={register}
         errors={errors}
-        
-      />  
-       <Input
+      />
+      <Input
         label="StationCode"
         name="StationCode"
         register={register}
         errors={errors}
-        
-      />  
-       <Input
+      />
+      <Input
         label="ReReferencedItemCode"
         name="ReReferencedItemCode"
         register={register}
         errors={errors}
-        
-      />  
-      
+      />
+
       <Button
         type="submit"
         label={isSubmitting ? "Saving..." : "Submit"}
@@ -255,4 +215,3 @@ const Manipulate: React.FC<Props> = ({
 };
 
 export default Manipulate;
-  

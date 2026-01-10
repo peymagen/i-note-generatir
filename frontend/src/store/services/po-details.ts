@@ -6,32 +6,30 @@ export const poDetailApi = createApi({
   baseQuery: baseQueryWithReauth,
 
   endpoints: (builder) => ({
-
     // GET ALL
-   
 
     getAllPOData: builder.query({
-    query: (params?: { page?: number; limit?: number; search?: string }) => {
-      const queryString = new URLSearchParams();
+      query: (params?: { page?: number; limit?: number; search?: string }) => {
+        const queryString = new URLSearchParams();
 
-      if (params?.page !== undefined) {
-        queryString.append('page', String(params.page));
-      }
+        if (params?.page !== undefined) {
+          queryString.append("page", String(params.page));
+        }
 
-      if (params?.limit !== undefined) {
-        queryString.append('limit', String(params.limit));
-      }
+        if (params?.limit !== undefined) {
+          queryString.append("limit", String(params.limit));
+        }
 
-      if (params?.search !== undefined && params.search.trim() !== "") {
-        queryString.append('search', params.search.trim());
-      }
+        if (params?.search !== undefined && params.search.trim() !== "") {
+          queryString.append("search", params.search.trim());
+        }
 
-      return {
-        url: `/po-detail${queryString.toString() ? `?${queryString}` : ''}`,
-        method: "GET",
-      };
-    },
-  }),
+        return {
+          url: `/po-detail${queryString.toString() ? `?${queryString}` : ""}`,
+          method: "GET",
+        };
+      },
+    }),
 
     // GET BY ID
     getPODataById: builder.query({
@@ -63,27 +61,35 @@ export const poDetailApi = createApi({
         body: body,
       }),
     }),
+    // UPDATE BY QtyFullFill
+    updateQtyFullFill: builder.mutation({
+      query: (body) => ({
+        url: `/po-detail/updateQty`,
+        method: "PUT",
+        body: body,
+      }),
+    }),
     deletePoDetail: builder.mutation({
       query: (id: number) => ({
         url: `/po-detail/${id}`,
         method: "DELETE",
       }),
     }),
-        
-    getByIndent: builder.query({ 
+
+    getByIndent: builder.query({
       query: (indentNo: string) => ({
         url: `/po-detail/getByIndent/${indentNo}`,
         method: "GET",
       }),
     }),
 
-    addPoDetail:builder.mutation({
+    addPoDetail: builder.mutation({
       query: (body) => ({
         url: "/po-detail",
         method: "POST",
         body: body,
       }),
-    })
+    }),
   }),
 });
 
@@ -94,6 +100,7 @@ export const {
   useUpdatePODataMutation,
   useAddPoDetailMutation,
   useDeletePoDetailMutation,
+  useUpdateQtyFullFillMutation,
   useLazyGetByIndentQuery,
 } = poDetailApi;
 

@@ -1,10 +1,10 @@
-import { useState } from 'react';
-import { useForm } from 'react-hook-form'; // Import this
-import styles from './Inote.module.css';
-import Button from '../../component/Button/Button'; 
-import Modal from '../../component/Modal/index';   
+import { useState } from "react";
+import { useForm } from "react-hook-form"; // Import this
+import styles from "./Inote.module.css";
+import Button from "../../component/Button/Button";
+import Modal from "../../component/Modal/index";
 import StepperForm from "./StepperForm";
-import RichTextEditor from "../../component/RichEditor/RichEditor"; 
+import RichTextEditor from "../../component/RichEditor/RichEditor";
 import type { StepperState } from "../../types/inote";
 
 // Define a type for the editor form
@@ -17,10 +17,15 @@ const Inote = () => {
   const [showEditor, setShowEditor] = useState<boolean>(false);
 
   // 1. Initialize React Hook Form
-  const { watch, setValue, handleSubmit, formState: { errors } } = useForm<EditorForm>({
+  const {
+    watch,
+    setValue,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<EditorForm>({
     defaultValues: {
-      editorContent: ""
-    }
+      editorContent: "",
+    },
   });
 
   const processTemplate = (html: string, state: StepperState) => {
@@ -30,14 +35,15 @@ const Inote = () => {
     // Financial Year Logic
     const now = new Date();
     const year = now.getFullYear();
-    const financialYear = now.getMonth() >= 3 
-      ? `${year}-${(year + 1).toString().slice(-2)}`
-      : `${year - 1}-${year.toString().slice(-2)}`;
+    const financialYear =
+      now.getMonth() >= 3
+        ? `${year}-${(year + 1).toString().slice(-2)}`
+        : `${year - 1}-${year.toString().slice(-2)}`;
 
     const replacements: Record<string, string> = {
       "{{FINANCIAL_YEAR}}": financialYear,
       "{{INDENT_NO}}": state.user.IndentNo || "N/A",
-      "{{CURRENT_DATE}}": new Date().toLocaleDateString('en-GB'),
+      "{{CURRENT_DATE}}": new Date().toLocaleDateString("en-GB"),
       "{{ORDER_DATE}}": state.user.OrderDate || "N/A",
       "{{CONSIGNEE_CODE}}": state.indentInfo.details[0].ConsigneeCode || "N/A",
       "{{INSPECTION_EVAL_RANGE}}": state.user.InspectionOfferedDate || "N/A",
@@ -54,12 +60,12 @@ const Inote = () => {
 
   const handleStepperComplete = (state: StepperState) => {
     const readyHtml = processTemplate(state.content, state);
-    
+
     // 2. Set the processed HTML into the form state
-    setValue("editorContent", readyHtml); 
-    
+    setValue("editorContent", readyHtml);
+
     setShowEditor(true);
-    setAddModal(false); 
+    setAddModal(false);
   };
 
   const onFinalSubmit = (data: EditorForm) => {
@@ -81,7 +87,10 @@ const Inote = () => {
 
       {/* 3. Render the RichTextEditor instead of dangerouslySetInnerHTML */}
       {showEditor && (
-        <form onSubmit={handleSubmit(onFinalSubmit)} className={styles.editorWrapper}>
+        <form
+          onSubmit={handleSubmit(onFinalSubmit)}
+          className={styles.editorWrapper}
+        >
           <div className={styles.pagePaper}>
             <RichTextEditor<EditorForm>
               label="Edit I-Note Content"
@@ -91,16 +100,24 @@ const Inote = () => {
               errors={errors}
             />
           </div>
-          
+
           <div className={styles.actionButtons}>
             <Button label="Save Final I-Note" type="submit" buttonType="one" />
-            <Button label="Print" onClick={() => window.print()} buttonType="two" />
+            <Button
+              label="Print"
+              onClick={() => window.print()}
+              buttonType="two"
+            />
           </div>
         </form>
       )}
 
       {addModal && (
-        <Modal title="Add New Inspection" onClose={() => setAddModal(false)}>
+        <Modal
+          title="Add New Inspection"
+          size="xl"
+          onClose={() => setAddModal(false)}
+        >
           <StepperForm onComplete={handleStepperComplete} />
         </Modal>
       )}

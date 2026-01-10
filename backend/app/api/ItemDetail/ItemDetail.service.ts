@@ -2,6 +2,7 @@ import xlsx from "xlsx";
 import { pool } from "../../common/services/sql.service";
 import { ItemImportDTO } from "./ItemDetail.dto";
 import { type RowDataPacket, type ResultSetHeader } from "mysql2";
+import { Console } from "console";
 
 const formatDate = (value: any): string | null => {
   if (!value) return null;
@@ -9,7 +10,10 @@ const formatDate = (value: any): string | null => {
   // Case 1: Excel serial number
   if (typeof value === "number") {
     const d = xlsx.SSF.parse_date_code(value);
-    return `${d.y}-${String(d.m).padStart(2, "0")}-${String(d.d).padStart(2, "0")}`;
+    return `${d.y}-${String(d.m).padStart(2, "0")}-${String(d.d).padStart(
+      2,
+      "0"
+    )}`;
   }
 
   // Case 2: String like "03/07/2024 00:00:00"
@@ -82,8 +86,7 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
       ReviewSubSectionCode, INCATYN
     ) VALUES ?
   `;
-
-  await pool.execute<ResultSetHeader>(query, [insertValues]);
+  await pool.query<ResultSetHeader>(query, [insertValues]);
 
   return {
     totalInserted: validatedRows.length,
@@ -115,21 +118,44 @@ export const getDataById = async (id: number) => {
     if (!rows.length) {
       return {
         success: false,
-        message: "Record not found"
+        message: "Record not found",
       };
     }
 
     return {
       success: true,
-      data: rows[0]
+      data: rows[0],
     };
-
   } catch (error: any) {
     console.error("Error in getDataById:", error);
     throw new Error("Failed to fetch Item Detail by ID");
   }
 };
 
+export const getItemByIndentNoAndOrderDate = async (
+  indentNo: string,
+  orderDate: string
+) => {
+  try {
+    const query = `       
+      SELECT *, I.id ItemId, D.id DetailId FROM ITEMS_DETAILS I RIGHT JOIN PO_DETAILS D ON I.ItemCode = D.ItemCode
+      WHERE I.IndentNo = ? 
+      AND I.OrderDate = ? 
+      ORDER BY I.OrderLineNo ASC
+    `;
+    const [rows] = await pool.execute<RowDataPacket[]>(query, [
+      indentNo,
+      orderDate,
+    ]);
+    return {
+      success: true,
+      data: rows,
+    };
+  } catch (error: any) {
+    console.error("Error in getItemByIndentNoAndOrderDate:", error);
+    throw new Error("Failed to fetch Item Details by Indent No and Order Date");
+  }
+};
 
 // export const updateDataById = async (id: number, payload: any) => {
 //   try {
@@ -196,33 +222,32 @@ export const getDataById = async (id: number) => {
 //   }
 // };
 
-
 export const updateDataById = async (id: number, payload: any) => {
   try {
     // Filter out undefined or null values from payload
-    const filteredPayload = Object.entries(payload).reduce((acc, [key, value]) => {
-      if (value !== undefined && value !== null) {
-        acc[key] = value;
-      }
-      return acc;
-    }, {} as Record<string, any>);
+    const filteredPayload = Object.entries(payload).reduce(
+      (acc, [key, value]) => {
+        if (value !== undefined && value !== null) {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {} as Record<string, any>
+    );
 
     if (Object.keys(filteredPayload).length === 0) {
       return {
         success: false,
-        message: "No valid fields to update"
+        message: "No valid fields to update",
       };
     }
 
     // Build dynamic SET clause
     const setClause = Object.keys(filteredPayload)
-      .map(key => `${key} = ?`)
-      .join(', ');
+      .map((key) => `${key} = ?`)
+      .join(", ");
 
-    const values = [
-      ...Object.values(filteredPayload),
-      id
-    ];
+    const values = [...Object.values(filteredPayload), id];
 
     const query = `
       UPDATE ITEMS_DETAILS 
@@ -235,7 +260,7 @@ export const updateDataById = async (id: number, payload: any) => {
     if (result.affectedRows === 0) {
       return {
         success: false,
-        message: "Record not found"
+        message: "Record not found",
       };
     }
 
@@ -248,9 +273,8 @@ export const updateDataById = async (id: number, payload: any) => {
     return {
       success: true,
       message: "Record updated successfully",
-      data: updatedRows[0]
+      data: updatedRows[0],
     };
-
   } catch (error: any) {
     console.error("Error in updateDataById:", error);
     throw new Error("Failed to update PO detail: " + error.message);
@@ -265,20 +289,19 @@ export const deleteDataById = async (id: number) => {
     if ((result as ResultSetHeader).affectedRows === 0) {
       return {
         success: false,
-        message: "Record not found"
+        message: "Record not found",
       };
     }
 
     return {
       success: true,
-      message: "Record deleted successfully"
+      message: "Record deleted successfully",
     };
-
   } catch (error: any) {
     console.error("Error in deleteDataById:", error);
     throw new Error("Failed to delete PO detail: " + error.message);
   }
-}; 
+};
 export const addData = async (userId: number, payload: any) => {
   try {
     const {
@@ -298,11 +321,10 @@ export const addData = async (userId: number, payload: any) => {
       DateTimeApproved,
       ApprovedBy,
       ReviewSubSectionCode,
-      INCATYN
+      INCATYN,
     } = payload;
 
-    const toNull = (v: any) =>
-      v === undefined || v === '' ? null : v;
+    const toNull = (v: any) => (v === undefined || v === "" ? null : v);
 
     const query = `
       INSERT INTO ITEMS_DETAILS (
@@ -328,7 +350,7 @@ export const addData = async (userId: number, payload: any) => {
     `;
 
     const [result] = await pool.execute<ResultSetHeader>(query, [
-      userId,                 
+      userId,
       toNull(IndentNo),
       toNull(ItemDesc),
       toNull(VendorCode),
@@ -353,19 +375,14 @@ export const addData = async (userId: number, payload: any) => {
       data: {
         id: result.insertId,
         userId,
-        ...payload
-      }
+        ...payload,
+      },
     };
-
   } catch (error: any) {
     console.error("Error in addData:", error);
     throw error;
   }
 };
-
-
-
-
 
 // export const getPaginatedData = async (
 //   page: number = 1,
@@ -400,14 +417,12 @@ export const addData = async (userId: number, payload: any) => {
 //       message: "Data fetched successfully"
 //     };
 
-//   } 
+//   }
 //   catch (error: any) {
 //     console.error("Error in getPaginatedData:", error);
 //     throw new Error("Failed to fetch paginated Item Details");
 //   }
 // };
-
-
 
 export const getPaginatedDataWithGlobalSearch = async (
   page?: number,
@@ -415,7 +430,6 @@ export const getPaginatedDataWithGlobalSearch = async (
   search?: string
 ) => {
   try {
-    
     const safePage = page && page > 0 ? page : 1;
     const safeLimit = limit && limit > 0 ? limit : 50;
     const offset = (safePage - 1) * safeLimit;
@@ -425,7 +439,6 @@ export const getPaginatedDataWithGlobalSearch = async (
     let whereClause = "";
     const values: any[] = [];
 
-    
     if (normalizedSearch) {
       const [columnRows]: any = await pool.query(`
         SELECT COLUMN_NAME
@@ -441,14 +454,13 @@ export const getPaginatedDataWithGlobalSearch = async (
       if (searchableColumns.length > 0) {
         whereClause =
           "WHERE " +
-          searchableColumns.map(col => `${col} LIKE ?`).join(" OR ");
+          searchableColumns.map((col) => `${col} LIKE ?`).join(" OR ");
 
         const searchValue = `%${normalizedSearch}%`;
         searchableColumns.forEach(() => values.push(searchValue));
       }
     }
 
-    
     const dataQuery = `
       SELECT *
       FROM items_DETAILS
@@ -463,17 +475,13 @@ export const getPaginatedDataWithGlobalSearch = async (
       offset,
     ]);
 
-    
     const countQuery = `
       SELECT COUNT(*) AS total
       FROM items_DETAILS
       ${whereClause}
     `;
 
-    const [[countResult]]: any = await pool.query(
-      countQuery,
-      values
-    );
+    const [[countResult]]: any = await pool.query(countQuery, values);
 
     const totalRecords = countResult.total;
 

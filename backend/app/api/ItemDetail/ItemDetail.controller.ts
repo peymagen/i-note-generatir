@@ -11,16 +11,10 @@ export const uploadExcel = async (req: Request, res: Response) => {
       });
     }
 
-    console.log("Uploaded file:", {
-      name: req.file.originalname,
-      type: req.file.mimetype,
-      size: req.file.size
-    });
-
     // 2) Check user authentication
     const userId = (req as any).user?.id;
     if (!userId) {
-       res.status(401).json({
+      res.status(401).json({
         success: false,
         message: "Unauthorized user",
       });
@@ -28,23 +22,19 @@ export const uploadExcel = async (req: Request, res: Response) => {
 
     // 3) Process Excel File
     console.log("Starting Excel processing...");
-    
-    const result = await service.importExcel(
-      req.file.buffer,
-      userId
-    );
+
+    const result = await service.importExcel(req.file.buffer, userId);
 
     console.log("Excel processing finished.");
 
     // 4) Send Successful Response
-     res.status(200).json({
+    res.status(200).json({
       success: true,
       ...result,
     });
-
   } catch (error: any) {
     console.error("Excel Upload Error:", error);
-     res.status(500).json({
+    res.status(500).json({
       success: false,
       message: "Excel processing failed",
       error: error?.message || "Unexpected error",
@@ -54,134 +44,159 @@ export const uploadExcel = async (req: Request, res: Response) => {
 
 // export const getAllPOData =  async(req:Request,res:Response)=>{
 //   try {
-      
+
 //       const data = await service.getAllData();
 //        res.status(200).json({ success: true, data });
-//     } 
+//     }
 //     catch (error: any) {
 //        res.status(500).json({ success: false, error: error.message });
 //     }
 // }
 
-export const getPODataById = async(req:Request,res:Response)=>{
+export const getPODataById = async (req: Request, res: Response) => {
   try {
-      const id = Number(req.params.id);
-
-      if (!id) {
-         res.status(400).json({ success: false, message: "Invalid ID" });
-      }
-
-      const record = await service.getDataById(id);
-
-      if (!record) {
-         res.status(404).json({ success: false, message: "Record not found" });
-      }
-
-       res.status(200).json({ success: true, data: record });
-    } 
-    catch (error: any) {
-       res.status(500).json({ success: false, error: error.message });
-    }
-}
-
-export const update = async(req:Request, res:Response)=>{
-  try{
     const id = Number(req.params.id);
-    const payload = req.body
-    if (!id || isNaN(id)) {
-         res.status(400).json({
-           success: false, 
-           message: "Invalid ID" });
-      } 
 
-      if (!payload || Object.keys(payload).length === 0) {
-       res.status(400).json({ 
-        success: false, 
-        message: "No update data provided" 
-      });
+    if (!id) {
+      res.status(400).json({ success: false, message: "Invalid ID" });
     }
 
-      const record = await service.updateDataById(id,payload)
-      if (!record) {
-         res.status(404).json({ 
-          success: false, 
-          message: "Record not found" });
-      }
+    const record = await service.getDataById(id);
 
-       res.status(200).json({ success: true, data: record });
-  }
-  catch (error: any) {
-       res.status(500).json({ 
-        success: false, 
-        message:"Failed to update record",
-        error: error.message });
-    }
-}
-
-export const deleteDataById = async(req:Request,res:Response)=>{
-  try{
-    const id = Number(req.params.id);
-    if (!id || isNaN(id)) {
-         res.status(400).json({
-           success: false, 
-           message: "Invalid ID" });
-      } 
-
-      const record = await service.deleteDataById(id)
-      if (!record) {
-         res.status(404).json({ 
-          success: false, 
-          message: "Record not found" });
-      }
-
-       res.status(200).json({ success: true, data: record });
-  }
-  catch (error: any) {
-       res.status(500).json({ 
-        success: false, 
-        message:"Failed to delete record",
-        error: error.message });
-    }
-}
-
-export const addData = async(req:Request,res:Response)=>{
-   const userId = (req as any).user?.id;
-   console.log("Request body:", req.body);
-    if (!userId) {
-       res.status(401).json({
-        success: false,
-        message: "Unauthorized user",
-      });
-    }
-  try{
-    const payload = req.body
-    if (!payload || Object.keys(payload).length === 0) {
-      res.status(400).json({ 
-        success: false, 
-        message: "No data provided" 
-      });
-    }
-
-    const record = await service.addData(userId,payload)
     if (!record) {
-      res.status(404).json({ 
-        success: false, 
-        message: "Record not found" });
+      res.status(404).json({ success: false, message: "Record not found" });
     }
-    console.log("afteer add",record)
 
-     res.status(200).json({ success: true, data: record });
+    res.status(200).json({ success: true, data: record });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
   }
-  catch (error: any) {
-     res.status(500).json({ 
-      success: false, 
-      message:"Failed to add record",
-      error: error.message });
+};
+
+export const getItemByIndentNo = async (req: Request, res: Response) => {
+  try {
+    const indentNo = req.query.indentNo?.toString() || "";
+    const orderDate = req.query.orderDate?.toString() || "";
+
+    if (!indentNo) {
+      res
+        .status(400)
+        .json({ success: false, message: "Indent No is required" });
     }
-}
+    if (!orderDate) {
+      res
+        .status(400)
+        .json({ success: false, message: "Order Date is required" });
+    }
+    const records = await service.getItemByIndentNoAndOrderDate(
+      indentNo,
+      orderDate
+    );
+    res.status(200).json({ success: true, data: records });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
 
+export const update = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    const payload = req.body;
+    if (!id || isNaN(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid ID",
+      });
+    }
 
+    if (!payload || Object.keys(payload).length === 0) {
+      res.status(400).json({
+        success: false,
+        message: "No update data provided",
+      });
+    }
 
+    const record = await service.updateDataById(id, payload);
+    if (!record) {
+      res.status(404).json({
+        success: false,
+        message: "Record not found",
+      });
+    }
+
+    res.status(200).json({ success: true, data: record });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to update record",
+      error: error.message,
+    });
+  }
+};
+
+export const deleteDataById = async (req: Request, res: Response) => {
+  try {
+    const id = Number(req.params.id);
+    if (!id || isNaN(id)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid ID",
+      });
+    }
+
+    const record = await service.deleteDataById(id);
+    if (!record) {
+      res.status(404).json({
+        success: false,
+        message: "Record not found",
+      });
+    }
+
+    res.status(200).json({ success: true, data: record });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete record",
+      error: error.message,
+    });
+  }
+};
+
+export const addData = async (req: Request, res: Response) => {
+  const userId = (req as any).user?.id;
+  if (!userId) {
+    res.status(401).json({
+      success: false,
+      message: "Unauthorized user",
+    });
+  }
+  try {
+    const payload = req.body;
+    if (!payload || Object.keys(payload).length === 0) {
+      res.status(400).json({
+        success: false,
+        message: "No data provided",
+      });
+    }
+
+    const record = await service.addData(userId, payload);
+    if (!record) {
+      res.status(404).json({
+        success: false,
+        message: "Record not found",
+      });
+    }
+    console.log("afteer add", record);
+
+    res.status(200).json({ success: true, data: record });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to add record",
+      error: error.message,
+    });
+  }
+};
 
 // export const getItemsByPage = async (req: Request, res: Response) => {
 //   const page = Number(req.query.page) || 1;
@@ -193,47 +208,39 @@ export const addData = async(req:Request,res:Response)=>{
 //     if(result.success) {
 //       res.json(result);
 //     } else {
-//       res.status(404).json({ 
-//         success: false, 
-//         message: result.message || "No records found" 
+//       res.status(404).json({
+//         success: false,
+//         message: result.message || "No records found"
 //       });
 //     }
 //   }
 //   catch (error: any) {
-//     res.status(500).json({ 
-//       success: false, 
+//     res.status(500).json({
+//       success: false,
 //       message:"Failed to get records",
 //       error: error.message });
 //   }
 // };
 
-
-
-
-
 export const getItemPageSearch = async (req: Request, res: Response) => {
   try {
-    
     const pageParam = req.query.page;
     const limitParam = req.query.limit;
     const search = req.query.search?.toString();
 
-    
-    const page =
-      pageParam !== undefined ? Number(pageParam) : undefined;
+    const page = pageParam !== undefined ? Number(pageParam) : undefined;
 
-    const limit =
-      limitParam !== undefined ? Number(limitParam) : undefined;
+    const limit = limitParam !== undefined ? Number(limitParam) : undefined;
 
     if (page !== undefined && page <= 0) {
-       res.status(400).json({
+      res.status(400).json({
         success: false,
         message: "Page must be greater than 0",
       });
     }
 
     if (limit !== undefined && limit <= 0) {
-       res.status(400).json({
+      res.status(400).json({
         success: false,
         message: "Limit must be greater than 0",
       });
@@ -245,20 +252,18 @@ export const getItemPageSearch = async (req: Request, res: Response) => {
       search
     );
 
-    if(result.success){
-       res.status(200).json({ data: result });
-    }
-    else{
-       res.status(404).json({ 
-        success: false, 
-        message: result.message || "No records found" 
+    if (result.success) {
+      res.status(200).json({ data: result });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: result.message || "No records found",
       });
     }
-  } 
-  catch (error: any) {
+  } catch (error: any) {
     console.error("Controller error:", error);
 
-     res.status(500).json({
+    res.status(500).json({
       success: false,
       message: error.message || "Failed to fetch item details",
     });
