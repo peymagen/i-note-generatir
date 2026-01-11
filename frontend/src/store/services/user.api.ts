@@ -6,11 +6,15 @@ export const userApi = createApi({
   reducerPath: "userApi",
   baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
-
-     getUser: builder.query({
-      query: () => ({ url: "/users", method: "GET" }),
+    getUser: builder.query({
+      query: ({ limit = 10, offset = 0, search = "" }) => {
+        let url = `users?limit=${limit}&offset=${offset}`;
+        if (search) {
+          url += `&search=${encodeURIComponent(search)}`;
+        }
+        return url;
+      },
     }),
-
     loginUser: builder.mutation({
       query: (body) => ({
         url: "users/login",
@@ -21,50 +25,58 @@ export const userApi = createApi({
         try {
           const { data } = await queryFulfilled;
           if (data?.accessToken && data?.refreshToken) {
-            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem("accessToken", data.accessToken);
             console.log("accessToken", data.accessToken);
-            localStorage.setItem('refreshToken', data.refreshToken);
+            localStorage.setItem("refreshToken", data.refreshToken);
             console.log("refreshToken", data.refreshToken);
-            localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem("user", JSON.stringify(data.user));
             console.log("user", data.user);
-            
+
             // Update Redux state
-            dispatch(setTokens({
-              accessToken: data.accessToken,
-              refreshToken: data.refreshToken,
-              user: data.user
-            }));
+            dispatch(
+              setTokens({
+                accessToken: data.accessToken,
+                refreshToken: data.refreshToken,
+                user: data.user,
+              })
+            );
           }
         } catch (error) {
-          console.error('Login failed:', error);
+          console.error("Login failed:", error);
         }
       },
     }),
-    
 
     registerUser: builder.mutation({
-      query: (body) => ({ url: "/users/createUser", method: "POST", body }),
+      query: (body) => ({ url: "/users/", method: "POST", body }),
+    }),
+
+    updateUser: builder.mutation({
+      query: (body) => ({ url: `/users/${body.id}`, method: "PUT", body }),
     }),
 
     changePassword: builder.mutation({
-      query: (payload: { id: number; currentPassword: string; newPassword: string }) => ({
+      query: (payload: {
+        id: number;
+        currentPassword: string;
+        newPassword: string;
+      }) => ({
         url: `/users/change-password/${payload.id}`,
         method: "PUT",
         body: {
           currentPassword: payload.currentPassword,
           newPassword: payload.newPassword,
-          confirmPassword: payload.newPassword, 
+          confirmPassword: payload.newPassword,
         },
       }),
     }),
 
     toggleUserStatus: builder.mutation({
       query: (id: string) => ({
-        url: `/users/${id}`,
+        url: `/users/toggle/${id}`,
         method: "PATCH",
       }),
     }),
-
 
     deleteUser: builder.mutation({
       query: (id: string) => ({
@@ -75,10 +87,10 @@ export const userApi = createApi({
   }),
 });
 
-
 export const {
   useGetUserQuery,
   useRegisterUserMutation,
+  useUpdateUserMutation,
   useLoginUserMutation,
   useChangePasswordMutation,
   useToggleUserStatusMutation,

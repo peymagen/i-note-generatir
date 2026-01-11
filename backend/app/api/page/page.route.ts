@@ -12,6 +12,9 @@ router
   // list pages
   .get("/", controller.getAllPagesHandler)
 
+  .get("/titles", controller.getTitle)
+  .get("/content/:title", controller.getCont)
+
   // get by id
   .get("/:id", controller.getPageByIdHandler)
 

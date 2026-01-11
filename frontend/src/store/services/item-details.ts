@@ -6,15 +6,52 @@ export const itemDetail = createApi({
   baseQuery: baseQueryWithReauth,
 
   endpoints: (builder) => ({
-
     // ------------------------------
     // GET ALL ITEM DETAILS
     // ------------------------------
     getAllItemDetails: builder.query({
-      query: () => ({
-        url: "/item-detail",
-        method: "GET",
-      }),
+      query: (params?: { page?: number; limit?: number; search?: string }) => {
+        const queryString = new URLSearchParams();
+
+        if (params?.page !== undefined) {
+          queryString.append("page", String(params.page));
+        }
+
+        if (params?.limit !== undefined) {
+          queryString.append("limit", String(params.limit));
+        }
+
+        if (params?.search !== undefined && params.search.trim() !== "") {
+          queryString.append("search", params.search.trim());
+        }
+
+        return {
+          url: `/item-detail${queryString.toString() ? `?${queryString}` : ""}`,
+          method: "GET",
+        };
+      },
+    }),
+
+    // ------------------------------
+    // GET ALL ITEM DETAILS OF SPECIFIC INDENT NO. & ORDER DATE
+    // ------------------------------
+    getItemsIndent: builder.query({
+      query: (params?: { indentNo: string; orderDate?: string }) => {
+        const queryString = new URLSearchParams();
+        if (params?.indentNo !== undefined) {
+          queryString.append("indentNo", params.indentNo);
+        }
+        if (params?.orderDate !== undefined) {
+          queryString.append("orderDate", params.orderDate);
+        }
+
+        return {
+          url: `/item-detail/select${
+            queryString.toString() ? `?${queryString}` : ""
+          }`,
+          method: "GET",
+        };
+      },
     }),
 
     // ------------------------------
@@ -47,10 +84,10 @@ export const itemDetail = createApi({
     // UPDATE ITEM DETAIL BY ID
     // ------------------------------
     updateItemDetail: builder.mutation({
-      query: ({ id, data }: { id: number; data: any }) => ({
-        url: `/item-detail/${id}`,
+      query: (body) => ({
+        url: `/item-detail/${body.id}`,
         method: "PATCH",
-        body: data,
+        body: body,
       }),
     }),
 
@@ -64,21 +101,20 @@ export const itemDetail = createApi({
       }),
     }),
 
-    addItemDetail:builder.mutation({
-      query: (data: any) => ({
+    addItemDetail: builder.mutation({
+      query: (data) => ({
         url: "/item-detail",
         method: "POST",
         body: data,
       }),
-    })
+    }),
   }),
 });
-
-
 
 export const {
   useGetAllItemDetailsQuery,
   useGetItemDetailByIdQuery,
+  useGetItemsIndentQuery,
   useImportItemDetailsMutation,
   useUpdateItemDetailMutation,
   useDeleteItemDetailMutation,

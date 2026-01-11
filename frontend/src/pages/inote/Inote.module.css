@@ -1,0 +1,32 @@
+.container {
+  width: 100%;
+  min-height: 100vh;
+  padding: 2rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  position: relative;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* BUTTON AT TOP RIGHT */
+.btnWrapper {
+  position: absolute;
+  right: 2rem;
+  top: 2rem;
+  z-index: 10;
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+/* PAGE TITLE */
+.pageTitle {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--color-text, #111);
+  margin: 0 auto;
+}

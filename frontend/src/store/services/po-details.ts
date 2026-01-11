@@ -6,13 +6,29 @@ export const poDetailApi = createApi({
   baseQuery: baseQueryWithReauth,
 
   endpoints: (builder) => ({
-
     // GET ALL
+
     getAllPOData: builder.query({
-      query: () => ({
-        url: "/po-detail",
-        method: "GET",
-      }),
+      query: (params?: { page?: number; limit?: number; search?: string }) => {
+        const queryString = new URLSearchParams();
+
+        if (params?.page !== undefined) {
+          queryString.append("page", String(params.page));
+        }
+
+        if (params?.limit !== undefined) {
+          queryString.append("limit", String(params.limit));
+        }
+
+        if (params?.search !== undefined && params.search.trim() !== "") {
+          queryString.append("search", params.search.trim());
+        }
+
+        return {
+          url: `/po-detail${queryString.toString() ? `?${queryString}` : ""}`,
+          method: "GET",
+        };
+      },
     }),
 
     // GET BY ID
@@ -39,10 +55,18 @@ export const poDetailApi = createApi({
 
     // UPDATE BY ID
     updatePOData: builder.mutation({
-      query: ({ id, data }: { id: number; data: any }) => ({
-        url: `/po-detail/${id}`,
+      query: (body) => ({
+        url: `/po-detail/${body.id}`,
         method: "PATCH",
-        body: data,
+        body: body,
+      }),
+    }),
+    // UPDATE BY QtyFullFill
+    updateQtyFullFill: builder.mutation({
+      query: (body) => ({
+        url: `/po-detail/updateQty`,
+        method: "PUT",
+        body: body,
       }),
     }),
     deletePoDetail: builder.mutation({
@@ -51,21 +75,21 @@ export const poDetailApi = createApi({
         method: "DELETE",
       }),
     }),
-        
-    getByIndent: builder.query({ 
+
+    getByIndent: builder.query({
       query: (indentNo: string) => ({
         url: `/po-detail/getByIndent/${indentNo}`,
         method: "GET",
       }),
     }),
 
-    addPoDetail:builder.mutation({
-      query: (data: any) => ({
+    addPoDetail: builder.mutation({
+      query: (body) => ({
         url: "/po-detail",
         method: "POST",
-        body: data,
+        body: body,
       }),
-    })
+    }),
   }),
 });
 
@@ -76,6 +100,7 @@ export const {
   useUpdatePODataMutation,
   useAddPoDetailMutation,
   useDeletePoDetailMutation,
+  useUpdateQtyFullFillMutation,
   useLazyGetByIndentQuery,
 } = poDetailApi;
 

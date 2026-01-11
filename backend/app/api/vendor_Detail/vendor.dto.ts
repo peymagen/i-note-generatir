@@ -4,7 +4,8 @@ export interface vendor{
     FirmName: string;
     FirmAddress:string;
     vendorCode:string;
-    FirmEmailId:string;
+    FirmEmailId?:string;
+    ContactNumber?:string;
     status:boolean;
     updateBy?:number
 }

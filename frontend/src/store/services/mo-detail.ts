@@ -9,11 +9,27 @@ export const moDetailApi = createApi({
 
     // GET ALL
     getAllMoDetail: builder.query({
-      query: () => ({
-        url: "/mo-detail",
+    query: (params?: { page?: number; limit?: number; search?: string }) => {
+      const queryString = new URLSearchParams();
+
+      if (params?.page !== undefined) {
+        queryString.append('page', String(params.page));
+      }
+
+      if (params?.limit !== undefined) {
+        queryString.append('limit', String(params.limit));
+      }
+
+      if (params?.search !== undefined && params.search.trim() !== "") {
+        queryString.append('search', params.search.trim());
+      }
+
+      return {
+        url: `/mo-detail${queryString.toString() ? `?${queryString}` : ''}`,
         method: "GET",
-      }),
-    }),
+      };
+    },
+  }),
     getDatabyCon:builder.query({
       query:(code:string)=>({
           url:`mo-detail/code/${code}`,
@@ -45,10 +61,10 @@ export const moDetailApi = createApi({
 
     // UPDATE BY ID
     updateMoDetail: builder.mutation({
-      query: ({ id, data }: { id: number; data: any }) => ({
-        url: `/mo-detail/${id}`,
+      query: (body) => ({
+        url: `/mo-detail/${body.id}`,
         method: "PATCH",
-        body: data,
+        body: body,
       }),
     }),
     deleteMoDetail: builder.mutation({
@@ -58,20 +74,12 @@ export const moDetailApi = createApi({
       }),
     }),
     addMoDetail: builder.mutation({
-      query: (data: any) => ({
+      query: (data) => ({
         url: "/mo-detail",
         method: "POST",
         body: data,
       }),
     }),
-    // getIndentDate: builder.mutation({
-    //   query: ({ IndentNo, OrderDate }) => ({
-    //     url: `/mo-detail/search?IndentNo=${IndentNo}&OrderDate=${OrderDate}`,
-    //     method: "GET",
-    //   }),
-    // })
-
-    
   }),
 });
 

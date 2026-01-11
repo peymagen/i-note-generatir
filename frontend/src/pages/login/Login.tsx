@@ -38,44 +38,15 @@ const Login = () => {
     mode: "onSubmit",
   });
 
-  // const onSubmit = async (formData: LoginFormValues) => {
-  //   console.log("✅ onSubmit Fired!", formData); 
-  //   try {
-  //     const response = await loginUser(formData).unwrap();
-  //     console.log("✅ API Response:", response); 
-
-  //     if (response?.token) {
-  //       dispatch(
-  //         setTokens({
-  //           accessToken: response.token,
-  //           refreshToken: response.refreshToken || "",
-  //           user: response.user,
-  //         })
-  //       );
-
-  //       toast.success("Login successful!");
-  //       navigate("/dashboard", { replace: true });
-  //     }
-  //   } catch (error: any) {
-  //     console.log("❌ API Error:", error); // Debug Log
-  //     const errorMessage =
-  //       error?.data?.message || "Login failed. Please check your credentials.";
-  //     toast.error(errorMessage);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   if (isAuthenticated) {
-  //     navigate("/dashboard", { replace: true });
-  //   }
-  // }, [isAuthenticated, navigate]);
+  
 
 
   const onSubmit = async (formData: LoginFormValues) => {
     try {
+      console.log(" onSubmit Fired!", formData); 
       const response = await loginUser(formData).unwrap();
       console.log("res",response)
-      console.log("✅ API Response:", response.data.accessToken)
+      console.log(" API Response:", response.data.accessToken)
       if (response?.data?.accessToken) {
         dispatch(setTokens({
           accessToken: response.data.accessToken,
@@ -86,7 +57,7 @@ const Login = () => {
         toast.success('Login successful!');
         navigate('/dashboard', { replace: true });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errorMessage = error?.data?.message || 'Login failed. Please check your credentials.';
       toast.error(errorMessage);
     }

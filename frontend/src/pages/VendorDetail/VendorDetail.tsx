@@ -1,232 +1,195 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { DataTable } from "../../component/DataTable/DataTable"; 
+import { useState, useCallback, useMemo } from "react";
+import { DataTable } from "../../component/DataTable/DataTable";
 import {
   useGetAllVendorQuery,
-  useUpdateVendorMutation,
   useDeleteVendorMutation,
-  useAddVendorMutation,
 } from "../../store/services/vendor-detail";
 import styles from "./VendorDetail.module.css";
 import { toast } from "react-toastify";
 import Button from "../../component/Button/Button";
-import { RxCross2 } from "react-icons/rx";
-import Input from "../../component/Input/Input2"; 
-import { useForm } from "react-hook-form";
+import { stripHtml } from "../../utils/stripHtml";
+import Modal from "../../component/Modal/index";
+import ConfirmDialog from "../../component/ConfirmDialoge";
+import {
+  FiEdit,
+  FiTrash2,
+} from "react-icons/fi";
+import type{VendorItem}from "../../types/vendor"
+import Manipulate from "./Manipulate"
 
-interface ModalProps { 
-  title: string;
-  form: Record<string, any>;
-  onClose: () => void;
-  onSave: (formData: Record<string, any>) => void;
-  fields: string[];
-}
-
-const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave, fields }) => {
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    defaultValues: initialForm
-  });
-
-  const onSubmit = (data: any) => {
-    onSave(data);
-  };
-
-  return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.modalHeader}>
-          <h2>{title}</h2>
-          <RxCross2 className={styles.closeIcon} onClick={onClose} />
-        </div>
-
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {fields.map((field) => (
-            <Input
-              key={field}
-              label={field}
-              name={field}
-              register={register}
-              errors={errors}
-              fullWidth
-            />
-          ))}
-
-          <div className={styles.modalActions}>
-            <Button 
-              type="button" 
-              label="Cancel" 
-              buttonType="three" 
-              onClick={onClose} 
-            />
-            <Button 
-              type="submit" 
-              label="Save" 
-              buttonType="one" 
-            />
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
 
 const VendorDetail = () => {
-  const { data, isLoading, isError, refetch } = useGetAllVendorQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
+  const [page, setPage] = useState(1);
+  const limit = 50;
+  const [search, setSearch] = useState<string>();
 
-  const editableFields = {
-    FirmName: "",
-    FirmAddress: "",
-    vendorCode: "",
-    FirmEmailId: ""
-  };
+  const { data, isLoading, isError,error, refetch } = useGetAllVendorQuery(
+    { page, limit, search },
+    { refetchOnMountOrArgChange: true }
+  );
+  console.log("isError:", isError, "error:", error);
 
-  const [form, setForm] = useState<Record<string, any>>({...editableFields});
-  const [editingRow, setEditingRow] = useState<any>(null);
-  const [editForm, setEditForm] = useState<Record<string, any>>({...editableFields});
-  const [addModal, setAddModal] = useState(false);
   
-  const [updateItem] = useUpdateVendorMutation();
-  const [deleteItem] = useDeleteVendorMutation(); 
-  const [addItem] = useAddVendorMutation();
+  // const [editingId, setEditingId] = useState<number | null>(null);
 
-  const items = data?.data?.data ?? [];
+  const [editingForm, setEditingForm] = useState<VendorItem | null>(null);
+  const [addModal, setAddModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<VendorItem | null>(null);
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  
 
-  useEffect(() => {
-    if (editingRow) {
-      // Only include the fields we want to be editable
-      const editableData = { ...editableFields };
-      Object.keys(editableFields).forEach(key => {
-        editableData[key] = editingRow[key] || "";
-      });
-      setEditForm(editableData);
-    }
-  }, [editingRow]);
+  // const [updateItem] = useUpdateVendorMutation();
+  const [deleteItem] = useDeleteVendorMutation();
+  // const [addItem] = useAddVendorMutation();
+
+  /* ---------------- NORMALIZE API DATA ---------------- */
+
+  const items = useMemo(() => {
+    return (data?.data?.data ?? []).map((item: VendorItem ) => ({
+      ...item,
+    Id: Number(item.Id),
+  }));
+  }, [data]);
+
+  const totalRecords = data?.data?.pagination?.totalRecords ?? 0;
+
+  /* ---------------- FETCH TABLE DATA ---------------- */
 
   const fetchData = useCallback(
-    async (params?: { page: number; search?: string }) => {
-      const page = params?.page ?? 1;
-      const search = params?.search?.toLowerCase() ?? "";
+    async (params?: { page?: number; search?: string }) => {
+      if (params?.search !== undefined && params.search !== search) {
+        setSearch(params.search);
+        setPage(1);
+      }
 
-      const pageSize = 100; 
-
-      // Filter by search
-      let filtered = items;
-      if (search) {
-        filtered = items.filter((item: any) =>
-          Object.values(item).some((v) =>
-            String(v).toLowerCase().includes(search)
-          )
-        );
+      if (params?.page && params.page !== page) {
+        setPage(params.page);
       }
 
       return {
-        data: filtered.slice((page - 1) * pageSize, page * pageSize),
-        total: filtered.length,
+        data: items,
+        total: totalRecords,
       };
     },
-    [items]
+    [items, totalRecords, page, search]
   );
 
-  const handleSaveEdit = async (updated: any) => {
-    try {
-      await updateItem({ id: editingRow.id, data: updated }).unwrap();
-      toast.success("Updated successfully");
-      setEditingRow(null);
-      refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Update failed");
+  /* ---------------- UPDATE ---------------- */
+
+  
+
+  /* ---------------- DELETE ---------------- */
+
+  const handleDelete = async () => {
+    if(!deleteTarget?.Id){
+      toast.error("Invalid vendor ID");
+      return;
     }
+    setLoadingAction(deleteTarget.Id.toString());
+    await deleteItem(deleteTarget.Id).unwrap();
+    toast.success("Deleted successfully");
+    setLoadingAction(null);
+    setDeleteTarget(null);
+    refetch();
   };
 
-  const handleDelete = async (row: any) => {
-    try {
-      const id = row.id || row.ID || row.Id;
-      if (!id) {
-        throw new Error('No ID found in row data');
-      }
-      await deleteItem(id).unwrap();
-      toast.success("Deleted successfully");
-      refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || err.message || "Delete failed");
-    }
-  };
 
-  const handleAdd = async (data: any) => {
-    try {
-      await addItem(data).unwrap();
-      toast.success("Item Added Successfully");
-      setAddModal(false);
-      setForm({...editableFields}); // Reset form
-      refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Add failed");
-    }
-  };
+   const actions = [
+      {
+        label: "Edit",
+        onClick: () => {},
 
-  const handleAddClick = () => {
-    setForm({...editableFields});
-    setAddModal(true);
-  };
-
-  if (isLoading) return <div className={styles.loader}>Loading items...</div>;
-  if (isError) return <div className={styles.error}>Error loading items</div>;
-
+        component: (row: VendorItem) => (
+          <button
+            className={`${styles.iconBtn} ${styles.edit}`}
+            title="Edit User"
+            onClick={()=>{setEditingForm(row)
+              console.log("row:",row);
+            }}
+          >
+            <FiEdit size={18} />
+          </button>
+        ),
+      },
+      {
+        label: "Delete",
+        onClick: () => {},
+        component: (row: VendorItem) => (
+          <button
+            className={`${styles.iconBtn} ${styles.delete}`} 
+            title="Delete"
+            onClick={() => setDeleteTarget(row)}
+          >
+            <FiTrash2 size={18} />
+          </button>
+        ),
+      },
+    ]
+  
+    const columns = [
+          { label: "Id", accessor: "Id" },
+          { label: "Firm Name", accessor: "FirmName"},
+          { label: "Firm Address", accessor: "FirmAddress", render: (row:VendorItem) => stripHtml(row.FirmAddress),},
+          { label: "Vendor Code", accessor: "vendorCode"},
+          { label: "Email", accessor: "FirmEmailId"},
+          {label:"Contact Number", accessor:"ContactNumber"}
+        ]
+ 
   return (
-    <div className={styles.container}>
+      <div className={styles.container}>
       
-      <div className={styles.btnWrapper}>
-        <Button
-          label="ADD"
-          buttonType="one"
-          onClick={handleAddClick}
-        />
-      </div>
-<h1 className={styles.pageTitle}>Vendor Detail</h1>
-      <DataTable
+        <div className={styles.btnWrapper}>
+          <Button
+            label="ADD"
+            buttonType="one"
+            onClick={() => setAddModal(true) 
+            }
+          />
+        </div> 
+      <h1 className={styles.pageTitle}>Vendor Detail</h1>
+      <div className={styles.tableBox}>
+        <DataTable<VendorItem & { [x: string]: unknown }>
         fetchData={fetchData}
-        columns={[
-          {label:"Id",accessor:"id"},
-          { label: "Firm Name", accessor: "FirmName" },
-          { label: "Firm Address", accessor: "FirmAddress" },
-          { label: "Vendor Code", accessor: "vendorCode" },
-          { label: "Email", accessor: "FirmEmailId" },
-        ]}
-        actions={[
-          {
-            label: "Edit",
-            buttonType: "one",
-            onClick: (row: any) => setEditingRow(row)
-          },
-          {
-            label: "Delete",
-            buttonType: "one",
-            onClick: handleDelete
-          }
-        ]}
+        columns={columns}
+        actions={actions}
         loading={isLoading}
+        isSearch={true}
+        isExport={true}
+        isNavigate={true}
       />
+      </div>
 
-      {editingRow && (
+      {deleteTarget && (
+          <ConfirmDialog
+            title="Delete Item"
+            message={`Are you sure you want to delete ${deleteTarget.FirmName}? This action cannot be undone.`}
+            onCancel={() => setDeleteTarget(null)}
+            onConfirm={handleDelete}
+            loading={loadingAction === deleteTarget.Id?.toString()}
+          />
+        )}
+
+      {(addModal || editingForm) && (
         <Modal
-          title="Edit Vendor"
-          form={editForm}
-          onClose={() => setEditingRow(null)}
-          onSave={handleSaveEdit}
-          fields={Object.keys(editableFields)}
-        />
+          title={editingForm ? "Edit Vendor" : "Add Vendor"}
+          onClose={()=>{
+            setAddModal(false);
+            setEditingForm(null);
+          }}
+        >
+          <Manipulate
+            mode={editingForm ? "edit" : "create"}
+            defaultValues={editingForm || undefined}
+            onSubmitSuccess={()=>{
+              setAddModal(false);
+              setEditingForm(null);
+              refetch();
+            }}
+            />
+          </Modal>
       )}
 
-      {addModal && (
-        <Modal
-          title="Add New Vendor"
-          form={form}
-          onClose={() => setAddModal(false)}
-          onSave={handleAdd}
-          fields={Object.keys(editableFields)}
-        />
-      )}
+     
     </div>
   );
 };

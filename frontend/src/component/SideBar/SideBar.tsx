@@ -15,15 +15,11 @@ const Sidebar: React.FC = () => {
   const menuItems = [
     { label: "Dashboard", path: "dashboard" },
     { label: "Users", path: "manage-users" },
-    { label: "Change Password", path: "change-password" },
     { label: "Template Management", path: "manage-template" },
-    {label:"Item Detail", path:"item-detail"},
-    {label:"Po Detail",path:"po-detail"},
-    {label:"Po Header",path:"po-header"},
+    {label:"Data Collective", path:"data-collective"},
     {label:"Vendor Detail", path:"vendor-detail"},
     {label:"Mo Detail", path:"mo-detail"},
-    {label:"Purchase Order" , path:"purchase-order"},
-    {label:"Page", path:"page"}
+    {label:"I-Note", path:"i-note"},
   ];
  
 

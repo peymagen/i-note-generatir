@@ -1,276 +1,142 @@
-import React, { useState, useCallback,useEffect } from "react";
+import  { useState, useCallback, useMemo } from "react";
 import { DataTable } from "../../component/DataTable/DataTable"; 
 import {
   useGetAllPOHeaderQuery,
-  useImportPOHeaderMutation,
-  useUpdatePOHeaderMutation,
-  useAddPoHeaderMutation,
   useDeletePoHeaderMutation
 } from "../../store/services/po-header";
 import styles from "./PoHeader.module.css";
 import { toast } from "react-toastify";
-import Button from "../../component/Button/Button";
-import { RxCross2 } from "react-icons/rx";
-import Input from "../../component/Input/Input2"; 
-import { useForm } from "react-hook-form";
+import Button from "../../component/Button/Button"; 
+import Modal from "../../component/Modal/index";
+import ConfirmDialog from "../../component/ConfirmDialoge";
+import {
+  FiEdit,
+  FiTrash2,
+} from "react-icons/fi";
+import type{PoHeaderItem} from "../../types/poHeader"
+import Manipulate from "./Manipulate"
 
-
-interface ModalProps {
-  title: string;
-  form: Record<string, any>;
-  onClose: () => void;
-  onSave: (formData: Record<string, any>) => void;
-}
-
-const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave }) => {
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    defaultValues: initialForm
-  });
-
-  const onSubmit = (data: any) => {
-    onSave(data);
-  };
-
-  return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.modalHeader}>
-          <h2>{title}</h2>
-          <RxCross2 className={styles.closeIcon} onClick={onClose} />
-        </div>
-
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {Object.keys(initialForm).map((field) => (
-            <Input
-              key={field}
-              label={field}
-              name={field}
-              register={register}
-              errors={errors}
-              fullWidth
-            />
-          ))}
-
-          <div className={styles.modalActions}>
-            <Button 
-              type="button" 
-              label="Cancel" 
-              buttonType="three" 
-              onClick={onClose} 
-            />
-            <Button 
-              type="submit" 
-              label="Save" 
-              buttonType="one" 
-            />
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-
-
-// ------------------------------
-// MAIN PAGE
-// ------------------------------
 const PoDetail = () => {
-  const { data, isLoading, isError, refetch } = useGetAllPOHeaderQuery(undefined, {
-    refetchOnMountOrArgChange: true,
-  });
 
+    const [page, setPage] = useState<number | undefined>(undefined);
+    const limit = 50;
+    const [search, setSearch] = useState<string | undefined>(undefined);
   
-  const [form, setForm] = useState<Record<string, any>>({
-      IndentNo:"",
-      VendorCode:"",
-      OrderDate:"",
-      ValueRs:"",
-      InspectingAgencyType:"",
-      InspectorCode:"",
-      InspectionSiteCode:"",
-      Remarks:"",
-      QuoteKey:"",
-      SelectedQuoteDate:"",
-      DateTimeApproved:"",
-      ApprovedBy:"",
-      TypeClosing:"",
-      DateCloded:"",
-      ClosedBy:"",
-      PackingInstruction:"",
-      DespatchInstruction:"",
-      InspectionInstruction:"",
-      StationCode:"",
-      Remarks1:"",
-      Name:"",
-      City:"",
-      State:""
-  });
-const [editingRow, setEditingRow] = useState<any>(null);
-  const [editForm, setEditForm] = useState<Record<string, any>>({});
-  useEffect(() => {
-    if (editingRow) {
-      setEditForm(editingRow);
+    const {data, isLoading, isError, error, refetch} = useGetAllPOHeaderQuery(
+    { page, limit ,search},
+    {
+      refetchOnMountOrArgChange: true,
     }
-  }, [editingRow]);
+  );
+    console.log("isError:", isError, "error:", error);
+  // const [editingId, setEditingId] = useState<number | null>(null);
 
-
-  const [importExcel] = useImportPOHeaderMutation();
-  const [updateItem] = useUpdatePOHeaderMutation();
-  const [deleteItem] = useDeletePoHeaderMutation(); 
-  const[addItem] = useAddPoHeaderMutation();
-
-  
+  const [editingForm, setEditingForm] = useState<PoHeaderItem | null>(null);
   const [addModal, setAddModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<PoHeaderItem | null>(null);
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
-  const [file, setFile] = useState<File | null>(null);
+
+  const [deleteItem] = useDeletePoHeaderMutation(); 
+
+
+
+  // const [file, setFile] = useState<File | null>(null);
 
   // Backend nested response => actual items
-  const items = data?.data?.data ?? [];
+  // const items = data?.data?.data ?? [];
+  const items = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
+  const pagination = data?.data?.pagination;
+ const totalRecords = data?.data?.pagination?.totalRecords ?? 0;
+  const totalPages = pagination?.totalPages ?? 1;
+
+  console.log("Items:", items);
+  console.log("Pagination:", pagination);
+  console.log("Total Records:", totalRecords);
+  console.log("Total Pages:", totalPages)
  
   // --------------------------                
   // FETCH DATA FOR DataTable (DataTable handles pagination!)
   // --------- -----------------
   const fetchData = useCallback(
-    async (params?: { page: number; search?: string }) => {
-      const page = params?.page ?? 1;
-      const search = params?.search?.toLowerCase() ?? "";
+      async (params?: { page?: number; search?: string }) => {
+        if (params?.search !== undefined && params.search !== search) {
+          setSearch(params.search);
+          setPage(1);
+        }
+  
+        if (params?.page && params.page !== page) {
+          setPage(params.page);
+        }
+  
+        return {
+          data: items,
+          total: totalRecords,
+        };
+      },
+      [items, totalRecords, page, search]
+    );
 
-      const pageSize = 100; // rows per page
 
-      // Filter by search
-      let filtered = items;
-      if (search) {
-        filtered = items.filter((item: any) =>
-          Object.values(item).some((v) =>
-            String(v).toLowerCase().includes(search)
-          )
-        );
-      }
 
-      // Slice according to page
-      const start = (page - 1) * pageSize;
-      const end = start + pageSize;
-
-      return {
-        data: filtered.slice(start, end),
-        total: filtered.length,
-      };
-    },
-    [items]
-  );
-
-  // --------------------------
-  // EDIT SAVE HANDLER
-  // --------------------------
-  const handleSaveEdit = async (updated: any) => {
-    try {
-      await updateItem({ id: updated.id, data: updated }).unwrap();
-      toast.success("Updated successfully");
-      setEditingRow(null);
-      refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Update failed");
+const handleDelete = async () => {
+  if(!deleteTarget?.id){
+      toast.error("Invalid error")
+      return
     }
-  };
-
-  // --------------------------
-  // IMPORT EXCEL HANDLER
-  // --------------------------
- const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const selectedFile = e.target.files?.[0];
-
-  if (!selectedFile) return;
-
-  setFile(selectedFile);
-
   try {
-    await importExcel(selectedFile).unwrap();
-    toast.success("Excel imported successfully!");
-    refetch();
-  } catch (err) {
-    toast.error("Failed to import Excel!");
-  }
-};
-
-const handleDelete = async (row: any) => {
-  try {
-    // Extract the ID from the row object
-    const id = row.id || row.ID || row.Id; // Check common ID field names
-    if (!id) {
-      throw new Error('No ID found in row data');
-    }
+   
+    const id = Number(deleteTarget.id);
     await deleteItem(id).unwrap();
     toast.success("Deleted successfully");
+    setLoadingAction(null)
+    setDeleteTarget(null)
     refetch();
-  } catch (err: any) {
-    toast.error(err?.data?.message || err.message || "Delete failed");
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error(err.message);
+      toast.error(err.message);
+    } else {
+      console.error(err);
+      toast.error("Delete failed");
+    }
   }
 };
 
-const handleAdd = async (data: any) => {
-  try {
-    await addItem(data).unwrap();
-    toast.success("Item Added Successfully");
-    setAddModal(false);
-    refetch();
-  } catch (err: any) {
-    toast.error(err?.data?.message || "Add failed");
-  }
-};
 
+  const actions = [
+    {
+        label: "Edit",
+        onClick: () => {},
 
-  if (isLoading) return <div className={styles.loader}>Loading items...</div>;
-  if (isError) return <div className={styles.error}>Error loading items</div>;
-
-  return (
-    <div className={styles.container}>
-
-      {/* Import Excel */}
-      <div className={styles.btnWrapper}>
-         <Button
-            label="Add"
-            buttonType= "three"
-            onClick={() => {console.log("clicked")
-            setAddModal(true)}}
-          />
-        <input
-          type="file"
-          id="excel-upload"
-          accept=".xlsx,.xls"
-          onChange={handleFileChange}
-          style={{ display: 'none' }}
-        />
-        <Button
-          label="Import"
-          buttonType="three"
-          onClick={() => document.getElementById('excel-upload')?.click()}
-          loading={false}
-        />
-
-      </div>
-
-      {/* Title */}
-      <h1 className={styles.pageTitle}>PO Header</h1>
-
-      {/* Data Table */}
-       <div className={styles.tableWrapper}>
-        <DataTable
-          fetchData={fetchData}
-          loading={isLoading}
-          isSearch={true}
-          // addButton={{
-          //   label: "Add Item",
-          //   buttonType: "one",
-          //   onClick: () => {console.log("clicked")
-          //     setAddModal(true)},
-          // }}
-    
-
-          isExport={true}
-          isNavigate={true}  
-          columns={[
-            { label: "ID", accessor: "id" },
+        component: (row: PoHeaderItem) => (
+          <button
+            className={`${styles.iconBtn} ${styles.edit}`}
+            title="Edit User"
+            onClick={()=>{setEditingForm(row)
+              console.log("row:",row);
+            }}
+          >
+            <FiEdit size={18} />
+          </button>
+        ),
+      },
+    {
+      label: "Delete",
+      onClick: () => {}, 
+      component: (row: PoHeaderItem) => (
+        <button
+          className={`${styles.iconBtn} ${styles.delete}`}
+          title="Delete"
+          onClick={() => setDeleteTarget(row)}
+        >
+          <FiTrash2 size={18} />
+        </button>
+      ),
+    },
+  ];
+  const columns = [
+    { label: "ID", accessor: "id" },
             { label: "User ID", accessor: "userId" },
             { label: "Indent No", accessor: "IndentNo" },
             { label: "Vendor Code", accessor: "VendorCode" },
@@ -295,61 +161,69 @@ const handleAdd = async (data: any) => {
             {label:"City",accessor:"City"},
             {label:"State",accessor:"State"}
 
-          ]}
-          // actions={[
-          //   {
-          //     label: "Edit",
-          //     onClick: (row) => setEditingRow(row),
-          //   },
-          //   {
-          //     label: "Delete",
-          //     onClick: handleDelete,
-          //   },
-            
-             
-          // ]}
-          actions={[
-          {
-            label: "Edit",
-            buttonType: "one",
-            onClick: (row) => setEditingRow(row)
+  ]
+  return (
+    <div className={styles.container}>
 
-          },
-          {
-            label: "Delete",
-            buttonType: "three",
-            onClick: async (row) => {
-              if (window.confirm('Are you sure you want to delete this item?')) {
-                await handleDelete(row);
-              }
-            }
-          }
-        ]}
+      {/* Import Excel */}
+      <div className={styles.btnWrapper}>
+         <Button
+            label="Add"
+            buttonType= "three"
+            onClick={() => {console.log("clicked")
+            setAddModal(true)}}
+          />
+
+      </div>
+
+      {/* Title */}
+      <h1 className={styles.pageTitle}>PO Header</h1>
+
+      {/* Data Table */}
+       <div className={styles.tableWrapper}>
+        <DataTable
+          fetchData={fetchData}
+          loading={isLoading}
+          isSearch={true}
+          isExport={true}
+          isNavigate={true}  
+          columns={columns}
+          actions={actions}
         />
       </div>
 
+      {deleteTarget && (
+              <ConfirmDialog
+                title="Delete Item"
+                message={`Are you sure you want to delete ${deleteTarget.IndentNo}? This action cannot be undone.`}
+                onCancel={() => setDeleteTarget(null)}
+                onConfirm={handleDelete}
+                loading={loadingAction === deleteTarget.id?.toString()}
+              />
+            )}
+
       {/* Edit Modal */}
-      {editingRow && (
-        <Modal
-          title="Edit Item"
-          form={editForm}
-          onClose={() => setEditingRow(null)}
-          onSave={handleSaveEdit}
-        />
-      )}
-
-      {addModal && (
-        <Modal
-          title="Add New Item"
-          form={form}
-          onClose={() => setAddModal(false)}
-          onSave={(data) => {
-            handleAdd(data);
+      {(editingForm || addModal) && (
+          <Modal
+          title={editingForm ? "Edit PoHeader" : "Add PoHeader"}
+          onClose={()=>{
             setAddModal(false);
+            setEditingForm(null);
           }}
-        />
+        >
+          <Manipulate
+            mode={editingForm ? "edit" : "create"}
+            defaultValues={editingForm || undefined}
+            onSubmitSuccess={()=>{
+              setAddModal(false);
+              setEditingForm(null);
+              refetch();
+            }}
+            />
+          </Modal>
       )}
 
+      
      
     </div>
   );

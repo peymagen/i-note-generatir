@@ -60,18 +60,18 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
   };
 };
 
-export const getAllData = async () => {
-  try {
-    const [rows] = await pool.execute<ResultSetHeader>("SELECT * FROM MO_DETAILS ORDER BY id ASC");
-    return {
-      success: true,
-      data: rows
-    };
-  } catch (error: any) {
-    console.error("Error in getAllData:", error);
-    throw new Error("Failed to fetch Item Details");
-  }
-};
+// export const getAllData = async () => {
+//   try {
+//     const [rows] = await pool.execute<ResultSetHeader>("SELECT * FROM MO_DETAILS ORDER BY id ASC");
+//     return {
+//       success: true,
+//       data: rows
+//     };
+//   } catch (error: any) {
+//     console.error("Error in getAllData:", error);
+//     throw new Error("Failed to fetch Item Details");
+//   }
+// };
 
 export const getDataById = async (id: number) => {
   try {
@@ -189,7 +189,7 @@ export const deleteDataById = async (id: number) => {
 export  const addData = async (userId: number, payload: any) => {
   try {
     const [result]: any = await pool.query(
-      "INSERT INTO MO_DETAILS (userId, MoAddress, MoCPRO) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO MO_DETAILS (userId, MoAddress, MoCPRO) VALUES (?, ?, ?)",
       [
         userId,
         payload.MoAddress,
@@ -248,3 +248,92 @@ export const getDatabyCon = async(consignee: string) => {
     };
   }
 }
+
+
+
+
+
+export const getPaginatedDataWithGlobalSearch = async (
+  page?: number,
+  limit?: number,
+  search?: string
+) => {
+  try {
+    
+    const safePage = page && page > 0 ? page : 1;
+    const safeLimit = limit && limit > 0 ? limit : 50;
+    const offset = (safePage - 1) * safeLimit;
+
+    const normalizedSearch = search?.trim();
+
+    let whereClause = "";
+    const values: any[] = [];
+
+    
+    if (normalizedSearch) {
+      const [columnRows]: any = await pool.query(`
+        SELECT COLUMN_NAME
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_NAME = 'MO_DETAILS'
+          AND DATA_TYPE IN ('varchar', 'text', 'char')
+      `);
+
+      const searchableColumns: string[] = columnRows.map(
+        (c: any) => c.COLUMN_NAME
+      );
+
+      if (searchableColumns.length > 0) {
+        whereClause =
+          "WHERE " +
+          searchableColumns.map(col => `${col} LIKE ?`).join(" OR ");
+
+        const searchValue = `%${normalizedSearch}%`;
+        searchableColumns.forEach(() => values.push(searchValue));
+      }
+    }
+
+    
+    const dataQuery = `
+      SELECT *
+      FROM MO_DETAILS
+      ${whereClause}
+      ORDER BY id ASC
+      LIMIT ? OFFSET ?
+    `;
+
+    const [rows]: any = await pool.query(dataQuery, [
+      ...values,
+      safeLimit,
+      offset,
+    ]);
+
+    
+    const countQuery = `
+      SELECT COUNT(*) AS total
+      FROM MO_DETAILS
+      ${whereClause}
+    `;
+
+    const [[countResult]]: any = await pool.query(
+      countQuery,
+      values
+    );
+
+    const totalRecords = countResult.total;
+
+    return {
+      success: true,
+      data: rows,
+      pagination: {
+        page: safePage,
+        limit: safeLimit,
+        totalRecords,
+        totalPages: Math.ceil(totalRecords / safeLimit),
+      },
+      message: "Data fetched successfully",
+    };
+  } catch (error: any) {
+    console.error("Error in getPaginatedDataWithGlobalSearch:", error);
+    throw new Error("Failed to fetch data");
+  }
+};

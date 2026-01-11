@@ -1,218 +1,164 @@
-import React, { useState, useCallback,useEffect } from "react";
+import { useState, useCallback,useMemo } from "react";
 import { DataTable } from "../../component/DataTable/DataTable"; 
 import {
   useGetAllItemDetailsQuery,
-  useImportItemDetailsMutation,
-  useUpdateItemDetailMutation,
   useDeleteItemDetailMutation,
-  useAddItemDetailMutation,
 } from "../../store/services/item-details";
 import styles from "./ItemDetail.module.css";
 import { toast } from "react-toastify";
 import Button from "../../component/Button/Button";
-import { RxCross2 } from "react-icons/rx";
-import Input from "../../component/Input/Input2"; 
-import { useForm } from "react-hook-form";
+import Modal from "../../component/Modal/index"
+import ConfirmDialog from "../../component/ConfirmDialoge";
+import {
+  FiEdit,
+  FiTrash2,
+} from "react-icons/fi";
+import type{itemDetail} from "../../types/itemDetail"
+import Manipulate from "./Manipulate";
 
-
-
-interface ModalProps {
-  title: string;
-  form: Record<string, any>;
-  setForm: React.Dispatch<React.SetStateAction<Record<string, any>>>;
-  onClose: () => void;
-  onSave: (formData: Record<string, any>) => void;
-}
-const Modal: React.FC<ModalProps> = ({ title, form: initialForm, onClose, onSave }) => {
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    defaultValues: initialForm
-  });
-
-  const onSubmit = (data: any) => {
-    onSave(data);
-  };
-
-  return (
-    <div className={styles.modalOverlay} onClick={onClose}>
-      <div className={styles.modalBox} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.modalHeader}>
-          <h2>{title}</h2>
-          <RxCross2 className={styles.closeIcon} onClick={onClose} />
-        </div>
-
-        <form onSubmit={handleSubmit(onSubmit)}>
-          {Object.keys(initialForm).map((field) => (
-            <Input
-              key={field}
-              label={field}
-              name={field}
-              register={register}
-              errors={errors}
-              fullWidth
-            />
-          ))}
-
-          <div className={styles.modalActions}>
-            <Button 
-              type="button" 
-              label="Cancel" 
-              buttonType="three" 
-              onClick={onClose} 
-            />
-            <Button 
-              type="submit" 
-              label="Save" 
-              buttonType="one" 
-            />
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-
-// ------------------------------
-// MAIN PAGE
-// ------------------------------
 const ItemDetail = () => {
-  const { data, isLoading, isError, refetch } = useGetAllItemDetailsQuery(undefined, {
+  
+  const [page, setPage] = useState<number>(1);
+  const limit = 50;
+  const [search, setSearch] = useState<string | undefined>(undefined);
+
+  const {data, isLoading, isError,error, refetch} = useGetAllItemDetailsQuery(
+  { page, limit ,search},
+  {
     refetchOnMountOrArgChange: true,
-  });
+  }
+);
+  console.log("isError:", isError, "error:", error);
 
-  
-const [form, setForm] = useState<Record<string, any>>({
-  IndentNo: "",
-  VendorCode: "",
-  OrderDate: "",
-  ItemDesc: "",
-  OrderLineNo: "",
-  ItemCode: "",
-  SectionHead: "",
-  DescriptionL: "",
-  CountryCode: "",
-  ItemDeno: "",
-  MonthsShelfLife: "",
-  CRPCategory: "",
-  VEDCCategory: "",
-  ABCCategory: "",
-});
-const [editingRow, setEditingRow] = useState<any>(null);
-  const [editForm, setEditForm] = useState<Record<string, any>>({});
-  useEffect(() => {
-    if (editingRow) {
-      setEditForm(editingRow);
-    }
-  }, [editingRow]);
+  // const [editingId, setEditingId] = useState<number | null>(null);
 
-
-  const [importExcel] = useImportItemDetailsMutation();
-  const [updateItem] = useUpdateItemDetailMutation();
-  const [deleteItem] = useDeleteItemDetailMutation(); 
-  const[addItem] = useAddItemDetailMutation();
-
-  
+  const [editingForm, setEditingForm] = useState<itemDetail | null>(null);
   const [addModal, setAddModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<itemDetail | null>(null);
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
-  const [file, setFile] = useState<File | null>(null);
+  const [deleteItem] = useDeleteItemDetailMutation(); 
 
-  // Backend nested response => actual items
-  const items = data?.data?.data ?? [];
+
+  // const [file, setFile] = useState<File | null>(null);
+
+  const items = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
+  const pagination = data?.data?.pagination;
+const totalRecords = data?.data?.pagination?.totalRecords ?? 0;
+  const totalPages = pagination?.totalPages ?? 1;
+
+  console.log("Items:", items);
+  console.log("Pagination:", pagination);
+  console.log("Total Records:", totalRecords);
+  console.log("Total Pages:", totalPages)
  
   // --------------------------                
   // FETCH DATA FOR DataTable (DataTable handles pagination!)
   // --------------------------
+
+
   const fetchData = useCallback(
-    async (params?: { page: number; search?: string }) => {
-      const page = params?.page ?? 1;
-      const search = params?.search?.toLowerCase() ?? "";
-
-      const pageSize = 100; // rows per page
-
-      // Filter by search
-      let filtered = items;
-      if (search) {
-        filtered = items.filter((item: any) =>
-          Object.values(item).some((v) =>
-            String(v).toLowerCase().includes(search)
-          )
-        );
+    async (params?: { page?: number; search?: string }) => {
+      if (params?.search !== undefined && params.search !== search) {
+        setSearch(params.search);
+        setPage(1);
       }
 
-      // Slice according to page
-      const start = (page - 1) * pageSize;
-      const end = start + pageSize;
+      if (params?.page && params.page !== page) {
+        setPage(params.page);
+      }
 
       return {
-        data: filtered.slice(start, end),
-        total: filtered.length,
+        data: items,
+        total: totalRecords,
       };
     },
-    [items]
+    [items, totalRecords, page, search]
   );
 
-  // --------------------------
-  // EDIT SAVE HANDLER
-  // --------------------------
-  const handleSaveEdit = async (updated: any) => {
-    try {
-      await updateItem({ id: updated.id, data: updated }).unwrap();
-      toast.success("Updated successfully");
-      setEditingRow(null);
-      refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Update failed");
-    }
-  };
 
-  // --------------------------
-  // IMPORT EXCEL HANDLER
-  // --------------------------
- const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  const selectedFile = e.target.files?.[0];
 
-  if (!selectedFile) return;
-
-  setFile(selectedFile);
-
-  try {
-    await importExcel(selectedFile).unwrap();
-    toast.success("Excel imported successfully!");
-    refetch();
-  } catch (err) {
-    toast.error("Failed to import Excel!");
+const handleDelete = async () => {
+  if(!deleteTarget?.id){
+    toast.error("Invalid error")
+    return
   }
-};
-
-const handleDelete = async (row: any) => {
   try {
-    // Extract the ID from the row object
-    const id = row.id || row.ID || row.Id; // Check common ID field names
-    if (!id) {
-      throw new Error('No ID found in row data');
-    }
-    await deleteItem(id).unwrap();
+    setLoadingAction(deleteTarget.id.toString());
+    await deleteItem(deleteTarget.id).unwrap();
     toast.success("Deleted successfully");
+    setLoadingAction(null)
+    setDeleteTarget(null)
     refetch();
-  } catch (err: any) {
-    toast.error(err?.data?.message || err.message || "Delete failed");
+  } catch (err: unknown) {
+    if(err instanceof Error){
+      console.error(err.message);
+      toast.error(err.message);
+    }else{
+      console.error(err);
+      toast.error("Delete failed");
+    }
+    
   }
 };
 
-const handleAdd = async (data: any) => {
-  try {
-    await addItem(data).unwrap();
-    toast.success("Item Added Successfully");
-    setAddModal(false);
-    refetch();
-  } catch (err: any) {
-    toast.error(err?.data?.message || "Add failed");
-  }
-};
+  const actions = [
+  {
+        label: "Edit",
+        onClick: () => {},
+
+        component: (row: itemDetail) => (
+          <button
+            className={`${styles.iconBtn} ${styles.edit}`}
+            title="Edit User"
+            onClick={()=>{setEditingForm(row)
+              console.log("row:",row);
+            }}
+          >
+            <FiEdit size={18} />
+          </button>
+        ),
+      },
+  {
+    label: "Delete",
+    onClick: () => {}, // FIXED: Changed 'onclick' to 'onClick'
+    component: (row: itemDetail) => (
+      <button
+        className={`${styles.iconBtn} ${styles.delete}`}
+        title="Delete"
+        onClick={() => setDeleteTarget(row)}
+      >
+        <FiTrash2 size={18} />
+      </button>
+    ),
+  },
+];
+         
+  
+
+  const columns = [
+            { label: "ID", accessor: "id" },
+            { label: "Indent No", accessor: "IndentNo" },
+            { label: "Vendor Code", accessor: "VendorCode" },
+            { label: "Order Date", accessor: "OrderDate" },
+            { label: "Order Line No", accessor: "OrderLineNo" },
+            { label: "Item Code", accessor: "ItemCode" },
+            { label: "Section Head", accessor: "SectionHead" },
+            { label: "Item Description", accessor: "ItemDesc" },
+            { label: "Country", accessor: "CountryCode" },
+            { label: "Item Deno", accessor: "ItemDeno" }, 
+            { label: "Month Shelf Life", accessor: "MonthsShelfLife" },
+            { label: "CRP Category", accessor: "CRPCategory" },
+            { label: "VEDC Category", accessor: "VEDCCategory" },
+            { label: "ABC Category", accessor: "ABCCategory" },
+            {label:"DateTimeApproved", accessor:"DateTimeApproved"},
+            {label:"ApprovedBy", accessor:"ApprovedBy"},
+            {label:"ReviewSubSectionCode", accessor:"ReviewSubSectionCode"},
+            {label:"INCATYN", accessor:"INCATYN"},
+          ]
+  
 
 
-  if (isLoading) return <div className={styles.loader}>Loading items...</div>;
-  if (isError) return <div className={styles.error}>Error loading items</div>;
 
   return (
     <div className={styles.container}>
@@ -225,22 +171,9 @@ const handleAdd = async (data: any) => {
           onClick={() => {console.log("clicked")
           setAddModal(true)}}
         />
-        <input
-          type="file"
-          id="excel-upload"
-          accept=".xlsx,.xls"
-          onChange={handleFileChange}
-          style={{ display: 'none' }}
-        />
-        <Button
-          label="Import"
-          buttonType="three"
-          onClick={() => document.getElementById('excel-upload')?.click()}
-          loading={false}
-        />
+        
 
       </div>
-
       {/* Title */}
       <h1 className={styles.pageTitle}>Item Details</h1>
 
@@ -250,85 +183,45 @@ const handleAdd = async (data: any) => {
           fetchData={fetchData}
           loading={isLoading}
           isSearch={true}
-          // addButton={{
-          //   label: "Add Item",
-          //   buttonType: "one",
-          //   onClick: () => {console.log("clicked")
-          //     setAddModal(true)},
-          // }}
-
           isExport={true}
-          isNavigate={true}   // IMPORTANT → enables built-in pagination UI!
-          columns={[
-            { label: "ID", accessor: "id" },
-            { label: "User ID", accessor: "userId" },
-            { label: "Indent No", accessor: "IndentNo" },
-            { label: "Vendor Code", accessor: "VendorCode" },
-            { label: "Order Date", accessor: "OrderDate" },
-            { label: "Order Line No", accessor: "OrderLineNo" },
-            { label: "Item Code", accessor: "ItemCode" },
-            { label: "Section Head", accessor: "SectionHead" },
-            { label: "Description", accessor: "ItemDesc" },
-            { label: "Country", accessor: "CountryCode" },
-            { label: "Item Deno", accessor: "ItemDeno" },
-            { label: "Shelf Life", accessor: "MonthsShelfLife" },
-            { label: "CRP Category", accessor: "CRPCategory" },
-            { label: "VEDC Category", accessor: "VEDCCategory" },
-            { label: "ABC Category", accessor: "ABCCategory" },
-          ]}
-          // actions={[
-          //   {
-          //     label: "Edit",
-          //     onClick: (row) => setEditingRow(row),
-          //   },
-          //   {
-          //     label: "Delete",
-          //     onClick: handleDelete,
-          //   },
-            
-             
-          // ]}
-          actions={[
-          {
-            label: "Edit",
-            buttonType: "one",
-            onClick: (row) => setEditingRow(row)
-
-          },
-          {
-            label: "Delete",
-            buttonType: "three",
-            onClick: async (row) => {
-              if (window.confirm('Are you sure you want to delete this item?')) {
-                await handleDelete(row);
-              }
-            }
-          }
-        ]}
+          isNavigate={true}   
+          columns={columns}
+          actions={actions}
         />
       </div>
 
-      {/* Edit Modal */}
-      {editingRow && (
-      <Modal
-        title="Edit Item"
-        form={editForm}
-        setForm={setEditForm}
-        onClose={() => setEditingRow(null)}
-        onSave={handleSaveEdit}
-      />
-    )}
-
-
-      {addModal && (
-        <Modal
-          title="Add New Item"
-          form={form}
-          setForm={setForm}
-          onClose={() => setAddModal(false)}
-          onSave={handleAdd}
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Delete Item"
+          message={`Are you sure you want to delete ${deleteTarget.IndentNo}? This action cannot be undone.`}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={handleDelete}
+          loading={loadingAction === deleteTarget.id?.toString()}
         />
       )}
+
+      {/* Edit Modal */}
+      {(addModal || editingForm) && (
+        <Modal
+          title={editingForm ? "Edit Item" : "Add Item"}
+          onClose={()=>{
+            setAddModal(false);
+            setEditingForm(null);
+          }}
+        >
+          <Manipulate
+            mode={editingForm ? "edit" : "create"}
+            defaultValues={editingForm || undefined}
+            onSubmitSuccess={()=>{
+              setAddModal(false);
+              setEditingForm(null);
+              refetch();
+            }}
+            />
+          </Modal>
+      )}
+
+
 
      
     </div>

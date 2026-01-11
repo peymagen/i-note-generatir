@@ -1,108 +1,174 @@
+import styles from "./Input.module.css";
 import {
   type UseFormRegister,
   type FieldValues,
   type FieldErrors,
+  type FieldError,
+  type Merge,
+  type FieldErrorsImpl,
   type Path,
+  type UseFormSetValue,
+  type UseFormWatch,
 } from "react-hook-form";
-import { useState } from "react";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
-import styles from "./Input.module.css";
+import { useEffect, useMemo } from "react";
 
-interface InputProps<T extends FieldValues>
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputProps<T extends FieldValues> {
   label: string;
   name: Path<T>;
-  register?: UseFormRegister<T>;
+  type?: React.HTMLInputTypeAttribute;
+  register: UseFormRegister<T>;
   errors?: FieldErrors<T>;
+  setValue?: UseFormSetValue<T>;
+  watch?: UseFormWatch<T>;
   required?: boolean;
-  fullWidth?: boolean;
+  placeholder?: string;
   accept?: string;
   min?: string;
   max?: string;
 }
 
-const Input = <T extends FieldValues>({
+const Input = <T extends FieldValues = FieldValues>({
   label,
   name,
   type = "text",
   register,
   errors,
+  watch,
+  setValue,
   required = false,
-  fullWidth = false,
-  accept,
+  placeholder = `Enter your ${label.toLowerCase()} here`,
   min = "",
   max = "",
-  placeholder,
-  className = "",
-  ...rest
+  accept,
 }: InputProps<T>) => {
-  const [show, setShow] = useState(false);
-  const isPassword = type === "password";
-  const finalType = isPassword && show ? "text" : type;
-  const isDate = type === "date";
 
-  const error = errors?.[name];
+  const getNestedError = (errors: FieldErrors, path: string) => {
+    return path.split(".").reduce<unknown>((acc, part) => {
+      if (acc && typeof acc === "object" && acc !== null) {
+        return (acc as Record<string, unknown>)[part];
+      }
+      return undefined;
+    }, errors);
+  };
+
+  const watchedValue = watch?.(name);
+
+  useEffect(() => {
+    if (watchedValue && watchedValue.length > 0) {
+      setValue?.(name, watchedValue[0]);
+    }
+  }, [watchedValue, name, setValue]);
+
+  const renderPreview = useMemo(() => {
+    if (!watchedValue) return null;
+
+    let url: string | null = null;
+
+    if (watchedValue?.[0] instanceof File) {
+      url = URL.createObjectURL(watchedValue[0]);
+    } else if (typeof watchedValue === "string" && watchedValue.trim() !== "") {
+      url = watchedValue;
+    }
+
+    if (!url) return null;
+
+    if (accept?.includes("image") || /\.(jpeg|jpg|png|gif)$/i.test(url)) {
+      return (
+        <img
+          src={import.meta.env.VITE_BACKEND_SERVER + url}
+          alt="preview"
+          className="w-32 h-32 object-cover rounded"
+        />
+      );
+    }
+
+    if (accept?.includes("video") || /\.(mp4|webm|ogg)$/i.test(url)) {
+      return (
+        <video
+          src={import.meta.env.VITE_BACKEND_SERVER + url}
+          controls
+          className="w-48 h-32 rounded"
+        />
+      );
+    }
+
+    if (accept?.includes("audio") || /\.(mp3|wav|ogg)$/i.test(url)) {
+      return (
+        <audio
+          src={import.meta.env.VITE_BACKEND_SERVER + url}
+          controls
+          className="mt-2"
+        />
+      );
+    }
+
+    if (accept?.includes("pdf") || /\.pdf$/i.test(url)) {
+      return (
+        <a
+          href={import.meta.env.VITE_BACKEND_SERVER + url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-500 underline"
+        >
+          View PDF
+        </a>
+      );
+    }
+
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-500 underline"
+      >
+        View File
+      </a>
+    );
+  }, [accept, watchedValue]);
+
+  const error = getNestedError(errors ?? {}, name) as
+    | FieldError
+    | Merge<FieldError, FieldErrorsImpl<FieldError>>
+    | undefined;
 
   return (
-    <div className={`${styles.formGroup} ${className} ${fullWidth ? styles.fullWidth : ""}`}>
+    <div className={styles.formGroup} >
       <label htmlFor={name} className={styles.label}>
         {label}
         {required && <span className={styles.required}>*</span>}
       </label>
-
-      <div className={styles.inputWrapper}>
+      {type === "file" ? (
         <input
           id={name}
-          type={finalType}
+          type="file"
           accept={accept}
+          {...register(name, { required })}
+          className={`${styles.input} ${error ? styles.inputError : ""}`}
+          aria-invalid={error ? "true" : "false"}
+        />
+      ) : (
+        <input
+          id={name}
+          type={type}
+          {...register(name, { required })}
+          className={`${styles.input} ${error ? styles.inputError : ""}`}
+          placeholder={placeholder}
+          aria-invalid={error ? "true" : "false"}
           min={min}
           max={max}
-          placeholder={placeholder}
-          className={`${styles.input} ${error ? styles.inputError : ""}`}
-          {...(register ? register(name, { required }) : {})}
-          {...rest}
-           onClick={(e) => {
-            if (isDate && (e.currentTarget as any).showPicker) {
-              (e.currentTarget as any).showPicker();
-            }
-          }}
-          onFocus={(e) => {
-            if (isDate && (e.currentTarget as any).showPicker) {
-              (e.currentTarget as any).showPicker();
-            }
-          }}
         />
-
-        {/* {isPassword && (
-          <button
-            type="button"
-            onClick={() => setShow(!show)}
-            className={styles.eyeIcon}
-            aria-label={show ? "Hide Password" : "Show Password"}
-          >
-            {show ? <FaEyeSlash /> : <FaEye />}
-          </button>
-        )} */}
-        {isPassword && (
-          <span
-            onClick={() => setShow(!show)}
-            className={styles.eyeIcon}
-            role="button"
-            tabIndex={0}
-            aria-label={show ? "Show Password" : "Hide Password"}
-          >
-            {show ? <FaEye /> : <FaEyeSlash />}
-          </span>
-        )}
-
-      </div>
-
-      {error && (
-        <p className={styles.errorMessage}>
-          {String(error?.message ?? "Invalid input")}
-        </p>
       )}
 
+      {error && (
+        <p
+          className={styles.errorMessage}
+          role="alert"
+        >
+          {typeof error?.message === "string" ? error.message : "Invalid input"}
+        </p>
+      )}
+      {renderPreview}
     </div>
   );
 };

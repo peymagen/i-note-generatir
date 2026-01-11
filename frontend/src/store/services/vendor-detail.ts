@@ -4,15 +4,32 @@ import { baseQueryWithReauth } from "./api";
 export const vendorDetail = createApi({
   reducerPath: "vendorDetailApi",
   baseQuery: baseQueryWithReauth,
+  tagTypes: ['Vendor'],
 
   endpoints: (builder) => ({
 
     getAllVendor: builder.query({
-      query: () => ({
-        url: "/vendor-detail",
+    query: (params?: { page?: number; limit?: number; search?: string }) => {
+      const queryString = new URLSearchParams();
+
+      if (params?.page !== undefined) {
+        queryString.append('page', String(params.page));
+      }
+
+      if (params?.limit !== undefined) {
+        queryString.append('limit', String(params.limit));
+      }
+
+      if (params?.search !== undefined && params.search.trim() !== "") {
+        queryString.append('search', params.search.trim());
+      }
+
+      return {
+        url: `/vendor-detail${queryString.toString() ? `?${queryString}` : ''}`,
         method: "GET",
-      }),
-    }),
+      };
+    },
+  }),
 
    getByVendorCode: builder.query({  
       query: (vendorCode: string) => ({
@@ -22,11 +39,12 @@ export const vendorDetail = createApi({
     }),
 
     updateVendor: builder.mutation({
-      query: ({ id, data }: { id: number; data: any }) => ({
-        url: `/vendor-detail/${id}`,
-        method: "PUT",
-        body: data,
+      query: (payload) => ({
+        url: `/vendor-detail/${payload.Id}`,
+        method: "PATCH",
+        body: payload,
       }),
+      invalidatesTags: ['Vendor'],
     }),
 
     deleteVendor: builder.mutation({
@@ -37,11 +55,12 @@ export const vendorDetail = createApi({
     }),
 
     addVendor:builder.mutation({
-      query: (data: any) => ({
+      query: (data) => ({
         url: "/vendor-detail/create",
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ['Vendor'],
     })
   }),
 });
