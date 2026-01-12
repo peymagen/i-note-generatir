@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import StepOne from "./StepOne";
 import { Check, Lock } from "lucide-react";
 import StepTwo from "./StepTwo";
-import type { formData, StepperState, formOne } from "../../types/inote";
+import type { formData, StepperState, formOne, VendorFormData, MoFormData,iNote } from "../../types/inote";
 import * as detail from "../../types/poDetail";
 import * as header from "../../types/poHeader";
+// import * as vendor from "../../types/vendor";
+// import * as mo from "../../types/mo";
 import StepThree from "./StepThree";
 import { useUpdateQtyFullFillMutation } from "../../store/services/po-details";
 import styles from "./Stepper.module.css";
@@ -19,7 +21,15 @@ const steps = [
   { label: "Pproduct Details", icon: <Lock size={16} /> },
 ];
 
+
+const extractFromParens = (str: string | null | undefined) => {
+  const match = str?.match(/\((.*?)\)/);
+  return match ? match[1] : str;
+};
+
 const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
+  const[vendorCode,setVendorCode]=useState<string>("")
+  const[consigneeCode,setConsigneeCode]=useState<string>("")
   const [currentStep, setCurrentStep] = useState(1);
   const [masterState, setMasterState] = useState<StepperState>({
     user: {
@@ -33,6 +43,7 @@ const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
     },
     content: "",
     indentInfo: { header: [], details: [] },
+    info: { vendor: [] , mo: []},
     products: [],
   });
 
@@ -47,18 +58,28 @@ const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
       content: content,
       indentInfo: dbData,
     }));
+    setConsigneeCode(extractFromParens(dbData.details[0]?.ConsigneeCode) || "");
+    // console.log("Consignee Code in StepperForm:",consigneeCode);
+    setVendorCode(dbData.header[0]?.VendorCode || "");
+    console.log("Vendor Code in StepperForm:",vendorCode);
     setCurrentStep(2);
   };
   const [updateAvaailableQty] = useUpdateQtyFullFillMutation();
 
-  const handleStepTwoComplete = (stepTwoFields: Partial<formData>) => {
-    // Create the final snapshot of the data
-    const updatedState: StepperState = {
-      ...masterState,
-      user: { ...masterState.user, ...stepTwoFields },
-    };
-
-    setMasterState(updatedState);
+  const handleStepTwoComplete = (
+    stepTwoFields: Partial<formData>,
+    dbData?: { vendor: VendorFormData[]; mo: MoFormData[]; iNote: iNote }
+  ) => {
+    setMasterState((prev) => ({
+      ...prev,
+      user: { ...prev.user, ...stepTwoFields },
+      info:{
+        vendor:dbData?.vendor || [],
+        mo:dbData?.mo || [],
+        iNote: dbData?.iNote
+      }
+    }));
+    console.log("Master",masterState);
     setCurrentStep(3);
     // onComplete(updatedState);
   };
@@ -138,8 +159,10 @@ const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
         <StepTwo
           initialValues={masterState.user}
           indentInfo={masterState.indentInfo}
+          vendorCode={vendorCode}
+          consigneeCode={consigneeCode}
           onBack={() => setCurrentStep(1)}
-          onFinish={handleStepTwoComplete}
+          onNext={handleStepTwoComplete}
         />
       )}
 

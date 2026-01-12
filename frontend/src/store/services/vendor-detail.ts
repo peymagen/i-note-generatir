@@ -32,7 +32,7 @@ export const vendorDetail = createApi({
   }),
 
    getByVendorCode: builder.query({  
-      query: (vendorCode: string) => ({
+      query: (vendorCode) => ({
         url: `/vendor-detail/vendorCode/${vendorCode}`,
         method: "GET"
       })

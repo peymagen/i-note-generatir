@@ -8,13 +8,21 @@ import Button from "../../component/Button/Button";
 import Input from "../../component/Input/Input2";
 import styles from "./Stepper.module.css";
 import type { formData, formTwo, StepperState } from "../../types/inote";
+import {useLazyGetByVendorCodeQuery} from"../../store/services/vendor-detail"
+import {useLazyGetDatabyConQuery} from "../../store/services/mo-detail"
+import {useGetInoteQuery} from "../../store/services/i-note"
 
 interface StepTwoProps {
-  onFinish: (data: Partial<formData>) => void;
+  onNext: (data: Partial<formData>,
+    dbData?: StepperState["info"] 
+  ) => void;
   onBack: () => void;
   initialValues: formData;
   indentInfo: StepperState["indentInfo"];
+  vendorCode:string,
+  consigneeCode?:string
 }
+
 
 const dateRangeRegex =
   /^(\d{1,2}\/\d{1,2}\/\d{2,4})-(\d{1,2}\/\d{1,2}\/\d{2,4})$/;
@@ -34,13 +42,21 @@ const Schema: yup.ObjectSchema<formTwo> = yup.object({
 });
 
 const StepTwo: React.FC<StepTwoProps> = ({
-  onFinish,
+  onNext,
   onBack,
   initialValues,
   indentInfo,
+  vendorCode,
+  consigneeCode,
 }) => {
   const headerData = indentInfo.header[0];
   console.log("Header Data in Step Two:", headerData);
+  console.log("Initial Values in Step Two:", initialValues);
+  console.log("Indent Info in Step Two:", indentInfo);
+
+  const [triggerVendor, { isLoading: isFetching }] = useLazyGetByVendorCodeQuery();
+  const [triggerConsignee, { isLoading: isFetchingCon }] = useLazyGetDatabyConQuery();
+  const { data: iNoteData } = useGetInoteQuery(undefined);
 
   const {
     register,
@@ -51,9 +67,29 @@ const StepTwo: React.FC<StepTwoProps> = ({
     defaultValues: initialValues,
   });
 
-  const onSubmit: SubmitHandler<formData> = (data) => {
-    onFinish(data);
+  // console.log("INOTE:",iNoteData);
+  // const some = iNoteData?.data.iNote
+  // console.log(some);
+
+  const onSubmit: SubmitHandler<formData> = async (data) => {
+    const [vendorRes,moRes] = await Promise.all([
+      triggerVendor(vendorCode).unwrap(),
+      triggerConsignee(consigneeCode).unwrap(),
+    ]);
+    console.log("Vendor Data Response:", vendorRes.data.data[0]); 
+    console.log("Consignee Data Response:", moRes.data.data[0]);
+    console.log("INOTE DATA",iNoteData.data.iNote);
+    const dbData = {
+      vendor:Array.isArray(vendorRes.data.data[0]) ? vendorRes.data.data[0] : [vendorRes.data.data[0]],
+      mo:moRes.data.data[0],
+      iNote: {
+        iNote: iNoteData.data.iNote,
+        id: iNoteData.data.id
+      }
+    };
+    onNext(data, dbData);
     toast.success("Preparing I-Note editor...");
+   
   };
 
   return (
@@ -109,7 +145,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
             onClick={onBack}
             buttonType="one"
           />
-          <Button type="submit" label="Next Step" buttonType="one" />
+          <Button type="submit" label={isFetching || isFetchingCon ? "Loading..." : "Next"} buttonType="one" />
         </div>
       </form>
     </div>

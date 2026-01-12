@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useCallback,useState } from "react";
 import { useForm } from "react-hook-form"; // Import this
 import styles from "./Inote.module.css";
 import Button from "../../component/Button/Button";
@@ -9,15 +9,52 @@ import type { StepperState } from "../../types/inote";
 import { toWords } from "number-to-words";
 import type { PoDetailItem } from "../../types/poDetail";
 import type { itemDetail } from "../../types/itemDetail";
+import {useGetFinalQuery,
+   usePostFinalMutation} from "../../store/services/final"
+import { stripHtml } from "../../utils/stripHtml";
+import {
+  FiEdit,
+  // FiTrash2,
+} from "react-icons/fi";
+// import ConfirmDialog from "../../component/ConfirmDialoge";
+import { DataTable } from "../../component/DataTable/DataTable";
+import { toast } from "react-toastify";
 
 // Define a type for the editor form
+
+type final={
+  content:string
+}
 interface EditorForm {
   editorContent: string;
 }
 
+const renderCleanAddress = (address: string | undefined) => {
+  if (!address) return undefined;
+    const key = "MATERIAL ORGANISATION";
+    const startPos = address.indexOf(key);
+    return startPos !== -1 ? address?.substring(startPos) : address;
+  };
+
 const Inote = () => {
+  const [page, setPage] = useState(1);
+  const limit = 50;
+  const [search, setSearch] = useState<string | undefined>(undefined);
+
+  const { data, isLoading, isError, error,refetch } = useGetFinalQuery(
+    { page, limit, search },
+    { refetchOnMountOrArgChange: true }
+  );
+    console.log("isError:", isError, "error:", error);
+    const [save] = usePostFinalMutation();
+
+  const [editingForm, setEditingForm] = useState<final | null>(null);
+  // const [deleteTarget, setDeleteTarget] = useState<final | null>(null);
+  // const [loadingAction, setLoadingAction] = useState<string | null>(null);  
   const [addModal, setAddModal] = useState<boolean>(false);
   const [showEditor, setShowEditor] = useState<boolean>(false);
+
+
 
   // 1. Initialize React Hook Form
   const {
@@ -75,6 +112,11 @@ const Inote = () => {
       "{{INSPECTION_EVAL_RANGE}}": state.user.InspectionOfferedDate || "N/A",
       "{{INSPECTION_DATE}}": state.user.InspectedOn || "N/A",
       "{{TOTAL_ITEMS}}": state?.products?.length.toString() || "0",
+      "{{VENDOR_DETAILS}}": state.info?.vendor[0]?.FirmAddress || "N/A" ,
+      "{{MO_ADDRESS_WAREHOUSE}}":"THE CONTROLLERATE OF WAREHOUSING"+renderCleanAddress(state.info?.mo[0]?.MoAddress) || "N/A" ,
+      "{{MO_ADDRESS_PROCUREMENT}}":"THE CONTROLLERATE OF PROCUREMENT"+renderCleanAddress(state.info?.mo[0]?.MoAddress) || "N/A" ,
+      "{{FILE_NO}}": state.user.sequenceNo?.toString() || "N/A" ,
+      "{{INOTE_NO}}":state.info?.iNote?.iNote?.toString() || "N/A" ,
       "{{TOTAL_ITEMS_ WORD}}":
         toWords(state?.products?.length.toString() || 0).toUpperCase() ||
         "Zero",
@@ -89,6 +131,71 @@ const Inote = () => {
     return updatedHtml;
   };
 
+    const items = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
+    const totalRecords = data?.data?.pagination?.totalRecords ?? 0;
+  
+    const fetchData = useCallback(
+      async (params?: { page?: number; search?: string }) => {
+        if (params?.search !== undefined && params.search !== search) {
+          setSearch(params.search);
+          setPage(1);
+        }
+        if (params?.page && params.page !== page) {
+          setPage(params.page);
+        }
+        return { data: items, total: totalRecords };
+      },
+      [items, totalRecords, page, search]
+    );
+  // const handleDelete = async () => {
+  //   if (!deleteTarget?.id) return;
+  //   setLoadingAction(deleteTarget?.id?.toString() || "");
+  //   await deleteItem(deleteTarget?.id).unwrap();
+  //   toast.success("Deleted");
+  //   setDeleteTarget(null);
+  //   refetch();
+  // };    
+  const columns = [
+    {label:"ID",accessor:"id"},
+    {
+                label: "Content",
+                accessor: "content",
+                render: (row: unknown) =>
+                  stripHtml((row as final).content),
+              },
+  ]
+   const actions = [
+      {
+          label: "Edit",
+          onClick: () => {},
+  
+          component: (row: final) => (
+            <button
+              className={`${styles.iconBtn} ${styles.edit}`}
+              title="Edit User"
+              onClick={()=>{setEditingForm(row)
+                 setShowEditor(true)
+                console.log("row:",row);
+              }}
+            >
+              <FiEdit size={18} />
+            </button>
+          ),
+        },
+      // {
+      //   label: "Delete",
+      //   onClick: () => {},
+      //   component: (row: MoItem) => (
+      //     <button
+      //       className={`${styles.iconBtn} ${styles.delete}`} 
+      //       title="Delete"
+      //       onClick={() => setDeleteTarget(row)}
+      //     >
+      //       <FiTrash2 size={18} />
+      //     </button>
+      //   ),
+      // },
+    ]
   const handleStepperComplete = (state: StepperState) => {
     const readyHtml = processTemplate(state.content, state);
     console.log("Processed HTML Content:", readyHtml);
@@ -155,9 +262,18 @@ const Inote = () => {
     printWindow.close();
   };
 
-  const onFinalSubmit = (data: EditorForm) => {
+
+  const onFinalSubmit = async(data: EditorForm) => {
     console.log("Final Edited Content to Save:", data.editorContent);
-    // Here you would call your API to save the I-Note
+    const body :final = {
+      content: data.editorContent,
+    } 
+    const res = await save(body).unwrap();
+    if(res?.data){
+      toast.success("Saved Successfully");
+      refetch();
+      setShowEditor(false);
+    }
   };
 
   return (
@@ -171,6 +287,18 @@ const Inote = () => {
       </div>
 
       <h1 className={styles.pageTitle}>I-Note Management</h1>
+
+      <div className={styles.tableBox}>
+            <DataTable<final & { [x: string]: unknown }>
+              fetchData={fetchData}
+              loading={isLoading}
+              isSearch
+              isNavigate
+              isExport
+              columns={columns}
+              actions={actions}
+            />
+          </div>
 
       {/* 3. Render the RichTextEditor instead of dangerouslySetInnerHTML */}
       {showEditor && (

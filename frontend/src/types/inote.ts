@@ -1,5 +1,8 @@
 import * as detail from "./poDetail";
 import * as header from "./poHeader";
+import * as vendor from "./vendor";
+import * as mo from "./mo";
+
 export type formData = {
   // Step 1
   IndentNo: string;
@@ -21,6 +24,13 @@ export type formTwo = Pick<
   "sequenceNo" | "date" | "InspectionOfferedDate" | "InspectedOn"
 >;
 
+export type MoFormData = mo.FormData;
+export type VendorFormData = vendor.FormData;
+export type iNote = {
+  iNote: number;
+  id: number;
+}
+
 export interface StepperState {
   user: formData;
   content: string;
@@ -28,6 +38,13 @@ export interface StepperState {
     header: header.FormData[];
     details: detail.FormData[];
   };
+  info?:{
+    vendor:VendorFormData[];
+    mo:MoFormData[];
+    iNote?:iNote;
+  }
+ 
+  
 }
 
 export interface ProductItem {
@@ -45,5 +62,11 @@ export interface StepperState {
     header: header.FormData[];
     details: detail.FormData[];
   };
+  info?:{
+    vendor:VendorFormData[];
+    mo:MoFormData[];
+    iNote?:iNote;
+  }
+  
   products?: ProductItem[];
 }

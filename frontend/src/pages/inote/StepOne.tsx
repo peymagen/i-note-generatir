@@ -62,8 +62,10 @@ const StepOne: React.FC<StepOneProps> = ({ onNext, initialValues }) => {
           details: poResponse.data.details || []
         };
         // console.log("content:",contentResponse.data[0]);
-        const content = contentResponse?.data[0] || "";
 
+        const content = contentResponse?.data[0] || "";
+        console.log("Vendor code ", indentData.header[0]?.VendorCode);
+        console.log("Consignee code ", indentData.details[0]?.ConsigneeCode);  
         onNext(data, indentData, content); 
       } else {
         console.error("No PO found:", poResponse);

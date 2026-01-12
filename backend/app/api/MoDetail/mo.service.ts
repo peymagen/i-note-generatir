@@ -211,13 +211,13 @@ export  const addData = async (userId: number, payload: any) => {
 
 export const getDatabyCon = async(consignee: string) => {
   try {
-    const query = 
-      `SELECT *
+    const searchPattern = `MO(${consignee}) /CPRO(${consignee})`;
+    const query = `
+      SELECT *
       FROM mo_details
-      WHERE MoCPRO = 'MO(' + ? + ')'
-        OR MoCPRO   = 'CPRO(' + ? + ')';`
-    ;
-    const [rows] = await pool.execute<RowDataPacket[]>(query, [consignee, consignee]);
+      WHERE MoCPRO = ?;
+    `;
+    const [rows] = await pool.execute<RowDataPacket[]>(query, [searchPattern]);
 //     console.log(`
       // SELECT *
       // FROM mo_details
@@ -226,6 +226,7 @@ export const getDatabyCon = async(consignee: string) => {
       // `,);
 
     // console.log("Query result:", rows);  
+    console.log("Service response:", rows);
     
     if (!rows || rows.length === 0) {
       console.log("No rows found for consignee:", consignee);

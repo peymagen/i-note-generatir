@@ -31,7 +31,7 @@ export const moDetailApi = createApi({
     },
   }),
     getDatabyCon:builder.query({
-      query:(code:string)=>({
+      query:(code)=>({
           url:`mo-detail/code/${code}`,
           method:"GET",
       }),

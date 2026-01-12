@@ -30,3 +30,30 @@
   color: var(--color-text, #111);
   margin: 0 auto;
 }
+
+
+/* Edit */
+.edit {
+  color: #2563eb;
+}
+.edit:hover {
+  background: #dbeafe;
+}
+
+/* Delete */
+.delete {
+  color: #dc2626;
+}
+.delete:hover {
+  background: #fee2e2;
+}
+
+.tableBox {
+  padding: 1rem;
+  box-shadow: 10px 14px 20px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+}
+.tableBox table tbody tr:hover {
+  background: #f1f5f9;
+  transition: background 0.15s ease;
+}
