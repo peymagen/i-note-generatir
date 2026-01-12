@@ -76,3 +76,8 @@ export const update = asyncHandler(async (req: Request, res: Response) => {
     const result = await service.updatePage(Number(req.params.id), req.body);
     res.send(createResponse(result, "Page updated sucssefully")); 
 })
+
+export const delteHandler = asyncHandler(async (req: Request, res: Response) => {
+    const result = await service.deletePageById(Number(req.params.id));
+    res.send(createResponse(result, "Page deleted sucssefully"));
+})

@@ -11,13 +11,16 @@ import type { PoDetailItem } from "../../types/poDetail";
 import type { itemDetail } from "../../types/itemDetail";
 import {useGetFinalQuery,
    usePostFinalMutation,
-  useUpdateFinalPageMutation} from "../../store/services/final"
+  useUpdateFinalPageMutation,
+useDeleteFinalPageMutation
+} from "../../store/services/final"
 
 import {
   FiEdit,
-  // FiTrash2,
+  FiTrash2,
+  FiPrinter,
 } from "react-icons/fi";
-// import ConfirmDialog from "../../component/ConfirmDialoge";
+import ConfirmDialog from "../../component/ConfirmDialoge";
 import { DataTable } from "../../component/DataTable/DataTable";
 import { toast } from "react-toastify";
 
@@ -54,10 +57,11 @@ const Inote = () => {
     console.log("isError:", isError, "error:", error);
     const [save] = usePostFinalMutation();
     const [update] = useUpdateFinalPageMutation();
+    const [deleteFinalPage] = useDeleteFinalPageMutation();
 
   const [editingForm, setEditingForm] = useState<final | null>(null);
-  // const [deleteTarget, setDeleteTarget] = useState<final | null>(null);
-  // const [loadingAction, setLoadingAction] = useState<string | null>(null);  
+  const [deleteTarget, setDeleteTarget] = useState<final | null>(null);
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);  
   const [addModal, setAddModal] = useState<boolean>(false);
   const [showEditor, setShowEditor] = useState<boolean>(false);
 
@@ -140,6 +144,7 @@ const Inote = () => {
 
     const items = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
     const totalRecords = data?.data?.pagination?.totalRecords ?? 0;
+    console.log("items",items);
   
     const fetchData = useCallback(
       async (params?: { page?: number; search?: string }) => {
@@ -154,18 +159,19 @@ const Inote = () => {
       },
       [items, totalRecords, page, search]
     );
-  // const handleDelete = async () => {
-  //   if (!deleteTarget?.id) return;
-  //   setLoadingAction(deleteTarget?.id?.toString() || "");
-  //   await deleteItem(deleteTarget?.id).unwrap();
-  //   toast.success("Deleted");
-  //   setDeleteTarget(null);
-  //   refetch();
-  // };    
+  const handleDelete = async () => {
+    if (!deleteTarget?.id) return;
+    setLoadingAction(deleteTarget?.id?.toString() || "");
+    await deleteFinalPage(deleteTarget.id).unwrap();
+    toast.success("Deleted");
+    setDeleteTarget(null);
+    refetch();
+  };    
+ 
   const columns = [
     {label:"ID",accessor:"id"},
     {label:"I-Note",accessor:"i_note"},
-    {label:"Indent No", accessor:"indent_no"},  
+    {label:"Indent No", accessor:"indent_No"},  
   ]
    const actions = [
       {
@@ -186,19 +192,32 @@ const Inote = () => {
             </button>
           ),
         },
-      // {
-      //   label: "Delete",
-      //   onClick: () => {},
-      //   component: (row: MoItem) => (
-      //     <button
-      //       className={`${styles.iconBtn} ${styles.delete}`} 
-      //       title="Delete"
-      //       onClick={() => setDeleteTarget(row)}
-      //     >
-      //       <FiTrash2 size={18} />
-      //     </button>
-      //   ),
-      // },
+      {
+        label: "Delete",
+        onClick: () => {},
+        component: (row: final) => (
+          <button
+            className={`${styles.iconBtn} ${styles.delete}`} 
+            title="Delete"
+            onClick={() => setDeleteTarget(row)}
+          >
+            <FiTrash2 size={18} />
+          </button>
+        ),
+      },
+      {
+      label: "Print",
+      onClick: () => {},
+      component: (row: final) => (
+        <button
+          className={`${styles.iconBtn} ${styles.edit}`} // Using same style class for consistency
+          title="Print I-Note"
+          onClick={() => handlePrint(row.content)}
+        >
+          <FiPrinter size={18} />
+        </button>
+      ),
+    },
     ]
   const handleStepperComplete = (state: StepperState) => {
     setStepperData(state);
@@ -211,8 +230,8 @@ const Inote = () => {
     setAddModal(false);
   };
 
-  const handlePrint = () => {
-    const content = watch("editorContent");
+  const handlePrint = (constent:string) => {
+    const content = constent;
     console.log("Printing Content:", content);
     const printWindow = window.open("", "", "width=800,height=600");
     if (!printWindow) return;
@@ -267,21 +286,6 @@ const Inote = () => {
     printWindow.close();
   };
 
-
-  // const onFinalSubmit = async(data: EditorForm) => {
-  //   console.log("Final Edited Content to Save:", data.editorContent);
-  //   console.log("inote",stepperData?.info?.iNote)
-  //   // const body :final = {
-
-  //   //   content: data.editorContent,
-  //   // } 
-  //   // const res = await save(body).unwrap();
-  //   // if(res?.data){
-  //   //   toast.success("Saved Successfully");
-  //   //   refetch();
-  //     setShowEditor(false);
-  //   // }
-  // };
 
   const onFinalSubmit = async (formData: EditorForm) => {
   // Initialize the payload
@@ -360,9 +364,26 @@ const Inote = () => {
               actions={actions}
             />
           </div>
+           {deleteTarget && (
+              <ConfirmDialog
+                title="Delete Item"
+                message={`Are you sure you want to delete ${deleteTarget.id}? This action cannot be undone.`}
+                onCancel={() => setDeleteTarget(null)}
+                onConfirm={handleDelete}
+                loading={loadingAction === deleteTarget.id?.toString()}
+              />
+            )}
 
       {/* 3. Render the RichTextEditor instead of dangerouslySetInnerHTML */}
-      {showEditor && (
+      
+        {showEditor && (
+      <Modal
+        title="Add I-Note"
+        size="xl"
+        onClose={() => {
+          setShowEditor(false)}}
+       >
+
         <form
           onSubmit={handleSubmit(onFinalSubmit)}
           className={styles.editorWrapper}
@@ -379,49 +400,55 @@ const Inote = () => {
 
           <div className={styles.actionButtons}>
             <Button label="Save Final I-Note" type="submit" buttonType="one" />
-            <Button label="Print" onClick={handlePrint} buttonType="two" />
+            <Button 
+              label="Print" 
+              onClick={() => handlePrint(watch("editorContent"))} 
+              buttonType="two" 
+            />
           </div>
         </form>
-      )}
+
+      </Modal>
+            )}
 {/*${editingForm.i_note}` */}
 
     {(editingForm && showEditor) && (
         <Modal
-    title="Edit I-Note"    
-    size="xl" // Fixed typo from 'sixe' to 'size'
-    onClose={() => {
-      setEditingForm(null);
-      setShowEditor(false);
-      setValue("editorContent", "");
-    }}
-  >
-    <form
-      onSubmit={handleSubmit(onFinalSubmit)}
-      className={styles.modalEditorWrapper}
-    >
-      <RichTextEditor<EditorForm>
-        label="Edit I-Note Content"
-        name="editorContent"
-        watch={watch}
-        setValue={setValue}
-        errors={errors}
-      />
+        title="Edit I-Note"    
+        size="xl" // Fixed typo from 'sixe' to 'size'
+        onClose={() => {
+          setEditingForm(null);
+          setShowEditor(false);
+          setValue("editorContent", "");
+        }}
+            >
+              <form
+                onSubmit={handleSubmit(onFinalSubmit)}
+                className={styles.modalEditorWrapper}
+              >
+                <RichTextEditor<EditorForm>
+                  label="Edit I-Note Content"
+                  name="editorContent"
+                  watch={watch}
+                  setValue={setValue}
+                  errors={errors}
+                />
 
-      <div className={styles.modalActions} style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-        <Button 
-          label="Update I-Note" 
-          type="submit" 
-          buttonType="one" 
-        />
-        <Button 
-          label="Cancel" 
-          buttonType="four" 
-          onClick={() => setEditingForm(null)} 
-        />
-      </div>
-    </form>
-  </Modal>
-    )}
+                <div className={styles.modalActions} style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+                  <Button 
+                    label="Update I-Note" 
+                    type="submit" 
+                    buttonType="one" 
+                  />
+                  <Button 
+                    label="Cancel" 
+                    buttonType="four" 
+                    onClick={() => setEditingForm(null)} 
+                  />
+                </div>
+              </form>
+            </Modal>
+              )}
     
 
 

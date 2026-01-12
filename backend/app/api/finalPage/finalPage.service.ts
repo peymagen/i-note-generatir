@@ -1,6 +1,8 @@
 import { pool } from "../../common/services/sql.service";
 import { type RowDataPacket, type ResultSetHeader } from "mysql2";
 import { page } from "./finalPage.dto";
+import { deletePage } from '../page/page.service';
+import { deletePageHandler } from '../page/page.controller';
 
 
 export const createPage = async (data: page) => {
@@ -50,7 +52,17 @@ export const updatePage = async (id: number, data: page) => {
     }
 };
 
-
+export const deletePageById= async(id:number)=>{
+  try{
+    const query = "DELETE FROM certificate  WHERE id = ?";
+    const [result] = await pool.execute<ResultSetHeader>(query, [id]);
+    return {result, id, success: true };
+  }
+  catch(error){
+    console.log(error);
+    return null;
+  }
+}
 
 
 

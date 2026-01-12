@@ -43,6 +43,15 @@ export const final = createApi({
       body: body,
     }),
   }),
+  
+  deleteFinalPage :builder.mutation({
+    query: (id) => ({
+      url: `/final-page/${id}`,
+      method: "DELETE",
+    }),
+  }),
+
+  
   }),
 
 
@@ -52,6 +61,7 @@ export const final = createApi({
 export const {
    useGetFinalQuery,
    usePostFinalMutation,
-   useUpdateFinalPageMutation
+   useUpdateFinalPageMutation,
+   useDeleteFinalPageMutation
     } = final;
   export default final

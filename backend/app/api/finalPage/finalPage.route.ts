@@ -33,4 +33,10 @@ router.put(
     catchError,
     controller.update
 )
+router.delete(
+    "/:id",
+    roleAuth(),
+    catchError,
+    controller.delteHandler
+)
 export default router;
