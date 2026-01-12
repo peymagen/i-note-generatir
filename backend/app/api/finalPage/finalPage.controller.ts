@@ -4,6 +4,7 @@ import asyncHandler from "express-async-handler";
 import { type Request, type Response } from "express";
 
 export const createPage = asyncHandler(async (req: Request, res: Response) => {
+  console.log(req.body)
     const result = await service.createPage(req.body);
     res.send(createResponse(result, "Page created sucssefully"));
 });
@@ -66,4 +67,12 @@ export const getPageInation = asyncHandler(async (req: Request, res: Response) =
           message: error.message || "Failed to fetch item details",
         });
       }
+})
+
+
+export const update = asyncHandler(async (req: Request, res: Response) => {
+    console.log("reqbody",req.body)
+    console.log("reqparams",req.params.id)
+    const result = await service.updatePage(Number(req.params.id), req.body);
+    res.send(createResponse(result, "Page updated sucssefully")); 
 })

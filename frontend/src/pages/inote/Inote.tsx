@@ -10,8 +10,9 @@ import { toWords } from "number-to-words";
 import type { PoDetailItem } from "../../types/poDetail";
 import type { itemDetail } from "../../types/itemDetail";
 import {useGetFinalQuery,
-   usePostFinalMutation} from "../../store/services/final"
-import { stripHtml } from "../../utils/stripHtml";
+   usePostFinalMutation,
+  useUpdateFinalPageMutation} from "../../store/services/final"
+
 import {
   FiEdit,
   // FiTrash2,
@@ -22,11 +23,15 @@ import { toast } from "react-toastify";
 
 // Define a type for the editor form
 
-type final={
-  content:string
-}
+type final = {
+  id?: number; 
+  content: string;
+  i_note: number;
+  indent_no?: string; 
+};
 interface EditorForm {
   editorContent: string;
+  i_note?:number
 }
 
 const renderCleanAddress = (address: string | undefined) => {
@@ -37,6 +42,7 @@ const renderCleanAddress = (address: string | undefined) => {
   };
 
 const Inote = () => {
+  const [stepperData, setStepperData] = useState<StepperState | null>(null);
   const [page, setPage] = useState(1);
   const limit = 50;
   const [search, setSearch] = useState<string | undefined>(undefined);
@@ -47,6 +53,7 @@ const Inote = () => {
   );
     console.log("isError:", isError, "error:", error);
     const [save] = usePostFinalMutation();
+    const [update] = useUpdateFinalPageMutation();
 
   const [editingForm, setEditingForm] = useState<final | null>(null);
   // const [deleteTarget, setDeleteTarget] = useState<final | null>(null);
@@ -157,12 +164,8 @@ const Inote = () => {
   // };    
   const columns = [
     {label:"ID",accessor:"id"},
-    {
-                label: "Content",
-                accessor: "content",
-                render: (row: unknown) =>
-                  stripHtml((row as final).content),
-              },
+    {label:"I-Note",accessor:"i_note"},
+    {label:"Indent No", accessor:"indent_no"},  
   ]
    const actions = [
       {
@@ -175,6 +178,7 @@ const Inote = () => {
               title="Edit User"
               onClick={()=>{setEditingForm(row)
                  setShowEditor(true)
+                  setValue("editorContent", row.content);
                 console.log("row:",row);
               }}
             >
@@ -197,6 +201,7 @@ const Inote = () => {
       // },
     ]
   const handleStepperComplete = (state: StepperState) => {
+    setStepperData(state);
     const readyHtml = processTemplate(state.content, state);
     console.log("Processed HTML Content:", readyHtml);
     // 2. Set the processed HTML into the form state
@@ -263,18 +268,74 @@ const Inote = () => {
   };
 
 
-  const onFinalSubmit = async(data: EditorForm) => {
-    console.log("Final Edited Content to Save:", data.editorContent);
-    const body :final = {
-      content: data.editorContent,
-    } 
-    const res = await save(body).unwrap();
-    if(res?.data){
-      toast.success("Saved Successfully");
-      refetch();
-      setShowEditor(false);
-    }
+  // const onFinalSubmit = async(data: EditorForm) => {
+  //   console.log("Final Edited Content to Save:", data.editorContent);
+  //   console.log("inote",stepperData?.info?.iNote)
+  //   // const body :final = {
+
+  //   //   content: data.editorContent,
+  //   // } 
+  //   // const res = await save(body).unwrap();
+  //   // if(res?.data){
+  //   //   toast.success("Saved Successfully");
+  //   //   refetch();
+  //     setShowEditor(false);
+  //   // }
+  // };
+
+  const onFinalSubmit = async (formData: EditorForm) => {
+  // Initialize the payload
+  let body = {
+    content: formData.editorContent,
+    i_note: stepperData?.info?.iNote?.iNote,
+    indent_no: stepperData?.user?.IndentNo, 
+    id: undefined as number | undefined, 
   };
+
+  if (stepperData && !editingForm) {
+    body.i_note = stepperData.info?.iNote?.iNote || 0;
+    body.indent_no = stepperData.user?.IndentNo || "";
+  } 
+  
+  // CASE 2: Editing an EXISTING I-Note (Data comes from Table Row)
+  else if (editingForm) {
+    body.i_note = editingForm.i_note;
+    body.id = editingForm.id; 
+    body.content = formData.editorContent;
+    body.indent_no = (editingForm as final).indent_no || ""; 
+  }
+
+  console.log("Final Payload:", body);
+
+  try {
+    console.log("body",body)
+    if(editingForm){
+      const res = await update(body).unwrap();
+      console.log("Update Response:", res);
+      if (res?.data) {
+        toast.success("Updated Successfully");
+        refetch(); 
+        setShowEditor(false);
+        setEditingForm(null); 
+        setStepperData(null); 
+      }
+    }
+    else{
+      const res = await save(body).unwrap();
+      console.log("Save Response:", res); 
+      if (res?.data) {
+        toast.success("Saved Successfully");
+        refetch(); // Refresh the table
+        setShowEditor(false);
+        setEditingForm(null); // Clear edit state
+        setStepperData(null); // Clear stepper state
+    }
+    }
+  } catch (error) {
+    console.error("Save failed", error);
+    toast.error("Failed to save I-Note");
+  }
+};
 
   return (
     <div className={styles.container}>
@@ -322,6 +383,47 @@ const Inote = () => {
           </div>
         </form>
       )}
+{/*${editingForm.i_note}` */}
+
+    {(editingForm && showEditor) && (
+        <Modal
+    title="Edit I-Note"    
+    size="xl" // Fixed typo from 'sixe' to 'size'
+    onClose={() => {
+      setEditingForm(null);
+      setShowEditor(false);
+      setValue("editorContent", "");
+    }}
+  >
+    <form
+      onSubmit={handleSubmit(onFinalSubmit)}
+      className={styles.modalEditorWrapper}
+    >
+      <RichTextEditor<EditorForm>
+        label="Edit I-Note Content"
+        name="editorContent"
+        watch={watch}
+        setValue={setValue}
+        errors={errors}
+      />
+
+      <div className={styles.modalActions} style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+        <Button 
+          label="Update I-Note" 
+          type="submit" 
+          buttonType="one" 
+        />
+        <Button 
+          label="Cancel" 
+          buttonType="four" 
+          onClick={() => setEditingForm(null)} 
+        />
+      </div>
+    </form>
+  </Modal>
+    )}
+    
+
 
       {addModal && (
         <Modal

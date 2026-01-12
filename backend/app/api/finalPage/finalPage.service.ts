@@ -4,9 +4,12 @@ import { page } from "./finalPage.dto";
 
 
 export const createPage = async (data: page) => {
+  console.log("content",data.content);
+  console.log("iNote",data.i_note);
+  console.log("indentNo",data.indent_no);
     try {
-        const query = "INSERT INTO certificate  (content) VALUES (?)";
-        const values = [data.content];
+        const query = "INSERT INTO certificate  (content,i_note,indent_No) VALUES (?,?,?)";
+        const values = [data.content,data.i_note,data.indent_no];
         const [result] = await pool.execute<ResultSetHeader>(query, values);
         return { pageId: result.insertId };
     } catch (error) {
@@ -25,6 +28,31 @@ export const getPageById = async (id: number) => {
         return null;
     }
 };
+
+
+export const updatePage = async (id: number, data: page) => {
+    try {
+      console.log("id",id)
+      console.log("data",data)
+        const query = "UPDATE certificate  SET content = ? WHERE id = ?";
+        const values = [data.content,id];
+        const [result] = await pool.execute(query, values);
+        console.log("Result",result)
+        if(!result){
+            return null
+        }
+        else{
+            return { id, ...data };
+        }
+    } catch (error) {
+        console.log(error);
+        return null;
+    }
+};
+
+
+
+
 
 export const getPaginatedDataWithGlobalSearch = async (
   page?: number,

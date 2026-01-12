@@ -26,5 +26,11 @@ router.post(
     catchError,
     controller.createPage
 )
-
+router.put(
+    "/:id",
+    roleAuth(),
+    // validator.updatePage,
+    catchError,
+    controller.update
+)
 export default router;

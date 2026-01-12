@@ -34,13 +34,24 @@ export const final = createApi({
       method: "POST",
       body: data,
     }),
-  })
   }),
+
+  updateFinalPage :builder.mutation({
+    query: (body) => ({
+      url: `/final-page/${body.id}`,
+      method: "PUT",
+      body: body,
+    }),
+  }),
+  }),
+
+
   
 }); 
 
 export const {
    useGetFinalQuery,
-   usePostFinalMutation
+   usePostFinalMutation,
+   useUpdateFinalPageMutation
     } = final;
   export default final
