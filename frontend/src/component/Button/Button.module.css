@@ -1,5 +1,5 @@
 .btn {
-  width: 100%;
+  /* width: 100%; */
   /* max-width: 95%; */
   padding: 0.7rem 1rem;
   background: var(--color-primary);
@@ -10,6 +10,7 @@
   cursor: pointer;
   transition: 0.2s ease;
   text-align: center;
+  white-space: nowrap;
 }
 
 .btn:hover {

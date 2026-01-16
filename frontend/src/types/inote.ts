@@ -28,7 +28,7 @@ export type MoFormData = mo.FormData;
 export type VendorFormData = vendor.FormData;
 export type iNote = {
   iNote: number;
-  id: number;
+  id?: number;
 }
 
 export interface StepperState {

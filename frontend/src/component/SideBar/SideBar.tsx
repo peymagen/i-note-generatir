@@ -62,6 +62,7 @@ const Sidebar: React.FC = () => {
 
       <div className={styles.lower}>
         <Button
+        buttonType="three"
           label={loading ? "Logging out..." : "Logout"}
           onClick={handleLogout}
           disabled={loading}

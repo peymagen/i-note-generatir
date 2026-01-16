@@ -11,6 +11,20 @@ router.get("/",
     catchError,
     controller.getInote
 );
+router.get(
+    "/current",
+    upload.none(),
+    roleAuth(),
+    catchError,
+    controller.getLastnote
+)
+router.post(
+    "/",
+    upload.none(),
+    roleAuth(),
+    catchError,
+    controller.createInote
+)
 
 
 export default router;

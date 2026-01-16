@@ -23,6 +23,7 @@ import {
 import ConfirmDialog from "../../component/ConfirmDialoge";
 import { DataTable } from "../../component/DataTable/DataTable";
 import { toast } from "react-toastify";
+import Manipulate from './Manipulate'
 
 // Define a type for the editor form
 
@@ -341,14 +342,28 @@ const Inote = () => {
   }
 };
 
+const [manipulate,setManipulate] = useState<boolean>(false);
+
   return (
     <div className={styles.container}>
       <div className={styles.btnWrapper}>
         <Button
-          label="Add New I-Note"
-          buttonType="three"
-          onClick={() => setAddModal(true)}
+          label="Add I-Note"
+          buttonType="one"
+          onClick={() => 
+            
+            setAddModal(true)}
         />
+
+        <Button
+          label="Current I-Note"
+          buttonType="one"
+          onClick={() => {
+            setManipulate(true);
+            // setAddModal(true);
+          }}
+        />
+
       </div>
 
       <h1 className={styles.pageTitle}>I-Note Management</h1>
@@ -448,19 +463,27 @@ const Inote = () => {
                 </div>
               </form>
             </Modal>
-              )}
+          )}
     
+            { manipulate && 
+            <Modal
+              title="Add I-Note"
+              onClose={() => setManipulate(false)}
+            >
+              <Manipulate onClose={() => setAddModal(false)} />
+            </Modal>
 
+            }
 
-      {addModal && (
-        <Modal
-          title="Add I-Note"
-          size={"xl"}
-          onClose={() => setAddModal(false)}
-        >
-          <StepperForm onComplete={handleStepperComplete} />
-        </Modal>
-      )}
+            {addModal && (
+              <Modal
+                title="Add I-Note"
+                size={"xl"}
+                onClose={() => setAddModal(false)}
+              >
+                <StepperForm onComplete={handleStepperComplete} />
+              </Modal>
+            )}
     </div>
   );
 };

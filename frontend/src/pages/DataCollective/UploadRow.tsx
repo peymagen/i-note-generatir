@@ -57,7 +57,7 @@ const UploadRow = ({
         <div className={styles.importBtn}>
           <Button
             label={loading ? "IMPORTING..." : "IMPORT"}
-            buttonType="one"
+            buttonType="three"
             onClick={onImport}
             disabled={!file || loading}
           />

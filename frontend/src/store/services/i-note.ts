@@ -8,8 +8,22 @@ export const iNote = createApi({
   endpoints: (builder) => ({
     getInote:builder.query({
       query: () => ({ url: "/inote", method: "GET" }),
-    })
-  })    
+    }),
+    getLastInote:builder.query({
+      query: () => ({ url: "/inote/current", method: "GET" }),
+    }),
+    creteUpdateInote:builder.mutation({
+      query: (data) => ({
+        url: `/inote?id=${data.id}`,
+        method: "POST",
+        body: data,
+      }),
+    }),
+  }) 
+
 });
 
-export const { useGetInoteQuery } = iNote;
+export const { 
+  useGetInoteQuery,
+  useGetLastInoteQuery,
+  useCreteUpdateInoteMutation } = iNote;

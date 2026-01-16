@@ -1,0 +1,20 @@
+.loadingContainer {
+  padding: 2rem;
+  text-align: center;
+  color: #64748b;
+}
+
+.title {
+  margin-bottom: 1rem;
+  margin-top: -1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.btnRow {
+  margin-top: 2rem;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-around;
+}
