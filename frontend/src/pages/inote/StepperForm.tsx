@@ -61,7 +61,7 @@ const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
     setConsigneeCode(extractFromParens(dbData.details[0]?.ConsigneeCode) || "");
     // console.log("Consignee Code in StepperForm:",consigneeCode);
     setVendorCode(dbData.header[0]?.VendorCode || "");
-    console.log("Vendor Code in StepperForm:",vendorCode);
+    // console.log("Vendor Code in StepperForm:",vendorCode);
     setCurrentStep(2);
   };
   const [updateAvaailableQty] = useUpdateQtyFullFillMutation();
@@ -79,7 +79,7 @@ const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
         iNote: dbData?.iNote
       }
     }));
-    console.log("Master",masterState);
+    // console.log("Master",masterState);
     setCurrentStep(3);
     // onComplete(updatedState);
   };
@@ -87,7 +87,7 @@ const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
   const handleStepThreeComplete = async (
     products: StepperState["products"]
   ) => {
-    console.log("Products from Step Three:", { products: products });
+    // console.log("Products from Step Three:", { products: products });
     const finalState = {
       ...masterState,
       products,

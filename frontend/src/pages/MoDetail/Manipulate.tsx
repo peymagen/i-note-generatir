@@ -1,7 +1,7 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import Input from "../../component/Input/Input2"
-// import RichTextEditor from "../../component/RichEditor/RichEditor";
+import RichTextEditor from "../../component/RichEditor/RichEditor";
 import Button from "../../component/Button/Button";
 import * as yup from "yup";
 import { toast } from "react-toastify";
@@ -32,8 +32,8 @@ const Manipulate: React.FC<Props> = ({
   const {
     register,
     handleSubmit,
-    // watch,
-    // setValue,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: yupResolver(moSchema),
@@ -84,24 +84,21 @@ const Manipulate: React.FC<Props> = ({
         errors={errors}
         required
       />
-      {/* <RichTextEditor
-        label="Firm Address"
-        name="FirmAddress"
+      <RichTextEditor
+        label="MO Address"
+        name="MoAddress"
         watch={watch}
         setValue={setValue}
         errors={errors}
-        onEditorReady={(editor) => {
-        editorInstanceRef.current = editor;
-        }}
         required
-      /> */}
-      <Input
+      />
+      {/* <Input
         label="Mo Address"
         name="MoAddress"
         register={register}
         errors={errors}
         required
-      />
+      /> */}
       <Button
         type="submit"
         label={isSubmitting ? "Saving..." : "Submit"}

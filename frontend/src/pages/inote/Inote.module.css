@@ -58,3 +58,10 @@
   background: #f1f5f9;
   transition: background 0.15s ease;
 }
+
+.modalActions{
+   /* marginTop: '20px', display: 'flex', gap: '10px'  */
+   display: flex;
+   margin-top: 1rem;
+   gap: 1rem;
+}

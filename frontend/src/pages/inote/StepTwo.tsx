@@ -81,7 +81,8 @@ const StepTwo: React.FC<StepTwoProps> = ({
     console.log("INOTE DATA",iNoteData.data.iNote);
     const dbData = {
       vendor:Array.isArray(vendorRes.data.data[0]) ? vendorRes.data.data[0] : [vendorRes.data.data[0]],
-      mo:moRes.data.data[0],
+      // mo:moRes.data.data[0],
+      mo:Array.isArray(moRes.data.data[0]) ? moRes.data.data[0] : [moRes.data.data[0]],
       iNote: {
         iNote: iNoteData.data.iNote,
         id: iNoteData.data.id

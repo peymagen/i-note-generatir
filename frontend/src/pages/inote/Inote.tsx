@@ -66,6 +66,7 @@ const Inote = () => {
   const [addModal, setAddModal] = useState<boolean>(false);
   const [showEditor, setShowEditor] = useState<boolean>(false);
 
+  console.log("Inote file")
 
 
   // 1. Initialize React Hook Form
@@ -82,7 +83,10 @@ const Inote = () => {
 
   const processTemplate = (html: string, state: StepperState) => {
     if (!html) return "";
-    // const header = state.indentInfo.header[0] || {};
+
+    const moAddress = state.info?.mo[0]?.MoAddress;
+
+    console.log("Cleaned Address:", renderCleanAddress(moAddress));
     console.log("State:", state);
     // Financial Year Logic
     const now = new Date();
@@ -125,8 +129,9 @@ const Inote = () => {
       "{{INSPECTION_DATE}}": state.user.InspectedOn || "N/A",
       "{{TOTAL_ITEMS}}": state?.products?.length.toString() || "0",
       "{{VENDOR_DETAILS}}": state.info?.vendor[0]?.FirmAddress || "N/A" ,
-      "{{MO_ADDRESS_WAREHOUSE}}":"THE CONTROLLERATE OF WAREHOUSING"+renderCleanAddress(state.info?.mo[0]?.MoAddress) || "N/A" ,
-      "{{MO_ADDRESS_PROCUREMENT}}":"THE CONTROLLERATE OF PROCUREMENT"+renderCleanAddress(state.info?.mo[0]?.MoAddress) || "N/A" ,
+      // "{{MO_ADDRESS_WAREHOUSE}}": moAddress|| "N/A",
+      "{{MO_ADDRESS_WAREHOUSE}}":"THE CONTROLLERATE OF WAREHOUSING "+renderCleanAddress(moAddress) || "N/A" ,
+      "{{MO_ADDRESS_PROCUREMENT}}":"THE CONTROLLERATE OF PROCUREMENT "+renderCleanAddress(moAddress) || "N/A" ,
       "{{FILE_NO}}": state.user.sequenceNo?.toString() || "N/A" ,
       "{{INOTE_NO}}":state.info?.iNote?.iNote?.toString() || "N/A" ,
       "{{TOTAL_ITEMS_ WORD}}":
@@ -449,7 +454,7 @@ const [manipulate,setManipulate] = useState<boolean>(false);
                   errors={errors}
                 />
 
-                <div className={styles.modalActions} style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+                <div className={styles.modalActions} >
                   <Button 
                     label="Update I-Note" 
                     type="submit" 
@@ -470,7 +475,7 @@ const [manipulate,setManipulate] = useState<boolean>(false);
               title="Add I-Note"
               onClose={() => setManipulate(false)}
             >
-              <Manipulate onClose={() => setAddModal(false)} />
+              <Manipulate onClose={() => setManipulate(false)} />
             </Modal>
 
             }
