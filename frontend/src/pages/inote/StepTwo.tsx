@@ -144,9 +144,9 @@ const StepTwo: React.FC<StepTwoProps> = ({
             type="button"
             label="Back"
             onClick={onBack}
-            buttonType="one"
+            buttonType="three"
           />
-          <Button type="submit" label={isFetching || isFetchingCon ? "Loading..." : "Next"} buttonType="one" />
+          <Button type="submit" label={isFetching || isFetchingCon ? "Loading..." : "Next"} buttonType="three" />
         </div>
       </form>
     </div>

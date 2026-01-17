@@ -419,7 +419,7 @@ const [manipulate,setManipulate] = useState<boolean>(false);
           </div>
 
           <div className={styles.actionButtons}>
-            <Button label="Save Final I-Note" type="submit" buttonType="one" />
+            <Button label="Save Final I-Note" type="submit" buttonType="three" />
             <Button 
               label="Print" 
               onClick={() => handlePrint(watch("editorContent"))} 
@@ -458,11 +458,11 @@ const [manipulate,setManipulate] = useState<boolean>(false);
                   <Button 
                     label="Update I-Note" 
                     type="submit" 
-                    buttonType="one" 
+                    buttonType="three" 
                   />
                   <Button 
                     label="Cancel" 
-                    buttonType="four" 
+                    buttonType="three" 
                     onClick={() => setEditingForm(null)} 
                   />
                 </div>

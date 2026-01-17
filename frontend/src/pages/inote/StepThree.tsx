@@ -167,8 +167,8 @@ const StepThree: React.FC<StepThreeProps> = ({
       )}
 
       <div className={styles.buttonGroup}>
-        <Button type="button" label="Back" onClick={onBack} />
-        <Button type="button" label="Generate I-Note" onClick={handleFinish} />
+        <Button type="button" buttonType="three" label="Back" onClick={onBack} />
+        <Button type="button" buttonType="three" label="Generate I-Note" onClick={handleFinish} />
       </div>
     </div>
   );
