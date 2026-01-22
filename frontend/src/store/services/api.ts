@@ -3,7 +3,7 @@ import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../store";
 import { resetTokens, setTokens } from "../reducers/authReducers";
 
-console.log('Base URL:', import.meta.env.VITE_BASE_URL);
+// console.log('Base URL:', import.meta.env.VITE_BASE_URL);
 
 
 const rawBaseQuery = fetchBaseQuery({
@@ -24,10 +24,10 @@ const rawBaseQuery = fetchBaseQuery({
 export const baseQueryWithReauth = async (
   args: string | FetchArgs,
   api: BaseQueryApi,
-  extra: {}
+  extra: object
 ) => {
-  console.log("api",api);
-  console.log("args",args)
+  // console.log("api",api);
+  // console.log("args",args)
   
   const result = await rawBaseQuery(args, api, extra);
   console.log("re",result)
@@ -39,13 +39,21 @@ export const baseQueryWithReauth = async (
   }
 
   // Save refreshed tokens if backend sends new ones
-  const data: any = result.data;
+  const data = result.data as {
+    accessToken?: string;
+    refreshToken?: string;
+    user?: {
+      id: string;
+      email: string;
+      [key: string]: unknown; 
+    };
+  };
   if (data?.accessToken && data?.refreshToken) {
     api.dispatch(
       setTokens({
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
-        user: data.user,
+        user: data.user!,
       })
     );
   }

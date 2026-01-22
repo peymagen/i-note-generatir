@@ -29,7 +29,7 @@ router.post(
 router.put(
     "/:id",
     roleAuth(),
-    // validator.updatePage,
+    validator.updatePage,
     catchError,
     controller.update
 )

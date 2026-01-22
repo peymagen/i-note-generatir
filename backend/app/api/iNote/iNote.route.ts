@@ -3,6 +3,7 @@ import { catchError } from "../../common/middleware/cath-error.middleware";
 import * as controller from "./iNote.controller";
 import { upload } from "../../common/middleware/multer.middleware";
 import { roleAuth } from "../../common/middleware/role-auth.middleware";
+import * as validator from "./iNote.validator";
 const router = Router();
 
 router.get("/", 
@@ -22,6 +23,7 @@ router.post(
     "/",
     upload.none(),
     roleAuth(),
+    validator.createINote,  
     catchError,
     controller.createInote
 )

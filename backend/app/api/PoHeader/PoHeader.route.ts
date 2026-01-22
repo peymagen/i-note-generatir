@@ -9,6 +9,7 @@ const router = Router();
 router.post(
   "/import",
   roleAuth(),
+  validator.createPoHeader,
   excelUpload.single("file"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {

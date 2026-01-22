@@ -3,12 +3,14 @@ import * as controller from "./PoDetail.Controller";
 import { roleAuth } from "../../common/middleware/role-auth.middleware";
 import { excelUpload } from "../../common/middleware/excel-upload.middleware";
 import { catchError } from "../../common/middleware/cath-error.middleware";
+import * as validator from "./PoDetail.validator";
 
 const router = Router();
 
 router.post(
   "/import",
   roleAuth(),
+  validator.createPoDetail,
   excelUpload.single("file"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
