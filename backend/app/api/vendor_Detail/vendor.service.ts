@@ -1,49 +1,119 @@
 import { pool } from '../../common/services/sql.service';
 import { vendor } from "./vendor.dto";
 import { type RowDataPacket, type ResultSetHeader } from "mysql2";
+import xlsx from "xlsx";
 
-export const add = async(userId: number, payload: any) => {
-    try {
-        const query = `INSERT INTO vendor_Detail(userId, FirmName, FirmAddress, vendorCode, FirmEmailId, ContactNumber) 
+
+const formatDate = (value: any): string | null => {
+  if (!value) return null;
+
+  // Case 1: Excel serial number
+  if (typeof value === "number") {
+    const d = xlsx.SSF.parse_date_code(value);
+    return `${d.y}-${String(d.m).padStart(2, "0")}-${String(d.d).padStart(2, "0")}`;
+  }
+
+  // Case 2: String like "03/07/2024 00:00:00"
+  if (typeof value === "string") {
+    const [datePart] = value.split(" ");
+    const [dd, mm, yyyy] = datePart.split("/");
+
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  return null;
+};
+
+export const importExcel = async (buffer: Buffer, userId: number) => {
+  const workbook = xlsx.read(buffer);
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  const rows: any[] = xlsx.utils.sheet_to_json(sheet);
+
+  // Map Excel rows to vendor DTO
+  const validatedRows: vendor[] = rows.map((row) => {
+    const dto: vendor = {
+      userId,
+      FirmName:  row["FIRM NAME"]?.toString() || "",
+      FirmAddress: row["FIRM ADDRESS"]?.toString() || "",
+      vendorCode:  row["VENDOR CODE"]?.toString() || "",
+      FirmEmailId:  row["FIRM E-MAIL ID"]?.toString() || null,
+      ContactNumber:  row["FIRM CONTACT NUMBER"]?.toString() || null,
+    };
+    return dto;
+  });
+
+  // Update the query to match your PoDto fields
+  const insertValues = validatedRows.map((r) => [
+    r.userId,
+    r.FirmName,
+    r.FirmAddress,
+    r.vendorCode,
+    r.FirmEmailId,
+    r.ContactNumber
+  ]);
+
+  const query = `
+    INSERT INTO vendor_Detail (
+      userId,
+      FirmName,
+      FirmAddress,
+      vendorCode,
+      FirmEmailId,
+      ContactNumber
+    ) VALUES ?
+  `;
+
+  await pool.query(query, [insertValues]);
+
+  return {
+    totalInserted: validatedRows.length,
+    message: "Excel imported successfully",
+  };
+};
+
+
+export const add = async (userId: number, payload: any) => {
+  try {
+    const query = `INSERT INTO vendor_Detail(userId, FirmName, FirmAddress, vendorCode, FirmEmailId, ContactNumber) 
                       VALUES(?, ?, ?, ?, ?, ?)`;
-        
-        // Convert undefined values to null
-        const values = [
-            userId,
-            payload.FirmName,
-            payload.FirmAddress,
-            payload.vendorCode,
-            payload.FirmEmailId||null,
-            payload.ContactNumber||null
-        ];
 
-        const [row]: any = await pool.execute<ResultSetHeader>(query, values);
-        return {
-            success: true,
-            message: "Record added successfully",
-            data: row
-        };
-    } catch (error: any) {
-        console.error('Error in vendor service add:', error);
-        throw error; 
-    }
+    // Convert undefined values to null
+    const values = [
+      userId,
+      payload.FirmName,
+      payload.FirmAddress,
+      payload.vendorCode,
+      payload.FirmEmailId || null,
+      payload.ContactNumber || null
+    ];
+
+    const [row]: any = await pool.execute<ResultSetHeader>(query, values);
+    return {
+      success: true,
+      message: "Record added successfully",
+      data: row
+    };
+  } catch (error: any) {
+    console.error('Error in vendor service add:', error);
+    throw error;
+  }
 }
 
-export const deleteData = async(Id:number)=>{
-    try{
-        const query = `Delete from vendor_Detail where id = ?`;
-        const value = [Id];
-        const row = await pool.execute<ResultSetHeader>(query,value);
-        return {
-            success: true,
-            message: "Record deleted successfully",
-            data: row
-        }
+export const deleteData = async (Id: number) => {
+  try {
+    const query = `Delete from vendor_Detail where id = ?`;
+    const value = [Id];
+    const row = await pool.execute<ResultSetHeader>(query, value);
+    return {
+      success: true,
+      message: "Record deleted successfully",
+      data: row
     }
-    catch(error:any){
-        console.log(error)
-        throw new Error(error)
-    }
+  }
+  catch (error: any) {
+    console.log(error)
+    throw new Error(error)
+  }
 }
 
 export const updateData = async (
@@ -52,19 +122,19 @@ export const updateData = async (
   userId: number
 ) => {
   try {
-    
+
     const filteredPayload = Object.entries(payload).reduce((acc, [key, value]) => {
       acc[key] = value !== undefined ? value : null;
       return acc;
     }, {} as Record<string, any>);
 
-    
+
     const updateFields: Partial<vendor> = {
       ...filteredPayload,
-      updateBy: userId  
+      updateBy: userId
     };
 
-    
+
     Object.keys(updateFields).forEach(key => {
       if (updateFields[key as keyof vendor] === undefined) {
         delete updateFields[key as keyof vendor];
@@ -79,7 +149,7 @@ export const updateData = async (
     }
 
     const setClause = Object.keys(updateFields)
-      .filter(key => key !== 'id') 
+      .filter(key => key !== 'id')
       .map(key => `${key} = ?`)
       .join(', ');
 
@@ -138,11 +208,11 @@ export const updateData = async (
 //     }
 // }
 
-export const getByVendorCode = async(vendorCode:string)=>{
-  try{
+export const getByVendorCode = async (vendorCode: string) => {
+  try {
     const query = "Select * from vendor_Detail where vendorCode = ? "
-    const[row] =  await pool.execute<RowDataPacket[]>(query,[vendorCode])
-    if(!row || row.length == 0 || row.length== null){
+    const [row] = await pool.execute<RowDataPacket[]>(query, [vendorCode])
+    if (!row || row.length == 0 || row.length == null) {
       return {
         success: false,
         message: "No record found with the given vendor code"
@@ -154,7 +224,7 @@ export const getByVendorCode = async(vendorCode:string)=>{
       data: row
     }
   }
-  catch(error:any){
+  catch (error: any) {
     console.log(error)
     throw new Error(error)
   }
@@ -171,7 +241,7 @@ export const getPaginatedDataWithGlobalSearch = async (
   search?: string
 ) => {
   try {
-    
+
     const safePage = page && page > 0 ? page : 1;
     const safeLimit = limit && limit > 0 ? limit : 50;
     const offset = (safePage - 1) * safeLimit;
@@ -181,7 +251,7 @@ export const getPaginatedDataWithGlobalSearch = async (
     let whereClause = "";
     const values: any[] = [];
 
-    
+
     if (normalizedSearch) {
       const [columnRows]: any = await pool.query(`
         SELECT COLUMN_NAME
@@ -204,7 +274,7 @@ export const getPaginatedDataWithGlobalSearch = async (
       }
     }
 
-    
+
     const dataQuery = `
       SELECT *
       FROM vendor_Detail
@@ -219,7 +289,7 @@ export const getPaginatedDataWithGlobalSearch = async (
       offset,
     ]);
 
-    
+
     const countQuery = `
       SELECT COUNT(*) AS total
       FROM vendor_Detail
