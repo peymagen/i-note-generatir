@@ -21,7 +21,6 @@ const Schema: yup.ObjectSchema<formOne> = yup.object({
 
 
 interface StepOneProps {
-  // Added content string to the callback signature
   onNext: (formFields: formOne, dbData: StepperState["indentInfo"], content: string) => void;
   initialValues?: Partial<formOne>;
 }
@@ -53,7 +52,7 @@ const StepOne: React.FC<StepOneProps> = ({ onNext, initialValues }) => {
         triggerGetContent(data.template).unwrap()
       ]);
 
-      console.log("PO Response:", poResponse);
+      
       if (poResponse.success ) {
         toast.success("Purchase Order and Content loaded!");
         
@@ -61,14 +60,12 @@ const StepOne: React.FC<StepOneProps> = ({ onNext, initialValues }) => {
           header: Array.isArray(poResponse.data.header) ? poResponse.data.header : [poResponse.data.header],
           details: poResponse.data.details || []
         };
-        // console.log("content:",contentResponse.data[0]);
+        
 
         const content = contentResponse?.data[0] || "";
-        console.log("Vendor code ", indentData.header[0]?.VendorCode);
-        console.log("Consignee code ", indentData.details[0]?.ConsigneeCode);  
+       
         onNext(data, indentData, content); 
       } else {
-        console.error("No PO found:", poResponse);
         toast.error("No Purchase Order found.");
       }
     } catch (err: unknown) {

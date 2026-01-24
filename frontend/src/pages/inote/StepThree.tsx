@@ -94,8 +94,8 @@ const StepThree: React.FC<StepThreeProps> = ({
         if (!ui || !ui.selected || ui.acceptedQty <= 0) return null;
 
         return {
-          ...p, // ✅ full backend detail
-          acceptedQty: ui.acceptedQty, // ✅ UI data
+          ...p,
+          acceptedQty: ui.acceptedQty, 
           selected: true,
         };
       })

@@ -67,7 +67,7 @@ const Manipulate: React.FC<Props> = ({ mode, defaultValues, onSubmitSuccess }) =
  
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
-    console.log("Form Data Submitted:", data);
+   
     try {
       const mutation = mode === "create" ? addPoHeader : updatePoHeader;
       

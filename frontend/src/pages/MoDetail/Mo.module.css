@@ -56,8 +56,7 @@
   }
 
   .btnWrapper {
-    position: static;
-    justify-content: flex-end;
+    top: 3.5rem;
   }
 
  

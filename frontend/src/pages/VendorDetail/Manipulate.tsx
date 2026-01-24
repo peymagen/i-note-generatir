@@ -10,7 +10,6 @@ import { useUpdateVendorMutation ,
 } from "../../store/services/vendor-detail";
 
 import type { FormData ,VendorItem} from "../../types/vendor";
-import { useEffect } from "react";
 
 /* ---------------- TYPES ---------------- */
 
@@ -47,12 +46,9 @@ const Manipulate: React.FC<Props> = ({
     const [updateVendor] = useUpdateVendorMutation();
     const [addVendor] = useAddVendorMutation();
 
-  useEffect(()=>{
-    console.log("Default Values:", defaultValues);
-  })
 
   const onSubmit: SubmitHandler<VendorItem> = async (data) => {
-    console.log("Form Data Submitted:", data);
+
     try {
       // call create or update API here
       try {
@@ -64,7 +60,6 @@ const Manipulate: React.FC<Props> = ({
           FirmEmailId: data.FirmEmailId || "",
           ContactNumber: data.ContactNumber ||"",
         };
-        console.log("Payload before submission:", payload);
         if (mode === "edit") {
           payload.Id = defaultValues?.Id;
         }
@@ -83,7 +78,6 @@ const Manipulate: React.FC<Props> = ({
       onSubmitSuccess();
     } 
     catch {
-      console.log("Data ID:", data.Id);
       toast.error("Failed");
     }
   };
@@ -106,13 +100,6 @@ const Manipulate: React.FC<Props> = ({
               errors={errors}
         
       />
-      {/* <Input
-        label="FirmAddress"
-        name="FirmAddress"
-        register={register}
-        errors={errors}
-        required
-      /> */}
       <Input
         label="vendorCode"
         name="vendorCode"

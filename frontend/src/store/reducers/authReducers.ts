@@ -26,18 +26,6 @@ const getStoredUser = (): User | null => {
   }
 };
 
-// Define the initial state using that type
-// const initialState: AuthState = {
-//   accessToken: localStorage.getItem("accessToken") || "",
-//   refreshToken: localStorage.getItem("refreshToken") || "",
-//   user: localStorage.getItem("user")
-//     ? JSON.parse(localStorage.getItem("user") as string)
-//     : null,
-//   isAuthenticated: localStorage.getItem("accessToken") ? true : false,
-//   loading: false,
-//   error: null,
-// };
-
 
 
 const initialState: AuthState = {
@@ -48,48 +36,6 @@ const initialState: AuthState = {
   loading: false,
   error: null,
 };
-
-
-// export const authSlice = createSlice({
-//   name: "auth",
-//   initialState,
-//   reducers: {
-//     setLoading: (state, action: PayloadAction<{ loading: boolean }>) => {
-//       state.loading = action.payload.loading;
-//     },
-
-//     setTokens: (
-//       state,
-//       action: PayloadAction<{
-//         accessToken: string;
-//         refreshToken: string;
-//         user: User;
-//       }>
-//     ) => {
-//       state.accessToken = action.payload.accessToken;
-//       state.refreshToken = action.payload.refreshToken;
-//       state.user = action.payload.user;
-//       state.isAuthenticated = true;
-//       state.loading = false;
-//       localStorage.setItem("accessToken", action.payload.accessToken);
-//       localStorage.setItem("refreshToken", action.payload.refreshToken);
-//       localStorage.setItem("user", JSON.stringify(action.payload.user));
-//     },
-//     resetTokens: (state) => {
-//       state.accessToken = "";
-//       state.refreshToken = "";
-//       state.user = null;
-//       state.isAuthenticated = false;
-//       localStorage.setItem("accessToken", "");
-//       localStorage.setItem("refreshToken", "");
-//       localStorage.setItem("user", "");
-//     },
-//   },
-// });
-
-// export const { setLoading, setTokens, resetTokens } = authSlice.actions;
-
-// export default authSlice.reducer;
 
 
 export const authSlice = createSlice({
@@ -120,9 +66,7 @@ export const authSlice = createSlice({
 
       try {
         localStorage.setItem("accessToken", accessToken);
-        console.log("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
-        console.log("refreshToken", refreshToken);
         localStorage.setItem("user", JSON.stringify(user));
       } 
       catch (error) {

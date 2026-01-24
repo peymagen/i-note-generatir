@@ -3,7 +3,6 @@ import Sidebar from "../../component/SideBar/SideBar";
 import style from "./Dashboard.module.css";
 
 const Dashboard: React.FC<{ children?: React.ReactNode }> = () => {
-  // const location = useLocation();
   
   return (
     <div className={style.dashboard}> 
@@ -11,7 +10,6 @@ const Dashboard: React.FC<{ children?: React.ReactNode }> = () => {
         <Sidebar />
       </div>
       <div className={style.contentArea}>
-        {/* {children || (location.pathname === '/' && <h1>Welcome to Dashboard</h1>)} */}
         <Outlet />
       </div>
     </div>

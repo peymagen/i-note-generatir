@@ -43,10 +43,7 @@ const Login = () => {
 
   const onSubmit = async (formData: LoginFormValues) => {
     try {
-      console.log(" onSubmit Fired!", formData); 
       const response = await loginUser(formData).unwrap();
-      console.log("res",response)
-      console.log(" API Response:", response.data.accessToken)
       if (response?.data?.accessToken) {
         dispatch(setTokens({
           accessToken: response.data.accessToken,
@@ -79,7 +76,6 @@ const Login = () => {
           type="email"
           register={register}
           errors={errors}
-          fullWidth
           required
           placeholder="Enter your email"
         />
@@ -90,12 +86,11 @@ const Login = () => {
           type="password"
           register={register}
           errors={errors}
-          fullWidth
           required
           placeholder="Enter your password"
         />
 
-        <Button type="submit" label="Login" buttonType="one" loading={isLoading} />
+        <Button type="submit" label="Login" buttonType="three" loading={isLoading} />
       </form>
     </AuthLayout>
   );

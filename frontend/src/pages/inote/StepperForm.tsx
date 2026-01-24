@@ -5,8 +5,6 @@ import StepTwo from "./StepTwo";
 import type { formData, StepperState, formOne, VendorFormData, MoFormData,iNote } from "../../types/inote";
 import * as detail from "../../types/poDetail";
 import * as header from "../../types/poHeader";
-// import * as vendor from "../../types/vendor";
-// import * as mo from "../../types/mo";
 import StepThree from "./StepThree";
 import { useUpdateQtyFullFillMutation } from "../../store/services/po-details";
 import styles from "./Stepper.module.css";
@@ -59,16 +57,14 @@ const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
       indentInfo: dbData,
     }));
     setConsigneeCode(extractFromParens(dbData.details[0]?.ConsigneeCode) || "");
-    // console.log("Consignee Code in StepperForm:",consigneeCode);
     setVendorCode(dbData.header[0]?.VendorCode || "");
-    // console.log("Vendor Code in StepperForm:",vendorCode);
     setCurrentStep(2);
   };
   const [updateAvaailableQty] = useUpdateQtyFullFillMutation();
 
   const handleStepTwoComplete = (
     stepTwoFields: Partial<formData>,
-    dbData?: { vendor: VendorFormData[]; mo: MoFormData[]; iNote: iNote }
+    dbData?: { vendor: VendorFormData[]; mo: MoFormData[]; iNote?: iNote }
   ) => {
     setMasterState((prev) => ({
       ...prev,
@@ -79,15 +75,12 @@ const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
         iNote: dbData?.iNote
       }
     }));
-    // console.log("Master",masterState);
     setCurrentStep(3);
-    // onComplete(updatedState);
   };
 
   const handleStepThreeComplete = async (
     products: StepperState["products"]
   ) => {
-    // console.log("Products from Step Three:", { products: products });
     const finalState = {
       ...masterState,
       products,
@@ -95,8 +88,7 @@ const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
     const updatePromises = await updateAvaailableQty({
       products: products,
     }).unwrap();
-    console.log("Update Promises:", updatePromises);
-    console.log("Final State to be sent on completion:", finalState);
+    
     setMasterState(finalState);
     onComplete(finalState);
   };

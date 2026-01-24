@@ -47,7 +47,7 @@ const Manipulate: React.FC<Props> = ({ onClose }) => {
 
   useEffect(() => {
     if (currentData) {
-      console.log("Raw API Response:", currentData); // Keep this to debug
+     
       const actualData = (currentData as { data?: iNote}).data || currentData;
 
       const iNoteValue = actualData?.iNote;

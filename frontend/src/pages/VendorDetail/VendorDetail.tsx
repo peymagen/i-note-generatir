@@ -23,14 +23,10 @@ const VendorDetail = () => {
   const limit = 50;
   const [search, setSearch] = useState<string>();
 
-  const { data, isLoading, isError,error, refetch } = useGetAllVendorQuery(
+  const { data, isLoading, refetch } = useGetAllVendorQuery(
     { page, limit, search },
     { refetchOnMountOrArgChange: true }
   );
-  console.log("isError:", isError, "error:", error);
-
-  
-  // const [editingId, setEditingId] = useState<number | null>(null);
 
   const [editingForm, setEditingForm] = useState<VendorItem | null>(null);
   const [addModal, setAddModal] = useState(false);
@@ -38,9 +34,7 @@ const VendorDetail = () => {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   
 
-  // const [updateItem] = useUpdateVendorMutation();
   const [deleteItem] = useDeleteVendorMutation();
-  // const [addItem] = useAddVendorMutation();
 
   /* ---------------- NORMALIZE API DATA ---------------- */
 
@@ -74,7 +68,6 @@ const VendorDetail = () => {
     [items, totalRecords, page, search]
   );
 
-  /* ---------------- UPDATE ---------------- */
 
   
 
@@ -104,7 +97,6 @@ const VendorDetail = () => {
             className={`${styles.iconBtn} ${styles.edit}`}
             title="Edit User"
             onClick={()=>{setEditingForm(row)
-              console.log("row:",row);
             }}
           >
             <FiEdit size={18} />

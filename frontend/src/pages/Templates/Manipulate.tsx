@@ -31,7 +31,6 @@ const TemplateFormModal: React.FC<Props> = ({
   defaultValues,
   onSuccess,
 }) => {
-  console.log(defaultValues);
   const [createPage] = useCreatePageMutation();
   const [updatePage] = useUpdatePageMutation();
 

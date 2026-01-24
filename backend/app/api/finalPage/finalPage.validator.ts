@@ -9,5 +9,4 @@ export const createPage = [
 
 export const updatePage = [
     body("content").optional().isString().withMessage("content must be a string"),
-    body("indent_no").optional().isNumeric().withMessage("indent_no must be a number"),
 ];

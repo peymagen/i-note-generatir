@@ -44,8 +44,6 @@ const Manipulate: React.FC<Props> = ({
   const {
     register,
     handleSubmit,
-    // watch,
-    // setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: yupResolver(poDetailSchema),
@@ -56,7 +54,7 @@ const Manipulate: React.FC<Props> = ({
   const [addPoDetail] = useAddPoDetailMutation();
 
   const onSubmit: SubmitHandler<PoDetailItem> = async (data) => {
-    console.log("Form Data Submitted:", data);
+    
     try {
       // call create or update API here
       try {
@@ -78,7 +76,7 @@ const Manipulate: React.FC<Props> = ({
           StationCode: data.StationCode || "",
           ReReferencedItemCode: data.ReReferencedItemCode || "",
         };
-        console.log("Payload before submission:", payload);
+        
         if (mode === "edit") {
           payload.id = defaultValues?.id;
         }
@@ -97,7 +95,7 @@ const Manipulate: React.FC<Props> = ({
 
       onSubmitSuccess();
     } catch {
-      console.log("Data ID:", data.id);
+      
       toast.error("Failed");
     }
   };

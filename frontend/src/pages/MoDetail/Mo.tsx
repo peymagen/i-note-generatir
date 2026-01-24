@@ -26,13 +26,11 @@ const Mo = () => {
   const limit = 50;
   const [search, setSearch] = useState<string | undefined>(undefined);
 
-  const { data, isLoading, isError, error,refetch } = useGetAllMoDetailQuery(
+  const { data, isLoading,refetch } = useGetAllMoDetailQuery(
     { page, limit, search },
     { refetchOnMountOrArgChange: true }
   );
-    console.log("isError:", isError, "error:", error);
 
-  // const [editingId, setEditingId] = useState<number | null>(null);
   const [editingForm, setEditingForm] = useState<MoItem | null>(null);
   const [addModal, setAddModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<MoItem | null>(null);
@@ -111,7 +109,7 @@ const Mo = () => {
             className={`${styles.iconBtn} ${styles.edit}`}
             title="Edit User"
             onClick={()=>{setEditingForm(row)
-              console.log("row:",row);
+              
             }}
           >
             <FiEdit size={18} />

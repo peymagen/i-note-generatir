@@ -50,10 +50,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
   consigneeCode,
 }) => {
   const headerData = indentInfo.header[0];
-  console.log("Header Data in Step Two:", headerData);
-  console.log("Initial Values in Step Two:", initialValues);
-  console.log("Indent Info in Step Two:", indentInfo);
-
+ 
   const [triggerVendor, { isLoading: isFetching }] = useLazyGetByVendorCodeQuery();
   const [triggerConsignee, { isLoading: isFetchingCon }] = useLazyGetDatabyConQuery();
   const { data: iNoteData } = useGetInoteQuery(undefined);
@@ -67,21 +64,16 @@ const StepTwo: React.FC<StepTwoProps> = ({
     defaultValues: initialValues,
   });
 
-  // console.log("INOTE:",iNoteData);
-  // const some = iNoteData?.data.iNote
-  // console.log(some);
+
 
   const onSubmit: SubmitHandler<formData> = async (data) => {
     const [vendorRes,moRes] = await Promise.all([
       triggerVendor(vendorCode).unwrap(),
       triggerConsignee(consigneeCode).unwrap(),
     ]);
-    console.log("Vendor Data Response:", vendorRes.data.data[0]); 
-    console.log("Consignee Data Response:", moRes.data.data[0]);
-    console.log("INOTE DATA",iNoteData.data.iNote);
+   
     const dbData = {
       vendor:Array.isArray(vendorRes.data.data[0]) ? vendorRes.data.data[0] : [vendorRes.data.data[0]],
-      // mo:moRes.data.data[0],
       mo:Array.isArray(moRes.data.data[0]) ? moRes.data.data[0] : [moRes.data.data[0]],
       iNote: {
         iNote: iNoteData.data.iNote,
@@ -95,13 +87,6 @@ const StepTwo: React.FC<StepTwoProps> = ({
 
   return (
     <div className={styles.formContainer}>
-      {/* {headerData && (
-        <div className={styles.infoBox}>
-          <h4>Inspection Basis</h4>
-          <p><strong>Vendor:</strong> {headerData.Name}</p>
-          <p><strong>PO No:</strong> {initialValues.IndentNo}</p>
-        </div>
-      )} */}
 
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
         <h3 className={styles.stepTitle}>Inspection Details</h3>

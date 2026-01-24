@@ -22,15 +22,13 @@ const ItemDetail = () => {
   const limit = 50;
   const [search, setSearch] = useState<string | undefined>(undefined);
 
-  const {data, isLoading, isError,error, refetch} = useGetAllItemDetailsQuery(
+  const {data, isLoading,  refetch} = useGetAllItemDetailsQuery(
   { page, limit ,search},
   {
     refetchOnMountOrArgChange: true,
   }
 );
-  console.log("isError:", isError, "error:", error);
 
-  // const [editingId, setEditingId] = useState<number | null>(null);
 
   const [editingForm, setEditingForm] = useState<itemDetail | null>(null);
   const [addModal, setAddModal] = useState(false);
@@ -40,18 +38,10 @@ const ItemDetail = () => {
   const [deleteItem] = useDeleteItemDetailMutation(); 
 
 
-  // const [file, setFile] = useState<File | null>(null);
 
   const items = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
-  const pagination = data?.data?.pagination;
-const totalRecords = data?.data?.pagination?.totalRecords ?? 0;
-  const totalPages = pagination?.totalPages ?? 1;
+  const totalRecords = data?.data?.pagination?.totalRecords ?? 0;
 
-  console.log("Items:", items);
-  console.log("Pagination:", pagination);
-  console.log("Total Records:", totalRecords);
-  console.log("Total Pages:", totalPages)
- 
   // --------------------------                
   // FETCH DATA FOR DataTable (DataTable handles pagination!)
   // --------------------------
@@ -111,9 +101,7 @@ const handleDelete = async () => {
           <button
             className={`${styles.iconBtn} ${styles.edit}`}
             title="Edit User"
-            onClick={()=>{setEditingForm(row)
-              console.log("row:",row);
-            }}
+            onClick={()=>{setEditingForm(row)}}
           >
             <FiEdit size={18} />
           </button>
@@ -121,7 +109,7 @@ const handleDelete = async () => {
       },
   {
     label: "Delete",
-    onClick: () => {}, // FIXED: Changed 'onclick' to 'onClick'
+    onClick: () => {}, 
     component: (row: itemDetail) => (
       <button
         className={`${styles.iconBtn} ${styles.delete}`}

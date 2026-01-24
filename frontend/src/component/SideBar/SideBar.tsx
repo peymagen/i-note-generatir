@@ -34,6 +34,7 @@ const Sidebar: React.FC = () => {
       toast.success("Logged out successfully!");
     } catch (err) {
       console.error("Logout error:", err);
+      toast.error("something went wrong, logout failed");
     } finally {
       setLoading(false);
       navigate("/login", { replace: true }); 
@@ -50,7 +51,7 @@ const Sidebar: React.FC = () => {
               <Link
                 to={item.path}
                 className={`${styles.menuItem} ${
-                  location.pathname === item.path ? styles.active : ''
+                  location.pathname === `/${item.path}` ? styles.active : ""
                 }`}
               >
                 {item.label}

@@ -51,11 +51,11 @@ const Inote = () => {
   const limit = 50;
   const [search, setSearch] = useState<string | undefined>(undefined);
 
-  const { data, isLoading, isError, error,refetch } = useGetFinalQuery(
+  const { data, isLoading,refetch } = useGetFinalQuery(
     { page, limit, search },
     { refetchOnMountOrArgChange: true }
   );
-    console.log("isError:", isError, "error:", error);
+    
     const [save] = usePostFinalMutation();
     const [update] = useUpdateFinalPageMutation();
     const [deleteFinalPage] = useDeleteFinalPageMutation();
@@ -65,8 +65,6 @@ const Inote = () => {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);  
   const [addModal, setAddModal] = useState<boolean>(false);
   const [showEditor, setShowEditor] = useState<boolean>(false);
-
-  console.log("Inote file")
 
 
   // 1. Initialize React Hook Form
@@ -86,8 +84,6 @@ const Inote = () => {
 
     const moAddress = state.info?.mo[0]?.MoAddress;
 
-    console.log("Cleaned Address:", renderCleanAddress(moAddress));
-    console.log("State:", state);
     // Financial Year Logic
     const now = new Date();
     const year = now.getFullYear();
@@ -129,7 +125,6 @@ const Inote = () => {
       "{{INSPECTION_DATE}}": state.user.InspectedOn || "N/A",
       "{{TOTAL_ITEMS}}": state?.products?.length.toString() || "0",
       "{{VENDOR_DETAILS}}": state.info?.vendor[0]?.FirmAddress || "N/A" ,
-      // "{{MO_ADDRESS_WAREHOUSE}}": moAddress|| "N/A",
       "{{MO_ADDRESS_WAREHOUSE}}":"THE CONTROLLERATE OF WAREHOUSING "+renderCleanAddress(moAddress) || "N/A" ,
       "{{MO_ADDRESS_PROCUREMENT}}":"THE CONTROLLERATE OF PROCUREMENT "+renderCleanAddress(moAddress) || "N/A" ,
       "{{FILE_NO}}": state.user.sequenceNo?.toString() || "N/A" ,
@@ -150,7 +145,6 @@ const Inote = () => {
 
     const items = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
     const totalRecords = data?.data?.pagination?.totalRecords ?? 0;
-    console.log("items",items);
   
     const fetchData = useCallback(
       async (params?: { page?: number; search?: string }) => {
@@ -191,7 +185,6 @@ const Inote = () => {
               onClick={()=>{setEditingForm(row)
                  setShowEditor(true)
                   setValue("editorContent", row.content);
-                console.log("row:",row);
               }}
             >
               <FiEdit size={18} />
@@ -216,7 +209,7 @@ const Inote = () => {
       onClick: () => {},
       component: (row: final) => (
         <button
-          className={`${styles.iconBtn} ${styles.edit}`} // Using same style class for consistency
+          className={`${styles.iconBtn} ${styles.edit}`} 
           title="Print I-Note"
           onClick={() => handlePrint(row.content)}
         >
@@ -228,7 +221,7 @@ const Inote = () => {
   const handleStepperComplete = (state: StepperState) => {
     setStepperData(state);
     const readyHtml = processTemplate(state.content, state);
-    console.log("Processed HTML Content:", readyHtml);
+    
     // 2. Set the processed HTML into the form state
     setValue("editorContent", readyHtml);
 
@@ -238,7 +231,7 @@ const Inote = () => {
 
   const handlePrint = (constent:string) => {
     const content = constent;
-    console.log("Printing Content:", content);
+    
     const printWindow = window.open("", "", "width=800,height=600");
     if (!printWindow) return;
 
@@ -315,13 +308,12 @@ const Inote = () => {
     body.indent_no = (editingForm as final).indent_no || ""; 
   }
 
-  console.log("Final Payload:", body);
 
   try {
-    console.log("body",body)
+    
     if(editingForm){
       const res = await update(body).unwrap();
-      console.log("Update Response:", res);
+      
       if (res?.data) {
         toast.success("Updated Successfully");
         refetch(); 
@@ -332,7 +324,7 @@ const Inote = () => {
     }
     else{
       const res = await save(body).unwrap();
-      console.log("Save Response:", res); 
+       
       if (res?.data) {
         toast.success("Saved Successfully");
         refetch(); // Refresh the table
@@ -371,7 +363,7 @@ const [manipulate,setManipulate] = useState<boolean>(false);
 
       </div>
 
-      <h1 className={styles.pageTitle}>I-Note Management</h1>
+      <h1 className={styles.pageTitle}>I-Note</h1>
 
       <div className={styles.tableBox}>
             <DataTable<final & { [x: string]: unknown }>
@@ -397,50 +389,50 @@ const [manipulate,setManipulate] = useState<boolean>(false);
       {/* 3. Render the RichTextEditor instead of dangerouslySetInnerHTML */}
       
         {showEditor && (
-      <Modal
-        title="Add I-Note"
-        size="xl"
-        onClose={() => {
-          setShowEditor(false)}}
-       >
+          <Modal
+            title="Add I-Note"
+            size="xl"
+            onClose={() => {
+              setShowEditor(false)}}
+          >
 
-        <form
-          onSubmit={handleSubmit(onFinalSubmit)}
-          className={styles.editorWrapper}
-        >
-          <div className={styles.pagePaper}>
-            <RichTextEditor<EditorForm>
-              label="Edit I-Note Content"
-              name="editorContent"
-              watch={watch}
-              setValue={setValue}
-              errors={errors}
-            />
-          </div>
+            <form
+              onSubmit={handleSubmit(onFinalSubmit)}
+              className={styles.editorWrapper}
+            >
+              <div className={styles.pagePaper}>
+                <RichTextEditor<EditorForm>
+                  label="Edit I-Note Content"
+                  name="editorContent"
+                  watch={watch}
+                  setValue={setValue}
+                  errors={errors}
+                />
+              </div>
 
-          <div className={styles.actionButtons}>
-            <Button label="Save Final I-Note" type="submit" buttonType="three" />
-            <Button 
-              label="Print" 
-              onClick={() => handlePrint(watch("editorContent"))} 
-              buttonType="two" 
-            />
-          </div>
-        </form>
+              <div className={styles.actionButtons}>
+                <Button label="Save Final I-Note" type="submit" buttonType="three" />
+                <Button 
+                  label="Print" 
+                  onClick={() => handlePrint(watch("editorContent"))} 
+                  buttonType="two" 
+                />
+              </div>
+            </form>
 
-      </Modal>
+          </Modal>
             )}
-{/*${editingForm.i_note}` */}
 
-    {(editingForm && showEditor) && (
-        <Modal
-        title="Edit I-Note"    
-        size="xl" // Fixed typo from 'sixe' to 'size'
-        onClose={() => {
-          setEditingForm(null);
-          setShowEditor(false);
-          setValue("editorContent", "");
-        }}
+
+        {(editingForm && showEditor) && (
+            <Modal
+            title="Edit I-Note"    
+            size="xl" 
+            onClose={() => {
+              setEditingForm(null);
+              setShowEditor(false);
+              setValue("editorContent", "");
+            }}
             >
               <form
                 onSubmit={handleSubmit(onFinalSubmit)}

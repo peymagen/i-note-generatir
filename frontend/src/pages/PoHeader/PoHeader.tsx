@@ -22,14 +22,13 @@ const PoDetail = () => {
     const limit = 50;
     const [search, setSearch] = useState<string | undefined>(undefined);
   
-    const {data, isLoading, isError, error, refetch} = useGetAllPOHeaderQuery(
+    const {data, isLoading, refetch} = useGetAllPOHeaderQuery(
     { page, limit ,search},
     {
       refetchOnMountOrArgChange: true,
     }
   );
-    console.log("isError:", isError, "error:", error);
-  // const [editingId, setEditingId] = useState<number | null>(null);
+   
 
   const [editingForm, setEditingForm] = useState<PoHeaderItem | null>(null);
   const [addModal, setAddModal] = useState(false);
@@ -40,20 +39,11 @@ const PoDetail = () => {
   const [deleteItem] = useDeletePoHeaderMutation(); 
 
 
-
-  // const [file, setFile] = useState<File | null>(null);
-
-  // Backend nested response => actual items
-  // const items = data?.data?.data ?? [];
   const items = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
-  const pagination = data?.data?.pagination;
  const totalRecords = data?.data?.pagination?.totalRecords ?? 0;
-  const totalPages = pagination?.totalPages ?? 1;
+ 
 
-  console.log("Items:", items);
-  console.log("Pagination:", pagination);
-  console.log("Total Records:", totalRecords);
-  console.log("Total Pages:", totalPages)
+
  
   // --------------------------                
   // FETCH DATA FOR DataTable (DataTable handles pagination!)
@@ -114,7 +104,7 @@ const handleDelete = async () => {
             className={`${styles.iconBtn} ${styles.edit}`}
             title="Edit User"
             onClick={()=>{setEditingForm(row)
-              console.log("row:",row);
+              
             }}
           >
             <FiEdit size={18} />
@@ -170,8 +160,7 @@ const handleDelete = async () => {
          <Button
             label="Add"
             buttonType= "three"
-            onClick={() => {console.log("clicked")
-            setAddModal(true)}}
+            onClick={() => {setAddModal(true)}}
           />
 
       </div>

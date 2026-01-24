@@ -157,71 +157,6 @@ export const getItemByIndentNoAndOrderDate = async (
   }
 };
 
-// export const updateDataById = async (id: number, payload: any) => {
-//   try {
-//     const query = `
-//       UPDATE ITEMS_DETAILS SET
-//         IndentNo = ?,
-//         VendorCode = ?,
-//         OrderDate = ?,
-//         OrderLineNo = ?,
-//         ItemCode = ?,
-//         SectionHead = ?,
-//         ItemDesc = ?,
-//         CountryCode = ?,
-//         ItemDeno = ?,
-//         MonthsShelfLife = ?,
-//         CRPCategory = ?,
-//         VEDCCategory = ?,
-//         ABCCategory = ?,
-//         DateTimeApproved = ?,
-//         ApprovedBy = ?,
-//         ReviewSubSectionCode = ?,
-//         INCATYN = ?
-//       WHERE id = ?
-//     `;
-
-//     const values = [
-//       payload.IndentNo,
-//       payload.VendorCode,
-//       payload.OrderDate,
-//       payload.OrderLineNo,
-//       payload.ItemCode,
-//       payload.SectionHead,
-//       payload.ItemDesc,
-//       payload.CountryCode,
-//       payload.ItemDeno,
-//       payload.MonthsShelfLife,
-//       payload.CRPCategory,
-//       payload.VEDCCategory,
-//       payload.ABCCategory,
-//       payload.DateTimeApproved,
-//       payload.ApprovedBy,
-//       payload.ReviewSubSectionCode,
-//       payload.INCATYN,
-//       id
-//     ];
-
-//     const [result]: any = await pool.query(query, values);
-
-//     if (result.affectedRows === 0) {
-//       return {
-//         success: false,
-//         message: "Record not found",
-//       };
-//     }
-
-//     return {
-//       success: true,
-//       message: "Record updated successfully",
-//     };
-
-//   } catch (error: any) {
-//     console.error("Error in updateDataById:", error);
-//     throw new Error("Failed to update PO detail");
-//   }
-// };
-
 export const updateDataById = async (id: number, payload: any) => {
   try {
     // Filter out undefined or null values from payload
@@ -384,45 +319,6 @@ export const addData = async (userId: number, payload: any) => {
   }
 };
 
-// export const getPaginatedData = async (
-//   page: number = 1,
-//   limit: number = 50
-// ) => {
-//   try {
-//     const offset = (page - 1) * limit;
-
-//     const [rows]: any = await pool.query(
-//       `
-//       SELECT *
-//       FROM ITEMS_DETAILS
-//       ORDER BY id ASC
-//       LIMIT ? OFFSET ?
-//       `,
-//       [limit, offset]
-//     );
-
-//     const [[countResult]]: any = await pool.query(
-//       `SELECT COUNT(*) as total FROM ITEMS_DETAILS`
-//     );
-
-//     return {
-//       success: true,
-//       data: rows,
-//       pagination: {
-//         page,
-//         limit,
-//         totalRecords: countResult.total,
-//         totalPages: Math.ceil(countResult.total / limit)
-//       },
-//       message: "Data fetched successfully"
-//     };
-
-//   }
-//   catch (error: any) {
-//     console.error("Error in getPaginatedData:", error);
-//     throw new Error("Failed to fetch paginated Item Details");
-//   }
-// };
 
 export const getPaginatedDataWithGlobalSearch = async (
   page?: number,

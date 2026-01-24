@@ -2,28 +2,12 @@ import React, { useEffect, useState, useRef } from "react";
 import styles from "./DataTable.module.css";
 import Button from "../Button/Button";
 
-// interface Action<T = { [x: string]: unknown }> {
-//   label: string;
-//   onClick: (row: T) => void | Promise<void>;
-// }
 interface Action<T = { [x: string]: unknown }> {
   label: string;
   onClick: (row: T) => Promise<void> | void;
   buttonType?: "one" | "two" | "three" | "four";
   component?: (row: T) => React.ReactNode;
 }
-
-// type addButtonType = {
-//   label: string;
-//   buttonType?: "one" | "two" | "three" | "four";
-//   onClick: () => void;
-// };
-
-// interface Column<T = any> {
-//   label: string;
-//   accessor: string;
-//   render?: (row: T) => React.ReactNode;
-// }
 
 interface DataTableProps<T = { [x: string]: unknown }> {
   fetchData: (
@@ -52,7 +36,6 @@ export const DataTable = <T extends { [x: string]: unknown }>({
   isSearch = true,
   isExport = true,
   hasCheckbox = false,
-  // addButton,
   onSelectedRows,
 }: DataTableProps<T>) => {
   const [data, setData] = useState<T[]>([]);
@@ -60,7 +43,7 @@ export const DataTable = <T extends { [x: string]: unknown }>({
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [selectedRows, setSelectedRows] = useState<T[]>([]);
-  const limit = isNavigate ? 10 : 100000;
+  const limit = isNavigate ? 50 : 100000;
 
   const tableRef = useRef<HTMLTableElement>(null);
 
@@ -175,15 +158,6 @@ export const DataTable = <T extends { [x: string]: unknown }>({
             />
           )}
         </div>
-        {/* {addButton && (
-          <div className={styles.addButton}>
-            <Button
-              label={addButton.label}
-              buttonType={addButton.buttonType || "one"}
-              onClick={addButton.onClick}
-            />
-          </div>
-        )} */}
         {isExport && (
           <div className={styles.exportButtons}>
             <button onClick={exportToCSV}>{"\u{2B07}\uFE0F"}</button>
@@ -361,28 +335,6 @@ export const DataTable = <T extends { [x: string]: unknown }>({
                       })()}
                     </td>
                   ))}
-
-                  {/* {actions && (
-                    <td>
-                      <div className={styles.action}>
-                        {actions.map((action, index) => (
-                          <button
-                            key={index}
-                            onClick={async () => {
-                              try {
-                                await action.onClick(row);
-                              } catch (error) {
-                                console.error('Action failed:', error);
-                              }
-                            }}
-                            className={styles.actionBtn}
-                          >
-                            {action.label}
-                          </button>
-                        ))}
-                      </div>
-                    </td>
-                  )} */}
                   {actions && (
                     <td>
                       <div className={styles.action}>

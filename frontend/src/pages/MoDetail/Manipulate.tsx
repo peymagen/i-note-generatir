@@ -92,13 +92,6 @@ const Manipulate: React.FC<Props> = ({
         errors={errors}
         required
       />
-      {/* <Input
-        label="Mo Address"
-        name="MoAddress"
-        register={register}
-        errors={errors}
-        required
-      /> */}
       <Button
         type="submit"
         label={isSubmitting ? "Saving..." : "Submit"}

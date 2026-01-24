@@ -8,7 +8,6 @@ import { useUpdateItemDetailMutation,
   useAddItemDetailMutation,
 } from "../../store/services/item-details";
 import type { FormData ,itemDetail} from "../../types/itemDetail";
-import { useEffect } from "react";
 
 
 /* ---------------- TYPES ---------------- */
@@ -47,8 +46,6 @@ const Manipulate: React.FC<Props> = ({
   const {
     register,
     handleSubmit,
-    // watch,
-    // setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: yupResolver(itemSchema),
@@ -58,12 +55,9 @@ const Manipulate: React.FC<Props> = ({
     const [updateItemDetail] = useUpdateItemDetailMutation();
     const [addItemDetail] = useAddItemDetailMutation();
 
-  useEffect(()=>{
-    console.log("Default Values:", defaultValues);
-  })
+
 
   const onSubmit: SubmitHandler<itemDetail> = async (data) => {
-    console.log("Form Data Submitted:", data);
     try {
       // call create or update API here
       try {
@@ -87,7 +81,6 @@ const Manipulate: React.FC<Props> = ({
           ReviewSubSectionCode: data.ReviewSubSectionCode,
           INCATYN: data.INCATYN || "",
         };
-        console.log("Payload before submission:", payload);
         if (mode === "edit") {
           payload.id = defaultValues?.id;
         }
@@ -106,7 +99,6 @@ const Manipulate: React.FC<Props> = ({
       onSubmitSuccess();
     } 
     catch {
-      console.log("Data ID:", data.id);
       toast.error("Failed");
     }
   };
