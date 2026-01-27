@@ -8,19 +8,19 @@ import Button from "../../component/Button/Button";
 import Input from "../../component/Input/Input2";
 import styles from "./Stepper.module.css";
 import type { formData, formTwo, StepperState } from "../../types/inote";
-import {useLazyGetByVendorCodeQuery} from"../../store/services/vendor-detail"
-import {useLazyGetDatabyConQuery} from "../../store/services/mo-detail"
-import {useGetInoteQuery} from "../../store/services/i-note"
+import { useLazyGetByVendorCodeQuery } from "../../store/services/vendor-detail"
+import { useLazyGetDatabyConQuery } from "../../store/services/mo-detail"
+import { useGetInoteQuery } from "../../store/services/i-note"
 
 interface StepTwoProps {
   onNext: (data: Partial<formData>,
-    dbData?: StepperState["info"] 
+    dbData?: StepperState["info"]
   ) => void;
   onBack: () => void;
   initialValues: formData;
   indentInfo: StepperState["indentInfo"];
-  vendorCode:string,
-  consigneeCode?:string
+  vendorCode: string,
+  consigneeCode?: string
 }
 
 
@@ -50,7 +50,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
   consigneeCode,
 }) => {
   const headerData = indentInfo.header[0];
- 
+
   const [triggerVendor, { isLoading: isFetching }] = useLazyGetByVendorCodeQuery();
   const [triggerConsignee, { isLoading: isFetchingCon }] = useLazyGetDatabyConQuery();
   const { data: iNoteData } = useGetInoteQuery(undefined);
@@ -67,22 +67,25 @@ const StepTwo: React.FC<StepTwoProps> = ({
 
 
   const onSubmit: SubmitHandler<formData> = async (data) => {
-    const [vendorRes,moRes] = await Promise.all([
+    console.log("data",vendorCode);
+    const [vendorRes, moRes] = await Promise.all([
       triggerVendor(vendorCode).unwrap(),
       triggerConsignee(consigneeCode).unwrap(),
     ]);
-   
+    console.log("vendorRes",vendorRes);
+    console.log("moRes",moRes);
     const dbData = {
-      vendor:Array.isArray(vendorRes.data.data[0]) ? vendorRes.data.data[0] : [vendorRes.data.data[0]],
-      mo:Array.isArray(moRes.data.data[0]) ? moRes.data.data[0] : [moRes.data.data[0]],
+      vendor: Array.isArray(vendorRes.data.data[0]) ? vendorRes.data.data[0] : [vendorRes.data.data[0]],
+      mo: Array.isArray(moRes.data.data[0]) ? moRes.data.data[0] : [moRes.data.data[0]],
       iNote: {
         iNote: iNoteData.data.iNote,
         id: iNoteData.data.id
       }
     };
+    console.log("dbData",dbData);
     onNext(data, dbData);
     toast.success("Preparing I-Note editor...");
-   
+
   };
 
   return (

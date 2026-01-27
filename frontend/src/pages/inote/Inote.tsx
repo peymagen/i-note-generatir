@@ -1,4 +1,4 @@
-import { useMemo, useCallback,useState } from "react";
+import { useMemo, useCallback, useState } from "react";
 import { useForm } from "react-hook-form"; // Import this
 import styles from "./Inote.module.css";
 import Button from "../../component/Button/Button";
@@ -9,10 +9,11 @@ import type { StepperState } from "../../types/inote";
 import { toWords } from "number-to-words";
 import type { PoDetailItem } from "../../types/poDetail";
 import type { itemDetail } from "../../types/itemDetail";
-import {useGetFinalQuery,
-   usePostFinalMutation,
+import {
+  useGetFinalQuery,
+  usePostFinalMutation,
   useUpdateFinalPageMutation,
-useDeleteFinalPageMutation
+  useDeleteFinalPageMutation
 } from "../../store/services/final"
 
 import {
@@ -28,22 +29,22 @@ import Manipulate from './Manipulate'
 // Define a type for the editor form
 
 type final = {
-  id?: number; 
+  id?: number;
   content: string;
   i_note: number;
-  indent_no?: string; 
+  indent_no?: string;
 };
 interface EditorForm {
   editorContent: string;
-  i_note?:number
+  i_note?: number
 }
 
 const renderCleanAddress = (address: string | undefined) => {
   if (!address) return undefined;
-    const key = "MATERIAL ORGANISATION";
-    const startPos = address.indexOf(key);
-    return startPos !== -1 ? address?.substring(startPos) : address;
-  };
+  const key = "MATERIAL ORGANISATION";
+  const startPos = address.indexOf(key);
+  return startPos !== -1 ? address?.substring(startPos) : address;
+};
 
 const Inote = () => {
   const [stepperData, setStepperData] = useState<StepperState | null>(null);
@@ -51,18 +52,18 @@ const Inote = () => {
   const limit = 50;
   const [search, setSearch] = useState<string | undefined>(undefined);
 
-  const { data, isLoading,refetch } = useGetFinalQuery(
+  const { data, isLoading, refetch } = useGetFinalQuery(
     { page, limit, search },
     { refetchOnMountOrArgChange: true }
   );
-    
-    const [save] = usePostFinalMutation();
-    const [update] = useUpdateFinalPageMutation();
-    const [deleteFinalPage] = useDeleteFinalPageMutation();
+
+  const [save] = usePostFinalMutation();
+  const [update] = useUpdateFinalPageMutation();
+  const [deleteFinalPage] = useDeleteFinalPageMutation();
 
   const [editingForm, setEditingForm] = useState<final | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<final | null>(null);
-  const [loadingAction, setLoadingAction] = useState<string | null>(null);  
+  const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [addModal, setAddModal] = useState<boolean>(false);
   const [showEditor, setShowEditor] = useState<boolean>(false);
 
@@ -104,12 +105,10 @@ const Inote = () => {
           const itemDesc = p.ItemDesc || "";
           const itemDeno = p.ItemDeno || "";
           const acceptedQty = p.acceptedQty || p.Qty || 0;
-          return `<tr><td>${p.OrderLineNo}</td><td>${
-            p.ItemCode
-          }<br/>${itemDesc}</td><td>Qty ${p.Qty}</td>
-        <td>${itemDeno}</td><td>${p.Qty}</td><td>${acceptedQty}</td><td>${
-            acceptedQty === p.Qty ? acceptedQty : acceptedQty + " / " + p.Qty
-          }</td><td>0</td><td colspan="2"></td></tr>`;
+          return `<tr><td>${p.OrderLineNo}</td><td>${p.ItemCode
+            }<br/>${itemDesc}</td><td>Qty ${p.Qty}</td>
+        <td>${itemDeno}</td><td>${p.Qty}</td><td>${acceptedQty}</td><td>${acceptedQty === p.Qty ? acceptedQty : acceptedQty + " / " + p.Qty
+            }</td><td>0</td><td colspan="2"></td></tr>`;
         }
       ) || []),
       "</table>",
@@ -124,11 +123,11 @@ const Inote = () => {
       "{{INSPECTION_EVAL_RANGE}}": state.user.InspectionOfferedDate || "N/A",
       "{{INSPECTION_DATE}}": state.user.InspectedOn || "N/A",
       "{{TOTAL_ITEMS}}": state?.products?.length.toString() || "0",
-      "{{VENDOR_DETAILS}}": state.info?.vendor[0]?.FirmAddress || "N/A" ,
-      "{{MO_ADDRESS_WAREHOUSE}}":"THE CONTROLLERATE OF WAREHOUSING "+renderCleanAddress(moAddress) || "N/A" ,
-      "{{MO_ADDRESS_PROCUREMENT}}":"THE CONTROLLERATE OF PROCUREMENT "+renderCleanAddress(moAddress) || "N/A" ,
-      "{{FILE_NO}}": state.user.sequenceNo?.toString() || "N/A" ,
-      "{{INOTE_NO}}":state.info?.iNote?.iNote?.toString() || "N/A" ,
+      "{{VENDOR_DETAILS}}": state.info?.vendor[0]?.FirmAddress || "N/A",
+      "{{MO_ADDRESS_WAREHOUSE}}": "THE CONTROLLERATE OF WAREHOUSING<br/> " + (renderCleanAddress(moAddress) || "N/A"),
+      "{{MO_ADDRESS_PROCUREMENT}}": "THE CONTROLLERATE OF PROCUREMENT<br/> " + (renderCleanAddress(moAddress) || "N/A"),
+      "{{FILE_NO}}": state.user.sequenceNo?.toString() || "N/A",
+      "{{INOTE_NO}}": state.info?.iNote?.iNote?.toString() || "N/A",
       "{{TOTAL_ITEMS_ WORD}}":
         toWords(state?.products?.length.toString() || 0).toUpperCase() ||
         "Zero",
@@ -143,22 +142,22 @@ const Inote = () => {
     return updatedHtml;
   };
 
-    const items = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
-    const totalRecords = data?.data?.pagination?.totalRecords ?? 0;
-  
-    const fetchData = useCallback(
-      async (params?: { page?: number; search?: string }) => {
-        if (params?.search !== undefined && params.search !== search) {
-          setSearch(params.search);
-          setPage(1);
-        }
-        if (params?.page && params.page !== page) {
-          setPage(params.page);
-        }
-        return { data: items, total: totalRecords };
-      },
-      [items, totalRecords, page, search]
-    );
+  const items = useMemo(() => data?.data?.data ?? [], [data?.data?.data]);
+  const totalRecords = data?.data?.pagination?.totalRecords ?? 0;
+
+  const fetchData = useCallback(
+    async (params?: { page?: number; search?: string }) => {
+      if (params?.search !== undefined && params.search !== search) {
+        setSearch(params.search);
+        setPage(1);
+      }
+      if (params?.page && params.page !== page) {
+        setPage(params.page);
+      }
+      return { data: items, total: totalRecords };
+    },
+    [items, totalRecords, page, search]
+  );
   const handleDelete = async () => {
     if (!deleteTarget?.id) return;
     setLoadingAction(deleteTarget?.id?.toString() || "");
@@ -166,50 +165,51 @@ const Inote = () => {
     toast.success("Deleted");
     setDeleteTarget(null);
     refetch();
-  };    
- 
+  };
+
   const columns = [
-    {label:"ID",accessor:"id"},
-    {label:"I-Note",accessor:"i_note"},
-    {label:"Indent No", accessor:"indent_No"},  
+    { label: "ID", accessor: "id" },
+    { label: "I-Note", accessor: "i_note" },
+    { label: "Indent No", accessor: "indent_No" },
   ]
-   const actions = [
-      {
-          label: "Edit",
-          onClick: () => {},
-  
-          component: (row: final) => (
-            <button
-              className={`${styles.iconBtn} ${styles.edit}`}
-              title="Edit User"
-              onClick={()=>{setEditingForm(row)
-                 setShowEditor(true)
-                  setValue("editorContent", row.content);
-              }}
-            >
-              <FiEdit size={18} />
-            </button>
-          ),
-        },
-      {
-        label: "Delete",
-        onClick: () => {},
-        component: (row: final) => (
-          <button
-            className={`${styles.iconBtn} ${styles.delete}`} 
-            title="Delete"
-            onClick={() => setDeleteTarget(row)}
-          >
-            <FiTrash2 size={18} />
-          </button>
-        ),
-      },
-      {
-      label: "Print",
-      onClick: () => {},
+  const actions = [
+    {
+      label: "Edit",
+      onClick: () => { },
+
       component: (row: final) => (
         <button
-          className={`${styles.iconBtn} ${styles.edit}`} 
+          className={`${styles.iconBtn} ${styles.edit}`}
+          title="Edit User"
+          onClick={() => {
+            setEditingForm(row)
+            setShowEditor(true)
+            setValue("editorContent", row.content);
+          }}
+        >
+          <FiEdit size={18} />
+        </button>
+      ),
+    },
+    {
+      label: "Delete",
+      onClick: () => { },
+      component: (row: final) => (
+        <button
+          className={`${styles.iconBtn} ${styles.delete}`}
+          title="Delete"
+          onClick={() => setDeleteTarget(row)}
+        >
+          <FiTrash2 size={18} />
+        </button>
+      ),
+    },
+    {
+      label: "Print",
+      onClick: () => { },
+      component: (row: final) => (
+        <button
+          className={`${styles.iconBtn} ${styles.edit}`}
           title="Print I-Note"
           onClick={() => handlePrint(row.content)}
         >
@@ -217,11 +217,11 @@ const Inote = () => {
         </button>
       ),
     },
-    ]
+  ]
   const handleStepperComplete = (state: StepperState) => {
     setStepperData(state);
     const readyHtml = processTemplate(state.content, state);
-    
+
     // 2. Set the processed HTML into the form state
     setValue("editorContent", readyHtml);
 
@@ -229,9 +229,66 @@ const Inote = () => {
     setAddModal(false);
   };
 
-  const handlePrint = (constent:string) => {
-    const content = constent;
-    
+  // const handlePrint = (constent:string) => {
+  //   const content = constent;
+
+  //   const printWindow = window.open("", "", "width=800,height=600");
+  //   if (!printWindow) return;
+
+  //   printWindow.document.write(`
+  //   <html>
+  //     <head>
+  //       <title>Print I-Note</title>
+  //       <style>
+  //        body {
+  //           font-family: Arial;
+  //         }
+  //         table {
+  //           width: 100%;
+  //           border-collapse: collapse;
+  //         }
+  //         table, th, td {
+  //           border: 1px solid black;
+  //         }
+  // 	  .table{
+  // 			margin: 0 !important;
+  // 	  }
+  // 	  .header, .header th, .header td{
+  //           border: 1px solid white !important;
+  // 	  }
+  // 	 td{
+  // 		vertical-align: top;
+  // 	 }
+  // 	 .fancy{
+  // 		 border-top: 1px solid black !important;
+  // 		 border-bottom: 1px solid black !important;
+  // 		 padding: 5px 0 !important;
+  // 	 }
+  // 	 .fancy td{
+  // 	     text-align: center !important;
+  // 	 }
+  //   .midd tr > td:nth-child(4) {
+  //     border-bottom: 1px solid #ffffff !important;
+  //     border-top: 1px solid #ffffff !important;
+  //   }
+  //       </style>
+  //     </head>
+  //     <body>
+  //       ${content}
+  //     </body>
+  //   </html>
+  // `);
+
+  //   printWindow.document.close();
+  //   printWindow.focus();
+  //   printWindow.print();
+  //   printWindow.close();
+  // };
+
+
+
+
+  const handlePrint = (content: string) => {
     const printWindow = window.open("", "", "width=800,height=600");
     if (!printWindow) return;
 
@@ -240,41 +297,39 @@ const Inote = () => {
       <head>
         <title>Print I-Note</title>
         <style>
-         body {
-            font-family: Arial;
+          body { font-family: Arial; }
+          p { font-size: 10pt; margin: 10px 0; }
+          h1 { font-size: 24pt; margin: 16px 0 12px 0; }
+          h2 { font-size: 20pt; margin: 14px 0 10px 0; }
+          h3 { font-size: 16pt; margin: 12px 0 8px 0; }
+          table { width: 100%; border-collapse: collapse; }
+          table, th, td { border: 1px solid black; }
+          .table { margin: 0 !important; }
+          .header, .header th, .header td { border: 1px solid white !important; }
+          td { vertical-align: top; }
+          .fancy { border-top: 1px solid black !important; border-bottom: 1px solid black !important; padding: 5px 0 !important; }
+          .fancy td { text-align: center !important; }
+          .midd tr > td:nth-child(4) { border-bottom: 1px solid #ffffff !important; border-top: 1px solid #ffffff !important; }
+
+          
+          /* --- NEW CODE START --- */
+          /* This class forces a break before it (ending page 1), 
+             occupies a "blank" spot, and forces a break after it (starting page 3) */
+          .blank-page-break {
+             page-break-before: always;
+             page-break-after: always;
+             content: " ";
+             display: block;
+             height: 0;
+             visibility: hidden;
           }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-          }
-          table, th, td {
-            border: 1px solid black;
-          }
-		  .table{
-				margin: 0 !important;
-		  }
-		  .header, .header th, .header td{
-            border: 1px solid white !important;
-		  }
-		 td{
-			vertical-align: top;
-		 }
-		 .fancy{
-			 border-top: 1px solid black !important;
-			 border-bottom: 1px solid black !important;
-			 padding: 5px 0 !important;
-		 }
-		 .fancy td{
-		     text-align: center !important;
-		 }
-    .midd tr > td:nth-child(4) {
-      border-bottom: 1px solid #ffffff !important;
-      border-top: 1px solid #ffffff !important;
-    }
+          /* --- NEW CODE END --- */
+          
         </style>
       </head>
       <body>
         ${content}
+        <div class="blank-page-break"></div>
       </body>
     </html>
   `);
@@ -285,61 +340,60 @@ const Inote = () => {
     printWindow.close();
   };
 
-
   const onFinalSubmit = async (formData: EditorForm) => {
-  // Initialize the payload
-  let body = {
-    content: formData.editorContent,
-    i_note: stepperData?.info?.iNote?.iNote,
-    indent_no: stepperData?.user?.IndentNo, 
-    id: undefined as number | undefined, 
+    // Initialize the payload
+    let body = {
+      content: formData.editorContent,
+      i_note: stepperData?.info?.iNote?.iNote,
+      indent_no: stepperData?.user?.IndentNo,
+      id: undefined as number | undefined,
+    };
+
+    if (stepperData && !editingForm) {
+      body.i_note = stepperData.info?.iNote?.iNote || 0;
+      body.indent_no = stepperData.user?.IndentNo || "";
+    }
+
+    // CASE 2: Editing an EXISTING I-Note (Data comes from Table Row)
+    else if (editingForm) {
+      body.i_note = editingForm.i_note;
+      body.id = editingForm.id;
+      body.content = formData.editorContent;
+      body.indent_no = (editingForm as final).indent_no || "";
+    }
+
+
+    try {
+
+      if (editingForm) {
+        const res = await update(body).unwrap();
+
+        if (res?.data) {
+          toast.success("Updated Successfully");
+          refetch();
+          setShowEditor(false);
+          setEditingForm(null);
+          setStepperData(null);
+        }
+      }
+      else {
+        const res = await save(body).unwrap();
+
+        if (res?.data) {
+          toast.success("Saved Successfully");
+          refetch(); // Refresh the table
+          setShowEditor(false);
+          setEditingForm(null); // Clear edit state
+          setStepperData(null); // Clear stepper state
+        }
+      }
+    } catch (error) {
+      console.error("Save failed", error);
+      toast.error("Failed to save I-Note");
+    }
   };
 
-  if (stepperData && !editingForm) {
-    body.i_note = stepperData.info?.iNote?.iNote || 0;
-    body.indent_no = stepperData.user?.IndentNo || "";
-  } 
-  
-  // CASE 2: Editing an EXISTING I-Note (Data comes from Table Row)
-  else if (editingForm) {
-    body.i_note = editingForm.i_note;
-    body.id = editingForm.id; 
-    body.content = formData.editorContent;
-    body.indent_no = (editingForm as final).indent_no || ""; 
-  }
-
-
-  try {
-    
-    if(editingForm){
-      const res = await update(body).unwrap();
-      
-      if (res?.data) {
-        toast.success("Updated Successfully");
-        refetch(); 
-        setShowEditor(false);
-        setEditingForm(null); 
-        setStepperData(null); 
-      }
-    }
-    else{
-      const res = await save(body).unwrap();
-       
-      if (res?.data) {
-        toast.success("Saved Successfully");
-        refetch(); // Refresh the table
-        setShowEditor(false);
-        setEditingForm(null); // Clear edit state
-        setStepperData(null); // Clear stepper state
-    }
-    }
-  } catch (error) {
-    console.error("Save failed", error);
-    toast.error("Failed to save I-Note");
-  }
-};
-
-const [manipulate,setManipulate] = useState<boolean>(false);
+  const [manipulate, setManipulate] = useState<boolean>(false);
 
   return (
     <div className={styles.container}>
@@ -347,8 +401,8 @@ const [manipulate,setManipulate] = useState<boolean>(false);
         <Button
           label="Add I-Note"
           buttonType="one"
-          onClick={() => 
-            
+          onClick={() =>
+
             setAddModal(true)}
         />
 
@@ -366,121 +420,122 @@ const [manipulate,setManipulate] = useState<boolean>(false);
       <h1 className={styles.pageTitle}>I-Note</h1>
 
       <div className={styles.tableBox}>
-            <DataTable<final & { [x: string]: unknown }>
-              fetchData={fetchData}
-              loading={isLoading}
-              isSearch
-              isNavigate
-              isExport
-              columns={columns}
-              actions={actions}
-            />
-          </div>
-           {deleteTarget && (
-              <ConfirmDialog
-                title="Delete Item"
-                message={`Are you sure you want to delete ${deleteTarget.id}? This action cannot be undone.`}
-                onCancel={() => setDeleteTarget(null)}
-                onConfirm={handleDelete}
-                loading={loadingAction === deleteTarget.id?.toString()}
-              />
-            )}
+        <DataTable<final & { [x: string]: unknown }>
+          fetchData={fetchData}
+          loading={isLoading}
+          isSearch
+          isNavigate
+          isExport
+          columns={columns}
+          actions={actions}
+        />
+      </div>
+      {deleteTarget && (
+        <ConfirmDialog
+          title="Delete Item"
+          message={`Are you sure you want to delete ${deleteTarget.id}? This action cannot be undone.`}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={handleDelete}
+          loading={loadingAction === deleteTarget.id?.toString()}
+        />
+      )}
 
       {/* 3. Render the RichTextEditor instead of dangerouslySetInnerHTML */}
-      
-        {showEditor && (
-          <Modal
-            title="Add I-Note"
-            size="xl"
-            onClose={() => {
-              setShowEditor(false)}}
+
+      {showEditor && (
+        <Modal
+          title="Add I-Note"
+          size="xl"
+          onClose={() => {
+            setShowEditor(false)
+          }}
+        >
+
+          <form
+            onSubmit={handleSubmit(onFinalSubmit)}
+            className={styles.editorWrapper}
           >
+            <div className={styles.pagePaper}>
+              <RichTextEditor<EditorForm>
+                label="Edit I-Note Content"
+                name="editorContent"
+                watch={watch}
+                setValue={setValue}
+                errors={errors}
+              />
+            </div>
 
-            <form
-              onSubmit={handleSubmit(onFinalSubmit)}
-              className={styles.editorWrapper}
-            >
-              <div className={styles.pagePaper}>
-                <RichTextEditor<EditorForm>
-                  label="Edit I-Note Content"
-                  name="editorContent"
-                  watch={watch}
-                  setValue={setValue}
-                  errors={errors}
-                />
-              </div>
+            <div className={styles.actionButtons}>
+              <Button label="Save Final I-Note" type="submit" buttonType="three" />
+              <Button
+                label="Print"
+                onClick={() => handlePrint(watch("editorContent"))}
+                buttonType="two"
+              />
+            </div>
+          </form>
 
-              <div className={styles.actionButtons}>
-                <Button label="Save Final I-Note" type="submit" buttonType="three" />
-                <Button 
-                  label="Print" 
-                  onClick={() => handlePrint(watch("editorContent"))} 
-                  buttonType="two" 
-                />
-              </div>
-            </form>
-
-          </Modal>
-            )}
+        </Modal>
+      )}
 
 
-        {(editingForm && showEditor) && (
-            <Modal
-            title="Edit I-Note"    
-            size="xl" 
-            onClose={() => {
-              setEditingForm(null);
-              setShowEditor(false);
-              setValue("editorContent", "");
-            }}
-            >
-              <form
-                onSubmit={handleSubmit(onFinalSubmit)}
-                className={styles.modalEditorWrapper}
-              >
-                <RichTextEditor<EditorForm>
-                  label="Edit I-Note Content"
-                  name="editorContent"
-                  watch={watch}
-                  setValue={setValue}
-                  errors={errors}
-                />
+      {(editingForm && showEditor) && (
+        <Modal
+          title="Edit I-Note"
+          size="xl"
+          onClose={() => {
+            setEditingForm(null);
+            setShowEditor(false);
+            setValue("editorContent", "");
+          }}
+        >
+          <form
+            onSubmit={handleSubmit(onFinalSubmit)}
+            className={styles.modalEditorWrapper}
+          >
+            <RichTextEditor<EditorForm>
+              label="Edit I-Note Content"
+              name="editorContent"
+              watch={watch}
+              setValue={setValue}
+              errors={errors}
+            />
 
-                <div className={styles.modalActions} >
-                  <Button 
-                    label="Update I-Note" 
-                    type="submit" 
-                    buttonType="three" 
-                  />
-                  <Button 
-                    label="Cancel" 
-                    buttonType="three" 
-                    onClick={() => setEditingForm(null)} 
-                  />
-                </div>
-              </form>
-            </Modal>
-          )}
-    
-            { manipulate && 
-            <Modal
-              title="Add I-Note"
-              onClose={() => setManipulate(false)}
-            >
-              <Manipulate onClose={() => setManipulate(false)} />
-            </Modal>
+            <div className={styles.modalActions} >
+              <Button
+                label="Update I-Note"
+                type="submit"
+                buttonType="three"
+              />
+              <Button
+                label="Cancel"
+                buttonType="three"
+                onClick={() => setEditingForm(null)}
+              />
+            </div>
+          </form>
+        </Modal>
+      )}
 
-            }
+      {manipulate &&
+        <Modal
+          title="Add I-Note"
+          onClose={() => setManipulate(false)}
+        >
+          <Manipulate onClose={() => setManipulate(false)} />
+        </Modal>
 
-            {addModal && (
-              <Modal
-                title="Add I-Note"
-                size={"xl"}
-                onClose={() => setAddModal(false)}
-              >
-                <StepperForm onComplete={handleStepperComplete} />
-              </Modal>
-            )}
+      }
+
+      {addModal && (
+        <Modal
+          title="Add I-Note"
+          size={"xl"}
+          onClose={() => setAddModal(false)}
+        >
+          <StepperForm onComplete={handleStepperComplete} />
+        </Modal>
+      )}
     </div>
   );
 };
