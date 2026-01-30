@@ -124,8 +124,8 @@ const Inote = () => {
       "{{INSPECTION_DATE}}": state.user.InspectedOn || "N/A",
       "{{TOTAL_ITEMS}}": state?.products?.length.toString() || "0",
       "{{VENDOR_DETAILS}}": state.info?.vendor[0]?.FirmAddress || "N/A",
-      "{{MO_ADDRESS_WAREHOUSE}}":  (renderCleanAddress(moAddress) || "N/A"),
-      "{{MO_ADDRESS_PROCUREMENT}}":  (renderCleanAddress(moAddress) || "N/A"),
+      "{{MO_ADDRESS_WAREHOUSE}}": (renderCleanAddress(moAddress) || "N/A"),
+      "{{MO_ADDRESS_PROCUREMENT}}": (renderCleanAddress(moAddress) || "N/A"),
       "{{FILE_NO}}": state.user.sequenceNo?.toString() || "N/A",
       "{{INOTE_NO}}": state.info?.iNote?.iNote?.toString() || "N/A",
       "{{TOTAL_ITEMS_ WORD}}":
@@ -243,34 +243,34 @@ const Inote = () => {
   //        body {
   //           font-family: Arial;
   //         }
-  //         table {
-  //           width: 100%;
-  //           border-collapse: collapse;
-  //         }
-  //         table, th, td {
-  //           border: 1px solid black;
-  //         }
-  // 	  .table{
-  // 			margin: 0 !important;
-  // 	  }
-  // 	  .header, .header th, .header td{
-  //           border: 1px solid white !important;
-  // 	  }
-  // 	 td{
-  // 		vertical-align: top;
-  // 	 }
-  // 	 .fancy{
-  // 		 border-top: 1px solid black !important;
-  // 		 border-bottom: 1px solid black !important;
-  // 		 padding: 5px 0 !important;
-  // 	 }
-  // 	 .fancy td{
-  // 	     text-align: center !important;
-  // 	 }
-  //   .midd tr > td:nth-child(4) {
-  //     border-bottom: 1px solid #ffffff !important;
-  //     border-top: 1px solid #ffffff !important;
+  //       table {
+  //         width: 100%;
+  //         border-collapse: collapse;
+  //       }
+  //       table, th, td {
+  //         border: 1px solid black;
+  //       }
+  //   .table{
+  // 		margin: 0 !important;
   //   }
+  //   .header, .header th, .header td{
+  //         border: 1px solid white !important;
+  //   }
+  //  td{
+  // 	vertical-align: top;
+  //  }
+  //  .fancy{
+  // 	 border-top: 1px solid black !important;
+  // 	 border-bottom: 1px solid black !important;
+  // 	 padding: 5px 0 !important;
+  //  }
+  //  .fancy td{
+  //      text-align: center !important;
+  //  }
+  // .midd tr > td:nth-child(4) {
+  //   border-bottom: 1px solid #ffffff !important;
+  //   border-top: 1px solid #ffffff !important;
+  // }
   //       </style>
   //     </head>
   //     <body>
@@ -292,52 +292,271 @@ const Inote = () => {
     const printWindow = window.open("", "", "width=800,height=600");
     if (!printWindow) return;
 
+
+    const fontUrl = `${window.location.origin}/Shivaji01-Normal.ttf`;
+
+    const underlineStatic = [
+      "DETAILS OF STORES INSPECTED",
+      "Description of stores",
+      "Remark",
+    ];
+
+    let updatedContent = content;
+
+    // underline static words
+    underlineStatic.forEach(word => {
+      const regex = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+      updatedContent = updatedContent.replace(regex, `<span class="underline-IN">${word}</span>`);
+    });
+    updatedContent = updatedContent.replace(
+      /सामान का विवरण[\s\S]*?(?=<\/td>)/g,
+      match => `<span class="underline-IN">${match}</span>`
+    );
+
+    updatedContent = updatedContent.replace(
+      /<strong>\s*INSPECTION NOTE\s*<\/strong>/g,
+      `<strong><span class="underline-IN">INSPECTION NOTE</span></strong>`
+    );
+
+        // underline dynamic "INSPECTION NOTE NO. …"
+    updatedContent = updatedContent.replace(
+      /<strong>INSPECTION NOTE NO\.[^<]*<\/strong>/g,
+      match => `<strong><span class="underline-IN">${match.replace(/<\/?strong>/g,"")}</span></strong>`
+    );
+
+    updatedContent = updatedContent.replace(
+      /Contractor's Name and Address/g,
+      `<span class="force-newline">Contractor's Name and Address</span>`
+    );
+
+
+
+
+    const processedContent = updatedContent
+      // Wrap Hindi characters with <span class="hindi-text">
+      .replace(/([\u0900-\u097F]+)/g, '<span class="hindi-text">$1</span>')
+      .replace("<!--PAGE_BREAK-->", `<div class="blank-page-break"></div>`);
+
+
     printWindow.document.write(`
     <html>
       <head>
         <title>Print I-Note</title>
         <style>
-          body { font-family: Arial; }
-          p { font-size: 10pt; margin: 10px 0; }
-          h1 { font-size: 24pt; margin: 16px 0 12px 0; }
-          h2 { font-size: 20pt; margin: 14px 0 10px 0; }
-          h3 { font-size: 16pt; margin: 12px 0 8px 0; }
-          table { width: 100%; border-collapse: collapse; }
-          table, th, td { border: 1px solid black; }
-          .table { margin: 0 !important; }
-          .header, .header th, .header td { border: 1px solid white !important; }
-          td { vertical-align: top; }
-          .fancy { border-top: 1px solid black !important; border-bottom: 1px solid black !important; padding: 5px 0 !important; }
-          .fancy td { text-align: center !important; }
-          .midd tr > td:nth-child(4) { border-bottom: 1px solid #ffffff !important; border-top: 1px solid #ffffff !important; }
+      
+        
 
-          
-          /* --- NEW CODE START --- */
-          /* This class forces a break before it (ending page 1), 
-             occupies a "blank" spot, and forces a break after it (starting page 3) */
-          .blank-page-break {
-             page-break-before: always;
-             page-break-after: always;
-             content: " ";
-             display: block;
-             height: 0;
-             visibility: hidden;
+        @font-face {
+          font-family: 'Shivaji01';
+          src: url('${fontUrl}') format('truetype');
+        }
+
+        body {
+          font-family: Arial, sans-serif !important;
+        }
+         
+
+        /* Anything wrapped by auto-detection becomes Hindi */
+        .hindi-text {
+          font-family: 'Shivaji01' !important;
+        }
+
+
+
+          // body { font-family: Arial; }
+
+        p { font-size: 9.5pt; margin: 10px 0; }
+        h1 { font-size: 24pt; margin: 16px 0 12px 0; }
+        h2 { font-size: 20pt; margin: 14px 0 10px 0; }
+        h3 { font-size: 18pt; margin: 12px 0 8px 0;font-weight: bold; }
+         
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        table, th, td {
+          border: 1px solid black;
+        }
+          .table{
+            margin: 0 !important;
+            
           }
-          /* --- NEW CODE END --- */
-          
+          .header, .header th, .header td{
+                border: 1px solid white !important;
+          }
+          td{
+            vertical-align: top;
+          }
+          .fancy{
+            border-top: 1px solid black !important;
+            border-bottom: 1px solid black !important;
+            padding: 5px 0 !important;
+          }
+          .fancy td{
+              text-align: center !important;
+          }
+          .midd tr > td:nth-child(4) {
+            border-bottom: 1px solid #ffffff !important;
+            border-top: 1px solid #ffffff !important;
+          }
+
+          figure.table:nth-of-type(1) table td,
+          figure.table:nth-of-type(1) table th,
+          figure.table:nth-of-type(3) table td,
+          figure.table:nth-of-type(3) table th {
+              border-left: 1px solid white !important;
+              border-right: 1px solid white !important;
+              border-top: 1px solid white !important;
+              border-bottom: 1px solid white !important;
+          }
+
+          figure.table:nth-of-type(1) table {
+            font-size: 10pt !important;
+          }
+          figure.table:nth-of-type(1) table.hindi {
+            font-size: 11.5pt !important;
+          }
+
+          figure.table:nth-of-type(2) table td,
+          figure.table:nth-of-type(2) table th {
+              padding: 3pt 4pt !important;   
+              line-height: 1.4 !important;
+          }
+
+          figure.table:nth-of-type(2) table{
+              padding:10pt !important;
+              font-size: 10pt !important;
+          }
+          figure.table:nth-of-type(2) table .hindi-text{
+          font-size: 13pt !important;
+          }
+
+
+
+
+          /* Hindi font in 3rd table */
+          figure.table:nth-of-type(3) table .hindi-text {
+            font-family: 'Shivaji01' !important;
+            font-size: 12.5pt !important;
+          }
+
+          /* English in 3rd table */
+          figure.table:nth-of-type(3) table {
+            font-size: 10.5pt !important;
+          }
+
+          .underline-IN {
+            text-decoration: underline !important;
+          }
+
+
+          ol figure.table:nth-of-type(1) table,
+          // ol figure.table:nth-of-type(2) table
+          {
+                display: block;
+                // width: 150% !important;        
+                // transform: scale(0.68);         
+                // transform-origin: top left;    
+                // table-layout: auto !important; 
+              
+          }
+  
+          ol figure.table:nth-of-type(1) table.hindi-text,
+          ol figure.table:nth-of-type(2) table.hindi-text {
+              font-size: 9pt !important;
+              border-collapse: collapse !important;
+              
+              
+          }
+
+          // ol li {
+          //     position: relative;
+          // }
+
+          /* cells of 1st and 2nd table */
+          ol figure.table:nth-of-type(1) table td,
+          ol figure.table:nth-of-type(1) table th,
+          ol figure.table:nth-of-type(2) table td,
+          ol figure.table:nth-of-type(2) table th {
+              padding-top:2pt;
+              line-height: 1.2 !important;
+              word-break: break-word !important;
+              border:none !important;
+              border-left: 1px solid white !important;
+              border-right: 1px solid white !important;
+              text-align:center !important;
+          }
+
+          ol li {
+            font-size: 7.5pt !important;
+            line-height: 1.4 !important;
+            margin-bottom: 1pt !important;
+          }
+            ol li.hindi-text {
+            
+                font-size: 11.5pt !important;
+            }
+          /* Make only bullet 2 content inline (single-row) */
+          ol > li:nth-of-type(2) * {
+              display: inline !important;
+              white-space: nowrap !important;
+              line-height: 1 !important;
+              margin: 0 !important;
+              padding: 0 !important;
+          }
+
+          /* Hide <br> tags inside bullet 2 */
+          ol > li:nth-of-type(2) br {
+              display: none !important;
+          }
+
+          /* Force <p> inside bullet 2 to act inline */
+          ol > li:nth-of-type(2) p {
+              display: inline !important;
+              margin: 0 !important;
+              padding: 0 !important;
+          }
+
+          ol > li:nth-of-type(2) span.force-newline {
+              display: block !important;
+              white-space: normal !important;
+              margin-top: 1px !important;
+          }
+
+
+
+          .blank-page-break {
+            page-break-before: always;
+            page-break-after: always;
+            height: 0;
+            visibility: hidden;
+            display: block;
+          }
         </style>
       </head>
       <body>
-        ${content}
-        <div class="blank-page-break"></div>
+        ${processedContent}
       </body>
     </html>
   `);
 
     printWindow.document.close();
     printWindow.focus();
-    printWindow.print();
-    printWindow.close();
+
+    printWindow.onload = () => {
+      if (printWindow.document.fonts) {
+        printWindow.document.fonts.ready.then(() => {
+          printWindow.print();
+          printWindow.close();
+        });
+      } else {
+        // Fallback
+        setTimeout(() => {
+          printWindow.print();
+          printWindow.close();
+        }, 100);
+      }
+    };
   };
 
   const onFinalSubmit = async (formData: EditorForm) => {
