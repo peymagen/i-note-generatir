@@ -13,18 +13,14 @@ import {
   useGetFinalQuery,
   usePostFinalMutation,
   useUpdateFinalPageMutation,
-  useDeleteFinalPageMutation
-} from "../../store/services/final"
+  useDeleteFinalPageMutation,
+} from "../../store/services/final";
 
-import {
-  FiEdit,
-  FiTrash2,
-  FiPrinter,
-} from "react-icons/fi";
+import { FiEdit, FiTrash2, FiPrinter } from "react-icons/fi";
 import ConfirmDialog from "../../component/ConfirmDialoge";
 import { DataTable } from "../../component/DataTable/DataTable";
 import { toast } from "react-toastify";
-import Manipulate from './Manipulate'
+import Manipulate from "./Manipulate";
 
 // Define a type for the editor form
 
@@ -36,7 +32,7 @@ type final = {
 };
 interface EditorForm {
   editorContent: string;
-  i_note?: number
+  i_note?: number;
 }
 
 const renderCleanAddress = (address: string | undefined) => {
@@ -54,7 +50,7 @@ const Inote = () => {
 
   const { data, isLoading, refetch } = useGetFinalQuery(
     { page, limit, search },
-    { refetchOnMountOrArgChange: true }
+    { refetchOnMountOrArgChange: true },
   );
 
   const [save] = usePostFinalMutation();
@@ -66,7 +62,6 @@ const Inote = () => {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [addModal, setAddModal] = useState<boolean>(false);
   const [showEditor, setShowEditor] = useState<boolean>(false);
-
 
   // 1. Initialize React Hook Form
   const {
@@ -101,15 +96,22 @@ const Inote = () => {
       <th>Rejected Quantity</th><th>No and date of inspection certificate (if any) issued by DGISM or other Insp. Authority</th>
       <th>Remarks</th></tr>`,
       ...(state?.products?.map(
-        (p: PoDetailItem & itemDetail & { acceptedQty: number }) => {
+        (
+          p: PoDetailItem &
+            itemDetail & { acceptedQty: number; QtyFullFill?: number },
+        ) => {
           const itemDesc = p.ItemDesc || "";
           const itemDeno = p.ItemDeno || "";
           const acceptedQty = p.acceptedQty || p.Qty || 0;
-          return `<tr><td>${p.OrderLineNo}</td><td>${p.ItemCode
-            }<br/>${itemDesc}</td><td>Qty ${p.Qty}</td>
-        <td>${itemDeno}</td><td>${p.Qty}</td><td>${acceptedQty}</td><td>${acceptedQty === p.Qty ? acceptedQty : acceptedQty + " / " + p.Qty
-            }</td><td>0</td><td colspan="2"></td></tr>`;
-        }
+          return `<tr><td>${p.OrderLineNo}</td><td>${
+            p.ItemCode
+          }<br/>${itemDesc}</td><td>Qty ${p.Qty}</td>
+        <td>${itemDeno}</td><td>${p.Qty}</td><td>${acceptedQty}</td><td>${
+          acceptedQty === p.Qty && p.QtyFullFill === 0
+            ? acceptedQty
+            : acceptedQty + " / " + p.Qty
+        }</td><td>0</td><td colspan="2"></td></tr>`;
+        },
       ) || []),
       "</table>",
     ].join("");
@@ -124,8 +126,8 @@ const Inote = () => {
       "{{INSPECTION_DATE}}": state.user.InspectedOn || "N/A",
       "{{TOTAL_ITEMS}}": state?.products?.length.toString() || "0",
       "{{VENDOR_DETAILS}}": state.info?.vendor[0]?.FirmAddress || "N/A",
-      "{{MO_ADDRESS_WAREHOUSE}}": (renderCleanAddress(moAddress) || "N/A"),
-      "{{MO_ADDRESS_PROCUREMENT}}": (renderCleanAddress(moAddress) || "N/A"),
+      "{{MO_ADDRESS_WAREHOUSE}}": renderCleanAddress(moAddress) || "N/A",
+      "{{MO_ADDRESS_PROCUREMENT}}": renderCleanAddress(moAddress) || "N/A",
       "{{FILE_NO}}": state.user.sequenceNo?.toString() || "N/A",
       "{{INOTE_NO}}": state.info?.iNote?.iNote?.toString() || "N/A",
       "{{TOTAL_ITEMS_ WORD}}":
@@ -156,7 +158,7 @@ const Inote = () => {
       }
       return { data: items, total: totalRecords };
     },
-    [items, totalRecords, page, search]
+    [items, totalRecords, page, search],
   );
   const handleDelete = async () => {
     if (!deleteTarget?.id) return;
@@ -171,19 +173,19 @@ const Inote = () => {
     { label: "ID", accessor: "id" },
     { label: "I-Note", accessor: "i_note" },
     { label: "Indent No", accessor: "indent_No" },
-  ]
+  ];
   const actions = [
     {
       label: "Edit",
-      onClick: () => { },
+      onClick: () => {},
 
       component: (row: final) => (
         <button
           className={`${styles.iconBtn} ${styles.edit}`}
           title="Edit User"
           onClick={() => {
-            setEditingForm(row)
-            setShowEditor(true)
+            setEditingForm(row);
+            setShowEditor(true);
             setValue("editorContent", row.content);
           }}
         >
@@ -193,7 +195,7 @@ const Inote = () => {
     },
     {
       label: "Delete",
-      onClick: () => { },
+      onClick: () => {},
       component: (row: final) => (
         <button
           className={`${styles.iconBtn} ${styles.delete}`}
@@ -206,7 +208,7 @@ const Inote = () => {
     },
     {
       label: "Print",
-      onClick: () => { },
+      onClick: () => {},
       component: (row: final) => (
         <button
           className={`${styles.iconBtn} ${styles.edit}`}
@@ -217,7 +219,7 @@ const Inote = () => {
         </button>
       ),
     },
-  ]
+  ];
   const handleStepperComplete = (state: StepperState) => {
     setStepperData(state);
     const readyHtml = processTemplate(state.content, state);
@@ -285,13 +287,9 @@ const Inote = () => {
   //   printWindow.close();
   // };
 
-
-
-
   const handlePrint = (content: string) => {
     const printWindow = window.open("", "", "width=800,height=600");
     if (!printWindow) return;
-
 
     const fontUrl = `${window.location.origin}/Shivaji01-Normal.ttf`;
 
@@ -304,39 +302,42 @@ const Inote = () => {
     let updatedContent = content;
 
     // underline static words
-    underlineStatic.forEach(word => {
-      const regex = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
-      updatedContent = updatedContent.replace(regex, `<span class="underline-IN">${word}</span>`);
+    underlineStatic.forEach((word) => {
+      const regex = new RegExp(
+        word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
+        "g",
+      );
+      updatedContent = updatedContent.replace(
+        regex,
+        `<span class="underline-IN">${word}</span>`,
+      );
     });
     updatedContent = updatedContent.replace(
       /सामान का विवरण[\s\S]*?(?=<\/td>)/g,
-      match => `<span class="underline-IN">${match}</span>`
+      (match) => `<span class="underline-IN">${match}</span>`,
     );
 
     updatedContent = updatedContent.replace(
       /<strong>\s*INSPECTION NOTE\s*<\/strong>/g,
-      `<strong><span class="underline-IN">INSPECTION NOTE</span></strong>`
+      `<strong><span class="underline-IN">INSPECTION NOTE</span></strong>`,
     );
 
-        // underline dynamic "INSPECTION NOTE NO. …"
+    // underline dynamic "INSPECTION NOTE NO. …"
     updatedContent = updatedContent.replace(
       /<strong>INSPECTION NOTE NO\.[^<]*<\/strong>/g,
-      match => `<strong><span class="underline-IN">${match.replace(/<\/?strong>/g,"")}</span></strong>`
+      (match) =>
+        `<strong><span class="underline-IN">${match.replace(/<\/?strong>/g, "")}</span></strong>`,
     );
 
     updatedContent = updatedContent.replace(
       /Contractor's Name and Address/g,
-      `<span class="force-newline">Contractor's Name and Address</span>`
+      `<span class="force-newline">Contractor's Name and Address</span>`,
     );
-
-
-
 
     const processedContent = updatedContent
       // Wrap Hindi characters with <span class="hindi-text">
       .replace(/([\u0900-\u097F]+)/g, '<span class="hindi-text">$1</span>')
       .replace("<!--PAGE_BREAK-->", `<div class="blank-page-break"></div>`);
-
 
     printWindow.document.write(`
     <html>
@@ -581,9 +582,7 @@ const Inote = () => {
       body.indent_no = (editingForm as final).indent_no || "";
     }
 
-
     try {
-
       if (editingForm) {
         const res = await update(body).unwrap();
 
@@ -594,8 +593,7 @@ const Inote = () => {
           setEditingForm(null);
           setStepperData(null);
         }
-      }
-      else {
+      } else {
         const res = await save(body).unwrap();
 
         if (res?.data) {
@@ -620,9 +618,7 @@ const Inote = () => {
         <Button
           label="Add I-Note"
           buttonType="one"
-          onClick={() =>
-
-            setAddModal(true)}
+          onClick={() => setAddModal(true)}
         />
 
         <Button
@@ -633,7 +629,6 @@ const Inote = () => {
             // setAddModal(true);
           }}
         />
-
       </div>
 
       <h1 className={styles.pageTitle}>I-Note</h1>
@@ -666,10 +661,9 @@ const Inote = () => {
           title="Add I-Note"
           size="xl"
           onClose={() => {
-            setShowEditor(false)
+            setShowEditor(false);
           }}
         >
-
           <form
             onSubmit={handleSubmit(onFinalSubmit)}
             className={styles.editorWrapper}
@@ -685,7 +679,11 @@ const Inote = () => {
             </div>
 
             <div className={styles.actionButtons}>
-              <Button label="Save Final I-Note" type="submit" buttonType="three" />
+              <Button
+                label="Save Final I-Note"
+                type="submit"
+                buttonType="three"
+              />
               <Button
                 label="Print"
                 onClick={() => handlePrint(watch("editorContent"))}
@@ -693,12 +691,10 @@ const Inote = () => {
               />
             </div>
           </form>
-
         </Modal>
       )}
 
-
-      {(editingForm && showEditor) && (
+      {editingForm && showEditor && (
         <Modal
           title="Edit I-Note"
           size="xl"
@@ -720,12 +716,8 @@ const Inote = () => {
               errors={errors}
             />
 
-            <div className={styles.modalActions} >
-              <Button
-                label="Update I-Note"
-                type="submit"
-                buttonType="three"
-              />
+            <div className={styles.modalActions}>
+              <Button label="Update I-Note" type="submit" buttonType="three" />
               <Button
                 label="Cancel"
                 buttonType="three"
@@ -736,15 +728,11 @@ const Inote = () => {
         </Modal>
       )}
 
-      {manipulate &&
-        <Modal
-          title="Add I-Note"
-          onClose={() => setManipulate(false)}
-        >
+      {manipulate && (
+        <Modal title="Add I-Note" onClose={() => setManipulate(false)}>
           <Manipulate onClose={() => setManipulate(false)} />
         </Modal>
-
-      }
+      )}
 
       {addModal && (
         <Modal

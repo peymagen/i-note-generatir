@@ -55,10 +55,11 @@ const StepThree: React.FC<StepThreeProps> = ({
           id: p.DetailId,
           name: `${p.ItemCode} - ${p.ItemDesc}`,
           availableQty: p.Qty,
+          QtyFullFill: p.QtyFullFill,
           selected: ui.selected,
           acceptedQty: ui.acceptedQty,
         };
-      }
+      },
     );
   }, [data, uiState]);
 
@@ -95,7 +96,7 @@ const StepThree: React.FC<StepThreeProps> = ({
 
         return {
           ...p,
-          acceptedQty: ui.acceptedQty, 
+          acceptedQty: ui.acceptedQty + p.QtyFullFill,
           selected: true,
         };
       })
@@ -144,19 +145,24 @@ const StepThree: React.FC<StepThreeProps> = ({
                     type="checkbox"
                     checked={p.selected}
                     onChange={() => toggleSelect(p.id)}
+                    disabled={p.availableQty - p.QtyFullFill <= 0}
                   />
                 </td>
                 <td>{p.name}</td>
-                <td>{p.availableQty}</td>
+                <td>{p.availableQty - (p?.QtyFullFill || 0)}</td>
                 <td>
                   <input
                     type="number"
                     min={0}
-                    max={p.availableQty}
+                    max={p.availableQty - (p?.QtyFullFill || 0)}
                     disabled={!p.selected}
                     value={p.acceptedQty}
                     onChange={(e) =>
-                      updateQty(p.id, Number(e.target.value), p.availableQty)
+                      updateQty(
+                        p.id,
+                        Number(e.target.value),
+                        p.availableQty - (p?.QtyFullFill || 0),
+                      )
                     }
                   />
                 </td>
@@ -167,8 +173,18 @@ const StepThree: React.FC<StepThreeProps> = ({
       )}
 
       <div className={styles.buttonGroup}>
-        <Button type="button" buttonType="three" label="Back" onClick={onBack} />
-        <Button type="button" buttonType="three" label="Generate I-Note" onClick={handleFinish} />
+        <Button
+          type="button"
+          buttonType="three"
+          label="Back"
+          onClick={onBack}
+        />
+        <Button
+          type="button"
+          buttonType="three"
+          label="Generate I-Note"
+          onClick={handleFinish}
+        />
       </div>
     </div>
   );
