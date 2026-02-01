@@ -87,6 +87,7 @@ const TemplateFormModal: React.FC<Props> = ({
     { label: "File No (User)", value: "{{FILE_NO}}" },
     { label: "Consignee Code (PO Detail)", value: "{{CONSIGNEE_CODE}}" },
     { label: "Order Date (PO Header)", value: "{{ORDER_DATE}}" },
+    {label:"Vendor Name", value:"{{VENDOR_NAME}}"},
     { label: "Vendor Details", value: "{{VENDOR_DETAILS}}" },
     { label: "Financial Year", value: "{{FINANCIAL_YEAR}}" },
     { label: "Unique I-Note No", value: "{{INOTE_NO}}" },

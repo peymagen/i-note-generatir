@@ -16,7 +16,7 @@ interface InputProps<T extends FieldValues> {
   label: string;
   name: Path<T>;
   type?: React.HTMLInputTypeAttribute;
-  register: UseFormRegister<T>;
+  register?: UseFormRegister<T>;
   errors?: FieldErrors<T>;
   setValue?: UseFormSetValue<T>;
   watch?: UseFormWatch<T>;
@@ -25,6 +25,9 @@ interface InputProps<T extends FieldValues> {
   accept?: string;
   min?: string;
   max?: string;
+  value?: string | number | readonly string[];
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
+  fullWidth?: boolean;
 }
 
 const Input = <T extends FieldValues = FieldValues>({
@@ -40,6 +43,9 @@ const Input = <T extends FieldValues = FieldValues>({
   min = "",
   max = "",
   accept,
+  value,
+  onChange,
+  fullWidth, 
 }: InputProps<T>) => {
 
   const getNestedError = (errors: FieldErrors, path: string) => {
@@ -132,8 +138,10 @@ const Input = <T extends FieldValues = FieldValues>({
     | Merge<FieldError, FieldErrorsImpl<FieldError>>
     | undefined;
 
+  const registration = register ? register(name, { required }) : undefined;
+
   return (
-    <div className={styles.formGroup} >
+    <div className={styles.formGroup} style={fullWidth ? { gridColumn: "1 / -1", width: "100%" } : undefined}>
       <label htmlFor={name} className={styles.label}>
         {label}
         {required && <span className={styles.required}>*</span>}
@@ -143,7 +151,11 @@ const Input = <T extends FieldValues = FieldValues>({
           id={name}
           type="file"
           accept={accept}
-          {...register(name, { required })}
+          {...(registration || {})}
+          onChange={(e) => {
+            registration?.onChange(e);
+            onChange?.(e);
+          }}
           className={`${styles.input} ${error ? styles.inputError : ""}`}
           aria-invalid={error ? "true" : "false"}
         />
@@ -151,7 +163,12 @@ const Input = <T extends FieldValues = FieldValues>({
         <input
           id={name}
           type={type}
-          {...register(name, { required })}
+          {...(registration || {})}
+          onChange={(e) => {
+            registration?.onChange(e);
+            onChange?.(e);
+          }}
+          value={value}
           className={`${styles.input} ${error ? styles.inputError : ""}`}
           placeholder={placeholder}
           aria-invalid={error ? "true" : "false"}

@@ -2,8 +2,8 @@ export type FormData = {
   FirmName: string;
   FirmAddress: string;
   vendorCode: string;
-  FirmEmailId?: string;
-  ContactNumber?: string;
+  FirmEmailId?: string | null;
+  ContactNumber?: string | null;
 };
 
 interface Base {
@@ -16,6 +16,6 @@ export interface VendorItem extends Base {
   FirmName: string;
   FirmAddress: string;
   vendorCode: string;
-  FirmEmailId?: string;
-  ContactNumber?: string;
+  FirmEmailId?: string | null;
+  ContactNumber?: string | null;
 }

@@ -45,11 +45,10 @@ const StepTwo: React.FC<StepTwoProps> = ({
   onNext,
   onBack,
   initialValues,
-  indentInfo,
   vendorCode,
   consigneeCode,
 }) => {
-  const headerData = indentInfo.header[0];
+
 
   const [triggerVendor, { isLoading: isFetching }] = useLazyGetByVendorCodeQuery();
   const [triggerConsignee, { isLoading: isFetchingCon }] = useLazyGetDatabyConQuery();
@@ -67,13 +66,11 @@ const StepTwo: React.FC<StepTwoProps> = ({
 
 
   const onSubmit: SubmitHandler<formData> = async (data) => {
-    console.log("data",vendorCode);
+    
     const [vendorRes, moRes] = await Promise.all([
       triggerVendor(vendorCode).unwrap(),
       triggerConsignee(consigneeCode).unwrap(),
     ]);
-    console.log("vendorRes",vendorRes);
-    console.log("moRes",moRes);
     const dbData = {
       vendor: Array.isArray(vendorRes.data.data[0]) ? vendorRes.data.data[0] : [vendorRes.data.data[0]],
       mo: Array.isArray(moRes.data.data[0]) ? moRes.data.data[0] : [moRes.data.data[0]],
@@ -82,7 +79,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
         id: iNoteData.data.id
       }
     };
-    console.log("dbData",dbData);
+   
     onNext(data, dbData);
     toast.success("Preparing I-Note editor...");
 

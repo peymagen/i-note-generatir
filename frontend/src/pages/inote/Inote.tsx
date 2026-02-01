@@ -41,7 +41,7 @@ interface EditorForm {
 
 const renderCleanAddress = (address: string | undefined) => {
   if (!address) return undefined;
-  const key = "MATERIAL ORGANISATION";
+  const key = "Material Organisation";
   const startPos = address.indexOf(key);
   return startPos !== -1 ? address?.substring(startPos) : address;
 };
@@ -93,26 +93,75 @@ const Inote = () => {
         ? `${year}-${(year + 1).toString().slice(-2)}`
         : `${year - 1}-${year.toString().slice(-2)}`;
 
-    const table = [
-      `<table border="1" cellpadding="5" cellspacing="0"><tr>
-      <th>Item No in A/T (OL No)</th>
-      <th colspan="2"><u>Description of store</u>Total Quantity Ordered<br/>The Inspector should indicate whether the Supply has been made in seller's / buyer's</th>
-      <th>Acc Unit</th><th>Tendered Quantity</th><th>Accepted Quantity</th><th>Brought to account in ledger folio Total Qty Accepted to</th>
-      <th>Rejected Quantity</th><th>No and date of inspection certificate (if any) issued by DGISM or other Insp. Authority</th>
-      <th>Remarks</th></tr>`,
-      ...(state?.products?.map(
-        (p: PoDetailItem & itemDetail & { acceptedQty: number }) => {
-          const itemDesc = p.ItemDesc || "";
-          const itemDeno = p.ItemDeno || "";
-          const acceptedQty = p.acceptedQty || p.Qty || 0;
-          return `<tr><td>${p.OrderLineNo}</td><td>${p.ItemCode
-            }<br/>${itemDesc}</td><td>Qty ${p.Qty}</td>
-        <td>${itemDeno}</td><td>${p.Qty}</td><td>${acceptedQty}</td><td>${acceptedQty === p.Qty ? acceptedQty : acceptedQty + " / " + p.Qty
-            }</td><td>0</td><td colspan="2"></td></tr>`;
-        }
-      ) || []),
-      "</table>",
-    ].join("");
+    // const table = [
+    //   `<table border="1" cellpadding="5" cellspacing="0"
+    //     style="border-collapse: collapse; width: 100%; font-size: 13px;"><tr>
+    //   <th>Item No in A/T (OL No)</th>
+    //   <th colspan="2"><u>Description of store</u>Total Quantity Ordered<br/>The Inspector should indicate whether the Supply has been made in seller's / buyer's</th>
+    //   <th>Acc Unit</th><th>Tendered Quantity</th><th>Accepted Quantity</th><th>Brought to account in ledger folio Total Qty Accepted to</th>
+    //   <th>Rejected Quantity</th><th>No and date of inspection certificate (if any) issued by DGISM or other Insp. Authority</th>
+    //   <th>Remarks</th></tr>`,
+    //   ...(state?.products?.map(
+    //     (p: PoDetailItem & itemDetail & { acceptedQty: number }) => {
+    //       const itemDesc = p.ItemDesc || "";
+    //       const itemDeno = p.ItemDeno || "";
+    //       const acceptedQty = p.acceptedQty || p.Qty || 0;
+    //       return `<tr><td>${p.OrderLineNo}</td><td>${p.ItemCode
+    //         }<br/>${itemDesc}</td><td>Qty ${p.Qty}</td>
+    //     <td>${itemDeno}</td><td>${p.Qty}</td><td>${acceptedQty}</td><td>${acceptedQty === p.Qty ? acceptedQty : acceptedQty + " / " + p.Qty
+    //         }</td><td>0</td><td colspan="2"></td></tr>`;
+    //     }
+    //   ) || []),
+    //   "</table>",
+    // ].join("");
+
+const table = [
+  `<table border="1" cellpadding="5" cellspacing="0"
+    style="border-collapse: collapse; width: 100%; font-size: 11px; text-align: center; border-color: #000;">
+    <thead>
+      <tr> 
+        <th>Item No in A/T (OL No)</th>
+        <th colspan="2"><u>Description of store</u><br/>Total Quantity Ordered.<br/>The Inspector should indicate whether the supply has been made...</th>
+        <th>Acc Unit</th>
+        <th>Tendered Quantity</th>
+        <th>Accepted Quantity</th>
+        <th>Brought to account in ledger folio Total Qty Accepted to Date</th>
+        <th>Rejected Quantity</th>
+        <th style="border-right: 1px solid black;">No and date of inspection certificate...</th>
+        <th>Remarks</th>
+      </tr>
+    </thead>`,
+  ...(state?.products?.map(
+    (p: PoDetailItem & itemDetail & { acceptedQty: number }) => {
+      const itemDesc = p.ItemDesc || "";
+      const itemDeno = p.ItemDeno || "";
+      const acceptedQty = p.acceptedQty || p.Qty || 0;
+      
+      const noRowBorder = 'style="border-top: none; border-bottom: none; vertical-align: top; padding-top: 15px;"';
+      const descText = 'style="border-top: none; border-bottom: none; border-right: none; text-align: left; vertical-align: top; padding-top: 15px; width:40%;"';
+      const qtyColumn = 'style="border-top: none; border-bottom: none; border-left: none; vertical-align: top; padding-top: 15px; width:10%;"';
+      
+      // Removed border-right for the Inspection column to merge it visually with Remarks
+      const noBorderRight = 'style="border-top: none; border-bottom: none; border-right: none; vertical-align: top; padding-top: 15px;"';
+      // Removed border-left for the Remarks column
+      const noBorderLeft = 'style="border-top: none; border-bottom: none; border-left: none; vertical-align: top; padding-top: 15px;"';
+
+      return `<tr>
+        <td ${noRowBorder}>${p.OrderLineNo}</td>
+        <td ${descText}>${p.ItemCode}<br/>${itemDesc}</td>
+        <td ${qtyColumn}>Qty ${p.Qty}</td>
+        <td ${noRowBorder}>${itemDeno}</td>
+        <td ${noRowBorder}>${p.Qty}</td>
+        <td ${noRowBorder}>${acceptedQty}</td>
+        <td ${noRowBorder}>${acceptedQty === p.Qty ? acceptedQty : acceptedQty + " / " + p.Qty}</td>
+        <td ${noRowBorder}>0</td>
+        <td ${noBorderRight}></td>
+        <td ${noBorderLeft}></td>
+      </tr>`;
+    }
+  ) || []),
+  "</table>",
+].join("");
 
     const replacements: Record<string, string> = {
       "{{FINANCIAL_YEAR}}": financialYear,
@@ -123,7 +172,19 @@ const Inote = () => {
       "{{INSPECTION_EVAL_RANGE}}": state.user.InspectionOfferedDate || "N/A",
       "{{INSPECTION_DATE}}": state.user.InspectedOn || "N/A",
       "{{TOTAL_ITEMS}}": state?.products?.length.toString() || "0",
-      "{{VENDOR_DETAILS}}": state.info?.vendor[0]?.FirmAddress || "N/A",
+      "{{VENDOR_NAME}}": state.info?.vendor[0]?.FirmName || "N/A",
+       "{{VENDOR_DETAILS}}": `
+        <div style="margin-top:-8px;"id="vendorBlock" >
+          ${(state.info?.vendor[0]?.FirmAddress || "N/A")
+            .replace(/(<br\s*\/?>\s*){2,}/gi, "<br>")}
+        </div>`,
+    //  "{{VENDOR_DETAILS}}": `
+    //     ${state.info?.vendor[0]?.FirmName || "N/A"}
+    //     <div style="margin-top:-8px;" >
+    //       ${(state.info?.vendor[0]?.FirmAddress || "N/A")
+    //         .replace(/(<br\s*\/?>\s*){2,}/gi, "<br>")}
+    //     </div>`,
+
       "{{MO_ADDRESS_WAREHOUSE}}": (renderCleanAddress(moAddress) || "N/A"),
       "{{MO_ADDRESS_PROCUREMENT}}": (renderCleanAddress(moAddress) || "N/A"),
       "{{FILE_NO}}": state.user.sequenceNo?.toString() || "N/A",
@@ -229,63 +290,6 @@ const Inote = () => {
     setAddModal(false);
   };
 
-  // const handlePrint = (constent:string) => {
-  //   const content = constent;
-
-  //   const printWindow = window.open("", "", "width=800,height=600");
-  //   if (!printWindow) return;
-
-  //   printWindow.document.write(`
-  //   <html>
-  //     <head>
-  //       <title>Print I-Note</title>
-  //       <style>
-  //        body {
-  //           font-family: Arial;
-  //         }
-  //       table {
-  //         width: 100%;
-  //         border-collapse: collapse;
-  //       }
-  //       table, th, td {
-  //         border: 1px solid black;
-  //       }
-  //   .table{
-  // 		margin: 0 !important;
-  //   }
-  //   .header, .header th, .header td{
-  //         border: 1px solid white !important;
-  //   }
-  //  td{
-  // 	vertical-align: top;
-  //  }
-  //  .fancy{
-  // 	 border-top: 1px solid black !important;
-  // 	 border-bottom: 1px solid black !important;
-  // 	 padding: 5px 0 !important;
-  //  }
-  //  .fancy td{
-  //      text-align: center !important;
-  //  }
-  // .midd tr > td:nth-child(4) {
-  //   border-bottom: 1px solid #ffffff !important;
-  //   border-top: 1px solid #ffffff !important;
-  // }
-  //       </style>
-  //     </head>
-  //     <body>
-  //       ${content}
-  //     </body>
-  //   </html>
-  // `);
-
-  //   printWindow.document.close();
-  //   printWindow.focus();
-  //   printWindow.print();
-  //   printWindow.close();
-  // };
-
-
 
 
   const handlePrint = (content: string) => {
@@ -324,18 +328,14 @@ const Inote = () => {
       match => `<strong><span class="underline-IN">${match.replace(/<\/?strong>/g,"")}</span></strong>`
     );
 
-    updatedContent = updatedContent.replace(
-      /Contractor's Name and Address/g,
-      `<span class="force-newline">Contractor's Name and Address</span>`
-    );
-
-
-
+    // updatedContent = updatedContent.replace(
+    //   /Contractor's Name and Address/g,
+    //   `<span class="force-newline">Contractor's Name and Address</span>`
+    // );
 
     const processedContent = updatedContent
       // Wrap Hindi characters with <span class="hindi-text">
       .replace(/([\u0900-\u097F]+)/g, '<span class="hindi-text">$1</span>')
-      .replace("<!--PAGE_BREAK-->", `<div class="blank-page-break"></div>`);
 
 
     printWindow.document.write(`
@@ -428,16 +428,15 @@ const Inote = () => {
               font-size: 10pt !important;
           }
           figure.table:nth-of-type(2) table .hindi-text{
-          font-size: 13pt !important;
+          font-size: 10pt !important;
           }
-
-
 
 
           /* Hindi font in 3rd table */
           figure.table:nth-of-type(3) table .hindi-text {
             font-family: 'Shivaji01' !important;
             font-size: 12.5pt !important;
+
           }
 
           /* English in 3rd table */
@@ -454,20 +453,14 @@ const Inote = () => {
           // ol figure.table:nth-of-type(2) table
           {
                 display: block;
+                
                 // width: 150% !important;        
                 // transform: scale(0.68);         
                 // transform-origin: top left;    
                 // table-layout: auto !important; 
               
           }
-  
-          ol figure.table:nth-of-type(1) table.hindi-text,
-          ol figure.table:nth-of-type(2) table.hindi-text {
-              font-size: 9pt !important;
-              border-collapse: collapse !important;
-              
-              
-          }
+
 
           // ol li {
           //     position: relative;
@@ -485,53 +478,69 @@ const Inote = () => {
               border-left: 1px solid white !important;
               border-right: 1px solid white !important;
               text-align:center !important;
+              font-size: 7.3pt !important;
           }
 
           ol li {
-            font-size: 7.5pt !important;
-            line-height: 1.4 !important;
+            font-size: 8pt !important;
+            line-height: 1.5 !important;
             margin-bottom: 1pt !important;
           }
             ol li.hindi-text {
             
-                font-size: 11.5pt !important;
+                font-size: 12pt !important;
             }
-          /* Make only bullet 2 content inline (single-row) */
-          ol > li:nth-of-type(2) * {
+
+          
+          ol > li:nth-of-type(2) div{
+              display: inline !important;
+              }
+          ol > li:nth-of-type(2) div p {
               display: inline !important;
               white-space: nowrap !important;
-              line-height: 1 !important;
               margin: 0 !important;
               padding: 0 !important;
           }
 
-          /* Hide <br> tags inside bullet 2 */
-          ol > li:nth-of-type(2) br {
+          /* Remove line breaks inside vendor address */
+          ol > li:nth-of-type(2) div p br {
               display: none !important;
           }
 
-          /* Force <p> inside bullet 2 to act inline */
-          ol > li:nth-of-type(2) p {
-              display: inline !important;
-              margin: 0 !important;
-              padding: 0 !important;
+          /* Make all tables in bullet 9 wider and left-aligned */
+          ol > li:nth-of-type(9) figure.table table:nth-of-type(1),
+          ol > li:nth-of-type(9) figure.table table:nth-of-type(2){
+              width: 108% !important;   /* expand left */
+              transform: translateX(-6.5%) !important; 
+              // margin-left: -4% !important;
+              table-layout: auto !important;
           }
 
-          ol > li:nth-of-type(2) span.force-newline {
-              display: block !important;
-              white-space: normal !important;
-              margin-top: 1px !important;
-          }
+       /* TABLE 4 SPACER FIX — DO NOT HIDE COLUMN 4 */
+figure.table:nth-of-type(4) table td:nth-child(4),
+figure.table:nth-of-type(4) table th:nth-child(4) {
+    width: 40px !important;      /* your gap width */
+    border: none !important;     /* remove borders */
+    background: white !important;/* blank space */
+    border-top: 1px solid white !important;
+    border-bottom: 1px solid white !important;
+}
+
+/* ADD RIGHT BORDER ON COLUMN 3 */
+figure.table:nth-of-type(4) table td:nth-child(3),
+figure.table:nth-of-type(4) table th:nth-child(3) {
+    border-right: 1.5px solid black !important;
+}
+
+/* ADD LEFT BORDER ON COLUMN 5 */
+figure.table:nth-of-type(4) table td:nth-child(5),
+figure.table:nth-of-type(4) table th:nth-child(5) {
+    border-left: 1.5px solid black !important;
+}
+ 
 
 
 
-          .blank-page-break {
-            page-break-before: always;
-            page-break-after: always;
-            height: 0;
-            visibility: hidden;
-            display: block;
-          }
         </style>
       </head>
       <body>

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import StepOne from "./StepOne";
 import { Check, Lock } from "lucide-react";
 import StepTwo from "./StepTwo";
-import type { formData, StepperState, formOne, VendorFormData, MoFormData,iNote } from "../../types/inote";
+import type { formData, StepperState, formOne, VendorFormData, MoFormData, iNote } from "../../types/inote";
 import * as detail from "../../types/poDetail";
 import * as header from "../../types/poHeader";
 import StepThree from "./StepThree";
@@ -26,8 +26,8 @@ const extractFromParens = (str: string | null | undefined) => {
 };
 
 const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
-  const[vendorCode,setVendorCode]=useState<string>("")
-  const[consigneeCode,setConsigneeCode]=useState<string>("")
+  const [vendorCode, setVendorCode] = useState<string>("")
+  const [consigneeCode, setConsigneeCode] = useState<string>("")
   const [currentStep, setCurrentStep] = useState(1);
   const [masterState, setMasterState] = useState<StepperState>({
     user: {
@@ -41,7 +41,7 @@ const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
     },
     content: "",
     indentInfo: { header: [], details: [] },
-    info: { vendor: [] , mo: []},
+    info: { vendor: [], mo: [] },
     products: [],
   });
 
@@ -69,9 +69,9 @@ const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
     setMasterState((prev) => ({
       ...prev,
       user: { ...prev.user, ...stepTwoFields },
-      info:{
-        vendor:dbData?.vendor || [],
-        mo:dbData?.mo || [],
+      info: {
+        vendor: dbData?.vendor || [],
+        mo: dbData?.mo || [],
         iNote: dbData?.iNote
       }
     }));
@@ -85,10 +85,10 @@ const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
       ...masterState,
       products,
     };
-    const updatePromises = await updateAvaailableQty({
+    await updateAvaailableQty({
       products: products,
     }).unwrap();
-    
+
     setMasterState(finalState);
     onComplete(finalState);
   };
@@ -105,13 +105,12 @@ const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
               {/* Step Circle and Label */}
               <div className={styles.stepItem}>
                 <div
-                  className={`${styles.circle} ${
-                    isCompleted
+                  className={`${styles.circle} ${isCompleted
                       ? styles.completed
                       : isActive
-                      ? styles.active
-                      : styles.upcoming
-                  }`}
+                        ? styles.active
+                        : styles.upcoming
+                    }`}
                 >
                   {isCompleted ? <Check size={18} /> : step.icon}
                 </div>
@@ -125,13 +124,12 @@ const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
               {index < steps.length - 1 && (
                 <div className={styles.lineWrapper}>
                   <div
-                    className={`${styles.line} ${
-                      isCompleted
+                    className={`${styles.line} ${isCompleted
                         ? styles.lineCompleted
                         : isActive
-                        ? styles.lineHalf
-                        : ""
-                    }`}
+                          ? styles.lineHalf
+                          : ""
+                      }`}
                   />
                 </div>
               )}

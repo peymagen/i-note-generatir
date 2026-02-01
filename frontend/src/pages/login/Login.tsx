@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -38,7 +38,7 @@ const Login = () => {
     mode: "onSubmit",
   });
 
-  
+
 
 
   const onSubmit = async (formData: LoginFormValues) => {
@@ -50,13 +50,13 @@ const Login = () => {
           refreshToken: response.data.refreshToken || '',
           user: response.data.user
         }));
-        
+
         toast.success('Login successful!');
         navigate('/dashboard', { replace: true });
       }
-    } catch (error: unknown) {
-      const errorMessage = error?.data?.message || 'Login failed. Please check your credentials.';
-      toast.error(errorMessage);
+    } catch  {
+      
+      toast.error('Login failed. Please check your credentials.');
     }
   };
 
