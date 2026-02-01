@@ -7,6 +7,8 @@ import {poDetailApi} from './services/po-details';
 import {poHeaderApi} from './services/po-header';
 import {vendorDetail} from './services/vendor-detail';
 import {moDetailApi} from './services/mo-detail';
+import {iNote} from './services/i-note';
+import {final} from './services/final'
 
 export const store = configureStore({
   reducer: {
@@ -18,9 +20,11 @@ export const store = configureStore({
     [poHeaderApi.reducerPath]:poHeaderApi.reducer,
     [vendorDetail.reducerPath]:vendorDetail.reducer,
     [moDetailApi.reducerPath]:moDetailApi.reducer,
+    [iNote.reducerPath]:iNote.reducer,
+    [final.reducerPath]:final.reducer
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware({ serializableCheck: false })
+    getDefaultMiddleware({ serializableCheck: false,immutableCheck: false,  })
       .concat(
         pageApi.middleware,
         userApi.middleware,
@@ -29,6 +33,8 @@ export const store = configureStore({
         poHeaderApi.middleware,
         vendorDetail.middleware,
         moDetailApi.middleware,
+        iNote.middleware,
+        final.middleware
       ),
 });
 

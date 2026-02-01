@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
@@ -38,57 +38,25 @@ const Login = () => {
     mode: "onSubmit",
   });
 
-  // const onSubmit = async (formData: LoginFormValues) => {
-  //   console.log("✅ onSubmit Fired!", formData); 
-  //   try {
-  //     const response = await loginUser(formData).unwrap();
-  //     console.log("✅ API Response:", response); 
 
-  //     if (response?.token) {
-  //       dispatch(
-  //         setTokens({
-  //           accessToken: response.token,
-  //           refreshToken: response.refreshToken || "",
-  //           user: response.user,
-  //         })
-  //       );
-
-  //       toast.success("Login successful!");
-  //       navigate("/dashboard", { replace: true });
-  //     }
-  //   } catch (error: any) {
-  //     console.log("❌ API Error:", error); // Debug Log
-  //     const errorMessage =
-  //       error?.data?.message || "Login failed. Please check your credentials.";
-  //     toast.error(errorMessage);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   if (isAuthenticated) {
-  //     navigate("/dashboard", { replace: true });
-  //   }
-  // }, [isAuthenticated, navigate]);
 
 
   const onSubmit = async (formData: LoginFormValues) => {
     try {
       const response = await loginUser(formData).unwrap();
-      console.log("res",response)
-      console.log("✅ API Response:", response.data.accessToken)
       if (response?.data?.accessToken) {
         dispatch(setTokens({
           accessToken: response.data.accessToken,
           refreshToken: response.data.refreshToken || '',
           user: response.data.user
         }));
-        
+
         toast.success('Login successful!');
         navigate('/dashboard', { replace: true });
       }
-    } catch (error: any) {
-      const errorMessage = error?.data?.message || 'Login failed. Please check your credentials.';
-      toast.error(errorMessage);
+    } catch  {
+      
+      toast.error('Login failed. Please check your credentials.');
     }
   };
 
@@ -108,7 +76,6 @@ const Login = () => {
           type="email"
           register={register}
           errors={errors}
-          fullWidth
           required
           placeholder="Enter your email"
         />
@@ -119,12 +86,11 @@ const Login = () => {
           type="password"
           register={register}
           errors={errors}
-          fullWidth
           required
           placeholder="Enter your password"
         />
 
-        <Button type="submit" label="Login" buttonType="one" loading={isLoading} />
+        <Button type="submit" label="Login" buttonType="three" loading={isLoading} />
       </form>
     </AuthLayout>
   );

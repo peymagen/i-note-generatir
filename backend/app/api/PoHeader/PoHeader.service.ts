@@ -120,7 +120,7 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
 
 export const getAllData = async () => {
   try {
-    const [rows] = await pool.query("SELECT * FROM PO_HEADER ORDER BY id ASC");
+    const [rows] = await pool.execute<RowDataPacket[]>("SELECT * FROM PO_HEADER ORDER BY id ASC");
     return {
       success: true,
       data: rows
@@ -270,7 +270,7 @@ export const addData = async(userId:number, payload:any)=>{
         Name,
         City,
         State
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`;
     const insertValues = [
       userId,
       payload.IndentNo,
@@ -314,43 +314,189 @@ export const addData = async(userId:number, payload:any)=>{
   }
 }
 
+// export const searchPO = async (IndentNo?: string, OrderDate?: string) => {
+//   try {
+//     console.log("Searching with params:", { IndentNo, OrderDate });
+
+//     let query = `SELECT * FROM PO_HEADER WHERE 1=1`;
+//     const params: any[] = [];
+
+//     // --------------------------
+//     // Search By Indent No
+//     // --------------------------
+//     if (IndentNo && IndentNo.trim() !== "" && IndentNo !== "undefined") {
+//       query += ` AND IndentNo = ?`;
+//       params.push(IndentNo.trim());
+//     }
+
+//     if (OrderDate && OrderDate.trim() !== "" && OrderDate !== "undefined") {
+     
+//       const cleanDate = OrderDate.includes("T")
+//         ? OrderDate.split("T")[0]
+//         : OrderDate;
+
+//       console.log("Clean OrderDate used:", cleanDate);
+
+//       query += ` AND OrderDate = ?`;
+//       params.push(cleanDate);
+//     }
+
+//     console.log("Final Query:", query);
+//     console.log("Params:", params);
+
+//     const [rows]: any = await pool.query(query, params);
+//     console.log("Query Result:", rows);
+
+//     return rows;
+
+//   } catch (error: any) {
+//     console.error("Error in searchPO:", error);
+//     throw new Error("Database search failed: " + error.message);
+//   }
+// };
+
+
+
 export const searchPO = async (IndentNo?: string, OrderDate?: string) => {
   try {
     console.log("Searching with params:", { IndentNo, OrderDate });
 
-    let query = `SELECT * FROM PO_HEADER WHERE 1=1`;
-    const params: any[] = [];
+    // 1. Prepare Header Query
+    let headerQuery = `SELECT * FROM PO_HEADER WHERE 1=1`;
+    const headerParams: any[] = [];
 
-    // --------------------------
-    // Search By Indent No
-    // --------------------------
     if (IndentNo && IndentNo.trim() !== "" && IndentNo !== "undefined") {
-      query += ` AND IndentNo = ?`;
-      params.push(IndentNo.trim());
+      headerQuery += ` AND IndentNo = ?`;
+      headerParams.push(IndentNo.trim());
     }
 
     if (OrderDate && OrderDate.trim() !== "" && OrderDate !== "undefined") {
-     
-      const cleanDate = OrderDate.includes("T")
-        ? OrderDate.split("T")[0]
-        : OrderDate;
-
-      console.log("Clean OrderDate used:", cleanDate);
-
-      query += ` AND OrderDate = ?`;
-      params.push(cleanDate);
+      const cleanDate = OrderDate.includes("T") ? OrderDate.split("T")[0] : OrderDate;
+      headerQuery += ` AND OrderDate = ?`;
+      headerParams.push(cleanDate);
     }
 
-    console.log("Final Query:", query);
-    console.log("Params:", params);
+    // 2. Execute Header Query
+    const [headerRows]: any = await pool.query(headerQuery, headerParams);
+    console.log("Header Rows:", headerRows);
 
-    const [rows]: any = await pool.query(query, params);
-    console.log("Query Result:", rows);
+    if (!headerRows || headerRows.length === 0) {
+      console.log("header  found",headerRows)
+      return { 
+        success: false,
+        header: null,
+        details: [], 
+        
+      };
+      console.log("No header found");
+    }
 
-    return rows;
+    // 4. Fetch Details based on the IndentNo found in the Header
+    // console.log("Indent Number:", headerRows[0].IndentNo);
+    const foundIndentNo = headerRows[0].IndentNo
+    console.log("Found IndentNo:", foundIndentNo);
+    const detailQuery = `SELECT * FROM PO_DETAILS WHERE IndentNo = ?`;
+    
+    const [detailRows]: any = await pool.query(detailQuery, [foundIndentNo]);
+
+    return {
+      success: true,
+      header: headerRows[0], 
+      details: detailRows,    
+    };
 
   } catch (error: any) {
     console.error("Error in searchPO:", error);
     throw new Error("Database search failed: " + error.message);
+  }
+};
+
+
+
+
+
+
+export const getPaginatedDataWithGlobalSearch = async (
+  page?: number,
+  limit?: number,
+  search?: string
+) => {
+  try {
+    
+    const safePage = page && page > 0 ? page : 1;
+    const safeLimit = limit && limit > 0 ? limit : 50;
+    const offset = (safePage - 1) * safeLimit;
+
+    const normalizedSearch = search?.trim();
+
+    let whereClause = "";
+    const values: any[] = [];
+
+    
+    if (normalizedSearch) {
+      const [columnRows]: any = await pool.query(`
+        SELECT COLUMN_NAME
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE TABLE_NAME = 'PO_HEADER'
+          AND DATA_TYPE IN ('varchar', 'text', 'char')
+      `);
+
+      const searchableColumns: string[] = columnRows.map(
+        (c: any) => c.COLUMN_NAME
+      );
+
+      if (searchableColumns.length > 0) {
+        whereClause =
+          "WHERE " +
+          searchableColumns.map(col => `${col} LIKE ?`).join(" OR ");
+
+        const searchValue = `%${normalizedSearch}%`;
+        searchableColumns.forEach(() => values.push(searchValue));
+      }
+    }
+
+    
+    const dataQuery = `
+      SELECT *
+      FROM PO_HEADER
+      ${whereClause}
+      ORDER BY id ASC
+      LIMIT ? OFFSET ?
+    `;
+
+    const [rows]: any = await pool.query(dataQuery, [
+      ...values,
+      safeLimit,
+      offset,
+    ]);
+
+    
+    const countQuery = `
+      SELECT COUNT(*) AS total
+      FROM PO_HEADER
+      ${whereClause}
+    `;
+
+    const [[countResult]]: any = await pool.query(
+      countQuery,
+      values
+    );
+
+    const totalRecords = countResult.total;
+
+    return {
+      success: true,
+      data: rows,
+      pagination: {
+        page: safePage,
+        limit: safeLimit,
+        totalRecords,
+        totalPages: Math.ceil(totalRecords / safeLimit),
+      },
+      message: "Data fetched successfully",
+    };
+  } catch (error: any) {
+    console.error("Error in getPaginatedDataWithGlobalSearch:", error);
+    throw new Error("Failed to fetch data");
   }
 };

@@ -2,31 +2,21 @@ import React, { useEffect, useState, useRef } from "react";
 import styles from "./DataTable.module.css";
 import Button from "../Button/Button";
 
-// interface Action<T = { [x: string]: unknown }> {
-//   label: string;
-//   onClick: (row: T) => void | Promise<void>;
-// }
 interface Action<T = { [x: string]: unknown }> {
   label: string;
   onClick: (row: T) => Promise<void> | void;
-  buttonType?: "one" | "two" | "three" | "four"; 
-  component?: (row: T) => React.ReactNode; 
+  buttonType?: "one" | "two" | "three" | "four";
+  component?: (row: T) => React.ReactNode;
 }
 
-// type addButtonType = {
-//   label: string;
-//   buttonType?: "one" | "two" | "three" | "four";
-//   onClick: () => void;
-// };
-
 interface DataTableProps<T = { [x: string]: unknown }> {
-  fetchData: ( 
+  fetchData: (
     params?: { page: number; search?: string } | undefined
   ) => Promise<{
     data: T[];
     total?: number;
   }>;
-  columns: { label: string; accessor: string }[];
+  columns: { label: string; accessor: string;render?: (row: T) => React.ReactNode; }[];
   actions?: Action<T>[];
   loading: boolean;
   isNavigate?: boolean;
@@ -46,7 +36,6 @@ export const DataTable = <T extends { [x: string]: unknown }>({
   isSearch = true,
   isExport = true,
   hasCheckbox = false,
-  // addButton,
   onSelectedRows,
 }: DataTableProps<T>) => {
   const [data, setData] = useState<T[]>([]);
@@ -54,7 +43,7 @@ export const DataTable = <T extends { [x: string]: unknown }>({
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [selectedRows, setSelectedRows] = useState<T[]>([]);
-  const limit = isNavigate ? 10 : 100000;
+  const limit = isNavigate ? 50 : 100000;
 
   const tableRef = useRef<HTMLTableElement>(null);
 
@@ -93,10 +82,7 @@ export const DataTable = <T extends { [x: string]: unknown }>({
 
   const totalPages = Math.ceil(total / limit);
 
-  const handleRowSelection = (
-    row: T,
-    isChecked: boolean
-  ) => {
+  const handleRowSelection = (row: T, isChecked: boolean) => {
     setSelectedRows((prev) => {
       if (isChecked) {
         return [...prev, row];
@@ -172,27 +158,17 @@ export const DataTable = <T extends { [x: string]: unknown }>({
             />
           )}
         </div>
-        {/* {addButton && (
-          <div className={styles.addButton}>
-            <Button
-              label={addButton.label}
-              buttonType={addButton.buttonType || "one"}
-              onClick={addButton.onClick}
-            />
-          </div>
-        )} */}
         {isExport && (
           <div className={styles.exportButtons}>
             <button onClick={exportToCSV}>{"\u{2B07}\uFE0F"}</button>
             <button onClick={handlePrint}>{"\u{1F5B6}"}</button>
           </div>
         )}
-        
       </div>
-      
+
       <div className={styles.tableContainer}>
-        <table className={styles.table} ref={tableRef}>  
-          <thead>  
+        <table className={styles.table} ref={tableRef}>
+          <thead>
             <tr>
               {hasCheckbox && (
                 <th>
@@ -250,12 +226,20 @@ export const DataTable = <T extends { [x: string]: unknown }>({
                   {columns.map((col) => (
                     <td key={col.accessor}>
                       {(() => {
-                        const value = row[col.accessor];
+                        // const value = row[col.accessor];
 
-                        if (!value) return " -";
+                        // if (!value) return " -";
 
-                        if (typeof value === "string") {
-                          const lower = value.toLowerCase();
+                        // if (typeof value === "string") {
+                        //   const lower = value.toLowerCase();
+                         const value = row[col.accessor];
+                          if (!value && value !== 0 && value !== false) return " -";
+                          // Check if this column has a custom render function
+                          if (col.render) {
+                            return col.render(row);
+                          }
+                          if (typeof value === "string") {
+                            const lower = value.toLowerCase();
 
                           // Check for image
                           if (/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(lower)) {
@@ -322,6 +306,20 @@ export const DataTable = <T extends { [x: string]: unknown }>({
                             );
                           }
 
+                          if (
+                            (col.accessor.toLowerCase().startsWith("create") ||
+                              col.accessor
+                                .toLowerCase()
+                                .startsWith("update")) &&
+                            !isNaN(Date.parse(value))
+                          ) {
+                            return new Date(value).toLocaleString("en-IN", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            });
+                          }
+
                           // Otherwise treat as text
                           return value;
                         }
@@ -337,57 +335,35 @@ export const DataTable = <T extends { [x: string]: unknown }>({
                       })()}
                     </td>
                   ))}
-
-                  {/* {actions && (
+                  {actions && (
                     <td>
                       <div className={styles.action}>
-                        {actions.map((action, index) => (
-                          <button
-                            key={index}
-                            onClick={async () => {
-                              try {
+                        {actions.map((action, index) => {
+                          // If custom component exists, render it
+                          if (action.component) {
+                            return (
+                              <React.Fragment key={index}>
+                                {action.component(row)}
+                              </React.Fragment>
+                            );
+                          }
+
+                          // Otherwise render default Button
+                          return (
+                            <Button
+                              key={index}
+                              label={action.label}
+                              buttonType={action.buttonType || "one"}
+                              onClick={async (e: React.MouseEvent) => {
+                                e.stopPropagation();
                                 await action.onClick(row);
-                              } catch (error) {
-                                console.error('Action failed:', error);
-                              }
-                            }}
-                            className={styles.actionBtn}
-                          >
-                            {action.label}
-                          </button>
-                        ))}
+                              }}
+                            />
+                          );
+                        })}
                       </div>
                     </td>
-                  )} */}
-                  {actions && (
-                  <td> 
-                    <div className={styles.action}>
-                      {actions.map((action, index) => {
-                        
-                        // If custom component exists, render it
-                        if (action.component) {
-                          return <React.Fragment key={index}>
-                            {action.component(row)}
-                          </React.Fragment>
-                        }
-
-                        // Otherwise render default Button
-                        return (
-                          <Button
-                            key={index}
-                            label={action.label}
-                            buttonType={action.buttonType || "one"}
-                            onClick={async (e: React.MouseEvent) => {
-                              e.stopPropagation();
-                              await action.onClick(row);
-                            }}
-                          />
-                        );
-                      })}
-                    </div>
-                  </td>
-                )}
-
+                  )}
                 </tr>
               ))
             ) : (

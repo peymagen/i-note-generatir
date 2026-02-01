@@ -1,0 +1,49 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal {
+  max-height: 90vh;
+  overflow: auto;
+  width: 95%;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+}
+.md {
+  max-width: 520px;
+}
+.lg {
+  max-width: 900px;
+}
+.xl {
+  max-width: 1240px;
+}
+.header {
+  padding: 0 1.2rem;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid #eee;
+}
+.header button {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.body {
+  padding: 1.4rem;
+}
+
+@media (max-width: 480px) {
+  .modal {
+    height: 100%;
+    border-radius: 0;
+  }
+}

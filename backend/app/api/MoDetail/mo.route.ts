@@ -3,12 +3,14 @@ import * as controller from './mo.controller';
 import { roleAuth } from '../../common/middleware/role-auth.middleware';
 import { excelUpload } from "../../common/middleware/excel-upload.middleware";
 import { catchError } from '../../common/middleware/cath-error.middleware';
+import * as validator from './mo.validator';
 
 const router = Router();
 
 router.post(
   "/import",
   roleAuth(),
+  validator.createMoDetail,
   excelUpload.single("file"),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -30,7 +32,7 @@ router.get(
   "/",
   roleAuth(),
   catchError,
-  controller.getAllPOData
+  controller.getItemPageSearch
 );
 
 // Get single item by ID
@@ -44,6 +46,7 @@ router.get(
 router.patch(
   "/:id",
   roleAuth(),
+  validator.updateMoDetail,
   catchError,
   controller.update
 );
@@ -58,6 +61,7 @@ router.delete(
 router.post(
   "/",
   roleAuth(),
+  validator.createMoDetail,
   catchError,
   controller.addData
 );

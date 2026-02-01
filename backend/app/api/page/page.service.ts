@@ -1,18 +1,23 @@
 import { pool } from "../../common/services/sql.service";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { IPage } from "./page.dto";
+import { query } from "express-validator";
 
 // Create Page
-export const createPage = async (data: { title: string; content: string ,userId: number}) => {
+export const createPage = async (data: {
+  title: string;
+  content: string;
+  userId: number;
+}) => {
   try {
     // const id = "page_" + Date.now();
-    const query = "INSERT INTO pages (title, content, created_by) VALUES (?, ?, ?)";
+    const query =
+      "INSERT INTO pages (title, content, created_by) VALUES (?, ?, ?)";
     const values = [data.title, data.content, data.userId];
-
 
     const [result] = await pool.execute<ResultSetHeader>(query, values);
 
-    return { id :result.insertId };
+    return { id: result.insertId };
   } catch (error) {
     console.log(error);
     return null;
@@ -26,7 +31,10 @@ export const updatePage = async (
 ) => {
   try {
     const query = "UPDATE pages SET title = ?, content = ? WHERE id = ?";
-    const values = [data.title, data.content, id];
+    const pageId = Number(id);
+    const values = [data.title, data.content, pageId];
+
+    console.log("Updating page with ID:", pageId, "Values:", values);
 
     const [result] = await pool.execute<ResultSetHeader>(query, values);
 
@@ -83,12 +91,62 @@ export const getPageById = async (id: string): Promise<IPage | null> => {
 // Get all pages
 export const getAllPages = async () => {
   try {
-    const query = "SELECT id, title, created_on, updated_on FROM pages ORDER BY ID ASC";
+    const query =
+      "SELECT id, title, content, created_on, updated_on FROM pages ORDER BY ID ASC";
     const [rows] = await pool.execute<RowDataPacket[]>(query);
-    console.log(rows)
+    console.log(rows);
     return rows;
   } catch (error) {
     console.log(error);
     return [];
   }
 };
+
+
+export const getOnlyTitles = async()=>{
+  try{
+    const query = "SELECT title FROM pages ORDER BY ID ASC";
+    const [rows] = await pool.execute<RowDataPacket[]>(query);
+    console.log(rows);
+    if(!rows.length) {
+      return{
+        success: false,
+        data: []
+      }
+    }
+    else{
+      return{
+        success: true,
+        data: rows.map(row=>row.title)
+      }
+    }
+  }
+  catch(error){
+    console.log(error);
+    return [];
+  }
+}
+
+
+export  const getContent = async(title:string)=>{
+  try{
+    const query = "SELECT content FROM pages WHERE title = ?";
+    const [rows] = await pool.execute<RowDataPacket[]>(query, [title]);
+    if(!rows.length){
+      return {
+        success:false,
+        data:[]
+      }
+    }
+    else{
+      return{
+        success:true,
+        data:rows.map(row=>row.content)
+      }
+    }
+  }
+  catch(err){
+    console.log(err);
+    return null;
+  }
+}
