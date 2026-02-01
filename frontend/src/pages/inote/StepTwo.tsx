@@ -8,21 +8,18 @@ import Button from "../../component/Button/Button";
 import Input from "../../component/Input/Input2";
 import styles from "./Stepper.module.css";
 import type { formData, formTwo, StepperState } from "../../types/inote";
-import { useLazyGetByVendorCodeQuery } from "../../store/services/vendor-detail"
-import { useLazyGetDatabyConQuery } from "../../store/services/mo-detail"
-import { useGetInoteQuery } from "../../store/services/i-note"
+import { useLazyGetByVendorCodeQuery } from "../../store/services/vendor-detail";
+import { useLazyGetDatabyConQuery } from "../../store/services/mo-detail";
+import { useGetInoteQuery } from "../../store/services/i-note";
 
 interface StepTwoProps {
-  onNext: (data: Partial<formData>,
-    dbData?: StepperState["info"]
-  ) => void;
+  onNext: (data: Partial<formData>, dbData?: StepperState["info"]) => void;
   onBack: () => void;
   initialValues: formData;
   indentInfo: StepperState["indentInfo"];
-  vendorCode: string,
-  consigneeCode?: string
+  vendorCode: string;
+  consigneeCode?: string;
 }
-
 
 const dateRangeRegex =
   /^(\d{1,2}\/\d{1,2}\/\d{2,4})-(\d{1,2}\/\d{1,2}\/\d{2,4})$/;
@@ -37,7 +34,7 @@ const Schema: yup.ObjectSchema<formTwo> = yup.object({
     .required("Required")
     .matches(
       dateRangeRegex,
-      "Use format DD/MM/YY-DD/MM/YY (e.g., 02/1/26-01/02/26)"
+      "Use format DD/MM/YY-DD/MM/YY (e.g., 02/1/26-01/02/26)",
     ),
 });
 
@@ -50,8 +47,10 @@ const StepTwo: React.FC<StepTwoProps> = ({
 }) => {
 
 
-  const [triggerVendor, { isLoading: isFetching }] = useLazyGetByVendorCodeQuery();
-  const [triggerConsignee, { isLoading: isFetchingCon }] = useLazyGetDatabyConQuery();
+  const [triggerVendor, { isLoading: isFetching }] =
+    useLazyGetByVendorCodeQuery();
+  const [triggerConsignee, { isLoading: isFetchingCon }] =
+    useLazyGetDatabyConQuery();
   const { data: iNoteData } = useGetInoteQuery(undefined);
 
   const {
@@ -63,8 +62,6 @@ const StepTwo: React.FC<StepTwoProps> = ({
     defaultValues: initialValues,
   });
 
-
-
   const onSubmit: SubmitHandler<formData> = async (data) => {
     
     const [vendorRes, moRes] = await Promise.all([
@@ -72,22 +69,24 @@ const StepTwo: React.FC<StepTwoProps> = ({
       triggerConsignee(consigneeCode).unwrap(),
     ]);
     const dbData = {
-      vendor: Array.isArray(vendorRes.data.data[0]) ? vendorRes.data.data[0] : [vendorRes.data.data[0]],
-      mo: Array.isArray(moRes.data.data[0]) ? moRes.data.data[0] : [moRes.data.data[0]],
+      vendor: Array.isArray(vendorRes.data.data[0])
+        ? vendorRes.data.data[0]
+        : [vendorRes.data.data[0]],
+      mo: Array.isArray(moRes.data.data[0])
+        ? moRes.data.data[0]
+        : [moRes.data.data[0]],
       iNote: {
         iNote: iNoteData.data.iNote,
-        id: iNoteData.data.id
-      }
+        id: iNoteData.data.id,
+      },
     };
    
     onNext(data, dbData);
     toast.success("Preparing I-Note editor...");
-
   };
 
   return (
     <div className={styles.formContainer}>
-
       <form onSubmit={handleSubmit(onSubmit)} className={styles.form}>
         <h3 className={styles.stepTitle}>Inspection Details</h3>
 
@@ -111,7 +110,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
           label="Offered Date (Range)"
           name="InspectionOfferedDate"
           type="text"
-          placeholder="e.g. 02/1/26-01/02/26"
+          placeholder="e.g. 02/01/26-03/01/26"
           register={register}
           errors={errors}
         />
@@ -131,7 +130,11 @@ const StepTwo: React.FC<StepTwoProps> = ({
             onClick={onBack}
             buttonType="three"
           />
-          <Button type="submit" label={isFetching || isFetchingCon ? "Loading..." : "Next"} buttonType="three" />
+          <Button
+            type="submit"
+            label={isFetching || isFetchingCon ? "Loading..." : "Next"}
+            buttonType="three"
+          />
         </div>
       </form>
     </div>

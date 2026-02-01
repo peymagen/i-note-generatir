@@ -24,9 +24,16 @@
   gap: 0.3rem;
   margin-bottom: 0.9rem;
 }
-.selectInput{
-  width: 100%;
-  height: 2rem;
+.selectInput {
+  width: -webkit-fill-available;
+  padding: 0.8rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: all 0.3s;
+  background-color: var(--light-text-color);
+  color: #656565;
+  height: 3rem;
 }
 
 .stepperWrapper {

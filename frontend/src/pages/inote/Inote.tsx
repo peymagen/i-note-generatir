@@ -13,18 +13,14 @@ import {
   useGetFinalQuery,
   usePostFinalMutation,
   useUpdateFinalPageMutation,
-  useDeleteFinalPageMutation
-} from "../../store/services/final"
+  useDeleteFinalPageMutation,
+} from "../../store/services/final";
 
-import {
-  FiEdit,
-  FiTrash2,
-  FiPrinter,
-} from "react-icons/fi";
+import { FiEdit, FiTrash2, FiPrinter } from "react-icons/fi";
 import ConfirmDialog from "../../component/ConfirmDialoge";
 import { DataTable } from "../../component/DataTable/DataTable";
 import { toast } from "react-toastify";
-import Manipulate from './Manipulate'
+import Manipulate from "./Manipulate";
 
 // Define a type for the editor form
 
@@ -36,7 +32,7 @@ type final = {
 };
 interface EditorForm {
   editorContent: string;
-  i_note?: number
+  i_note?: number;
 }
 
 const renderCleanAddress = (address: string | undefined) => {
@@ -54,7 +50,7 @@ const Inote = () => {
 
   const { data, isLoading, refetch } = useGetFinalQuery(
     { page, limit, search },
-    { refetchOnMountOrArgChange: true }
+    { refetchOnMountOrArgChange: true },
   );
 
   const [save] = usePostFinalMutation();
@@ -66,7 +62,6 @@ const Inote = () => {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [addModal, setAddModal] = useState<boolean>(false);
   const [showEditor, setShowEditor] = useState<boolean>(false);
-
 
   // 1. Initialize React Hook Form
   const {
@@ -93,29 +88,7 @@ const Inote = () => {
         ? `${year}-${(year + 1).toString().slice(-2)}`
         : `${year - 1}-${year.toString().slice(-2)}`;
 
-    // const table = [
-    //   `<table border="1" cellpadding="5" cellspacing="0"
-    //     style="border-collapse: collapse; width: 100%; font-size: 13px;"><tr>
-    //   <th>Item No in A/T (OL No)</th>
-    //   <th colspan="2"><u>Description of store</u>Total Quantity Ordered<br/>The Inspector should indicate whether the Supply has been made in seller's / buyer's</th>
-    //   <th>Acc Unit</th><th>Tendered Quantity</th><th>Accepted Quantity</th><th>Brought to account in ledger folio Total Qty Accepted to</th>
-    //   <th>Rejected Quantity</th><th>No and date of inspection certificate (if any) issued by DGISM or other Insp. Authority</th>
-    //   <th>Remarks</th></tr>`,
-    //   ...(state?.products?.map(
-    //     (p: PoDetailItem & itemDetail & { acceptedQty: number }) => {
-    //       const itemDesc = p.ItemDesc || "";
-    //       const itemDeno = p.ItemDeno || "";
-    //       const acceptedQty = p.acceptedQty || p.Qty || 0;
-    //       return `<tr><td>${p.OrderLineNo}</td><td>${p.ItemCode
-    //         }<br/>${itemDesc}</td><td>Qty ${p.Qty}</td>
-    //     <td>${itemDeno}</td><td>${p.Qty}</td><td>${acceptedQty}</td><td>${acceptedQty === p.Qty ? acceptedQty : acceptedQty + " / " + p.Qty
-    //         }</td><td>0</td><td colspan="2"></td></tr>`;
-    //     }
-    //   ) || []),
-    //   "</table>",
-    // ].join("");
-
-const table = [
+    const table = [
   `<table border="1" cellpadding="5" cellspacing="0"
     style="border-collapse: collapse; width: 100%; font-size: 11px; text-align: center; border-color: #000;">
     <thead>
@@ -178,13 +151,6 @@ const table = [
           ${(state.info?.vendor[0]?.FirmAddress || "N/A")
             .replace(/(<br\s*\/?>\s*){2,}/gi, "<br>")}
         </div>`,
-    //  "{{VENDOR_DETAILS}}": `
-    //     ${state.info?.vendor[0]?.FirmName || "N/A"}
-    //     <div style="margin-top:-8px;" >
-    //       ${(state.info?.vendor[0]?.FirmAddress || "N/A")
-    //         .replace(/(<br\s*\/?>\s*){2,}/gi, "<br>")}
-    //     </div>`,
-
       "{{MO_ADDRESS_WAREHOUSE}}": (renderCleanAddress(moAddress) || "N/A"),
       "{{MO_ADDRESS_PROCUREMENT}}": (renderCleanAddress(moAddress) || "N/A"),
       "{{FILE_NO}}": state.user.sequenceNo?.toString() || "N/A",
@@ -217,7 +183,7 @@ const table = [
       }
       return { data: items, total: totalRecords };
     },
-    [items, totalRecords, page, search]
+    [items, totalRecords, page, search],
   );
   const handleDelete = async () => {
     if (!deleteTarget?.id) return;
@@ -232,19 +198,19 @@ const table = [
     { label: "ID", accessor: "id" },
     { label: "I-Note", accessor: "i_note" },
     { label: "Indent No", accessor: "indent_No" },
-  ]
+  ];
   const actions = [
     {
       label: "Edit",
-      onClick: () => { },
+      onClick: () => {},
 
       component: (row: final) => (
         <button
           className={`${styles.iconBtn} ${styles.edit}`}
           title="Edit User"
           onClick={() => {
-            setEditingForm(row)
-            setShowEditor(true)
+            setEditingForm(row);
+            setShowEditor(true);
             setValue("editorContent", row.content);
           }}
         >
@@ -254,7 +220,7 @@ const table = [
     },
     {
       label: "Delete",
-      onClick: () => { },
+      onClick: () => {},
       component: (row: final) => (
         <button
           className={`${styles.iconBtn} ${styles.delete}`}
@@ -267,7 +233,7 @@ const table = [
     },
     {
       label: "Print",
-      onClick: () => { },
+      onClick: () => {},
       component: (row: final) => (
         <button
           className={`${styles.iconBtn} ${styles.edit}`}
@@ -278,7 +244,7 @@ const table = [
         </button>
       ),
     },
-  ]
+  ];
   const handleStepperComplete = (state: StepperState) => {
     setStepperData(state);
     const readyHtml = processTemplate(state.content, state);
@@ -290,9 +256,10 @@ const table = [
     setAddModal(false);
   };
 
+ 
 
 
-  const handlePrint = (content: string) => {
+const handlePrint = (content: string) => {
     const printWindow = window.open("", "", "width=800,height=600");
     if (!printWindow) return;
 
@@ -590,9 +557,7 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
       body.indent_no = (editingForm as final).indent_no || "";
     }
 
-
     try {
-
       if (editingForm) {
         const res = await update(body).unwrap();
 
@@ -603,8 +568,7 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
           setEditingForm(null);
           setStepperData(null);
         }
-      }
-      else {
+      } else {
         const res = await save(body).unwrap();
 
         if (res?.data) {
@@ -629,9 +593,7 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
         <Button
           label="Add I-Note"
           buttonType="one"
-          onClick={() =>
-
-            setAddModal(true)}
+          onClick={() => setAddModal(true)}
         />
 
         <Button
@@ -642,7 +604,6 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
             // setAddModal(true);
           }}
         />
-
       </div>
 
       <h1 className={styles.pageTitle}>I-Note</h1>
@@ -675,10 +636,9 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
           title="Add I-Note"
           size="xl"
           onClose={() => {
-            setShowEditor(false)
+            setShowEditor(false);
           }}
         >
-
           <form
             onSubmit={handleSubmit(onFinalSubmit)}
             className={styles.editorWrapper}
@@ -694,7 +654,11 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
             </div>
 
             <div className={styles.actionButtons}>
-              <Button label="Save Final I-Note" type="submit" buttonType="three" />
+              <Button
+                label="Save Final I-Note"
+                type="submit"
+                buttonType="three"
+              />
               <Button
                 label="Print"
                 onClick={() => handlePrint(watch("editorContent"))}
@@ -702,12 +666,10 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
               />
             </div>
           </form>
-
         </Modal>
       )}
 
-
-      {(editingForm && showEditor) && (
+      {editingForm && showEditor && (
         <Modal
           title="Edit I-Note"
           size="xl"
@@ -729,12 +691,8 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
               errors={errors}
             />
 
-            <div className={styles.modalActions} >
-              <Button
-                label="Update I-Note"
-                type="submit"
-                buttonType="three"
-              />
+            <div className={styles.modalActions}>
+              <Button label="Update I-Note" type="submit" buttonType="three" />
               <Button
                 label="Cancel"
                 buttonType="three"
@@ -745,15 +703,11 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
         </Modal>
       )}
 
-      {manipulate &&
-        <Modal
-          title="Add I-Note"
-          onClose={() => setManipulate(false)}
-        >
+      {manipulate && (
+        <Modal title="Add I-Note" onClose={() => setManipulate(false)}>
           <Manipulate onClose={() => setManipulate(false)} />
         </Modal>
-
-      }
+      )}
 
       {addModal && (
         <Modal
