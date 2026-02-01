@@ -3,19 +3,15 @@ import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type { RootState } from "../store";
 import { resetTokens, setTokens } from "../reducers/authReducers";
 
-console.log('Base URL:', import.meta.env.VITE_BASE_URL);
-
-
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: import.meta.env.VITE_BASE_URL 
-    ? `${import.meta.env.VITE_BASE_URL}api/` 
-    : 'http://localhost:3000/api/',
+  baseUrl: import.meta.env.VITE_BASE_URL
+    ? `${import.meta.env.VITE_BASE_URL}api/`
+    : "https://note.peymagen.com/ap/api/",
   prepareHeaders: (headers, { getState }) => {
     const state = getState() as RootState;
     const token = state.auth.accessToken;
-     console.log('Current token:', token);
     if (token) {
-      headers.set('Authorization', `Bearer ${token}`);
+      headers.set("Authorization", `Bearer ${token}`);
     }
     return headers;
   },
@@ -24,29 +20,35 @@ const rawBaseQuery = fetchBaseQuery({
 export const baseQueryWithReauth = async (
   args: string | FetchArgs,
   api: BaseQueryApi,
-  extra: {}
+  extra: object,
 ) => {
-  console.log("api",api);
-  console.log("args",args)
-  
   const result = await rawBaseQuery(args, api, extra);
-  console.log("re",result)
+
   // Handle 401 → logout
-  if (result.error?.status === 401 && 
-      !(typeof args === 'string' && args.includes('login'))) {
-    console.log('Session expired, logging out...');
+  if (
+    result.error?.status === 401 &&
+    !(typeof args === "string" && args.includes("login"))
+  ) {
     api.dispatch(resetTokens());
   }
 
   // Save refreshed tokens if backend sends new ones
-  const data: any = result.data;
+  const data = result.data as {
+    accessToken?: string;
+    refreshToken?: string;
+    user?: {
+      id: string;
+      email: string;
+      [key: string]: unknown;
+    };
+  };
   if (data?.accessToken && data?.refreshToken) {
     api.dispatch(
       setTokens({
         accessToken: data.accessToken,
         refreshToken: data.refreshToken,
-        user: data.user,
-      })
+        user: data.user!,
+      }),
     );
   }
 
