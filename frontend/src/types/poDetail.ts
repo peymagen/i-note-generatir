@@ -1,19 +1,19 @@
 export type FormData = {
-    IndentNo?: string;
-    VendorCode?: string;
-    OrderDate?: string;  
-    OrderLineNo?: number;
-    ItemCode?: string;
-    ConsigneeCode?: string;
-    OrderLineDRB?: string;
-    Specs?: string;
-    Qty?: number;  
-    UniCostCC?: number;
-    PilotSampleDRb?: string ; 
-    MIQPQty?: number; 
-    PackType?: string;  
-    StationCode?: string ;  
-    ReReferencedItemCode?: string;
+  IndentNo?: string;
+  VendorCode?: string;
+  OrderDate?: string;
+  OrderLineNo?: number;
+  ItemCode?: string;
+  ConsigneeCode?: string;
+  OrderLineDRB?: string;
+  Specs?: string;
+  Qty?: number;
+  UniCostCC?: number;
+  PilotSampleDRb?: string;
+  MIQPQty?: number;
+  PackType?: string;
+  StationCode?: string;
+  ReReferencedItemCode?: string;
 }
 
 interface Base {
@@ -23,19 +23,20 @@ interface Base {
   updatedOn?: string;
 }
 export interface PoDetailItem extends Base {
-    IndentNo?: string;
-    VendorCode?: string;
-    OrderDate?: string;  
-    OrderLineNo?: number;
-    ItemCode?: string;
-    ConsigneeCode?: string;
-    OrderLineDRB?: string;
-    Specs?: string;
-    Qty?: number;  
-    UniCostCC?: number;
-    PilotSampleDRb?: string ; 
-    MIQPQty?: number; 
-    PackType?: string;  
-    StationCode?: string ;  
-    ReReferencedItemCode?: string;
+  IndentNo?: string;
+  VendorCode?: string;
+  OrderDate?: string;
+  OrderLineNo?: number;
+  ItemCode?: string;
+  ConsigneeCode?: string;
+  OrderLineDRB?: string;
+  Specs?: string;
+  Qty?: number;
+  UniCostCC?: number;
+  PilotSampleDRb?: string;
+  MIQPQty?: number;
+  PackType?: string;
+  StationCode?: string;
+  ReReferencedItemCode?: string;
+  QtyFullFill?: number;
 }

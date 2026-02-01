@@ -55,7 +55,7 @@ const StepThree: React.FC<StepThreeProps> = ({
           id: p.DetailId,
           name: `${p.ItemCode} - ${p.ItemDesc}`,
           availableQty: p.Qty,
-          QtyFullFill: p.QtyFullFill,
+          QtyFullFill: p.QtyFullFill || 0,
           selected: ui.selected,
           acceptedQty: ui.acceptedQty,
         };
@@ -96,7 +96,7 @@ const StepThree: React.FC<StepThreeProps> = ({
 
         return {
           ...p,
-          acceptedQty: ui.acceptedQty + p.QtyFullFill,
+          acceptedQty: ui.acceptedQty + (p.QtyFullFill || 0),
           selected: true,
         };
       })

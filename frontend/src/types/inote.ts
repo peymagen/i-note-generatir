@@ -38,13 +38,13 @@ export interface StepperState {
     header: header.FormData[];
     details: detail.FormData[];
   };
-  info?:{
-    vendor:VendorFormData[];
-    mo:MoFormData[];
-    iNote?:iNote;
+  info?: {
+    vendor: VendorFormData[];
+    mo: MoFormData[];
+    iNote?: iNote;
   }
- 
-  
+
+
 }
 
 export interface ProductItem {
@@ -53,6 +53,7 @@ export interface ProductItem {
   availableQty: number;
   acceptedQty: number;
   selected: boolean;
+  QtyFullFill: number;
 }
 
 export interface StepperState {
@@ -62,11 +63,11 @@ export interface StepperState {
     header: header.FormData[];
     details: detail.FormData[];
   };
-  info?:{
-    vendor:VendorFormData[];
-    mo:MoFormData[];
-    iNote?:iNote;
+  info?: {
+    vendor: VendorFormData[];
+    mo: MoFormData[];
+    iNote?: iNote;
   }
-  
+
   products?: ProductItem[];
 }
