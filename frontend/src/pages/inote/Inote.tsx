@@ -13,14 +13,18 @@ import {
   useGetFinalQuery,
   usePostFinalMutation,
   useUpdateFinalPageMutation,
-  useDeleteFinalPageMutation,
-} from "../../store/services/final";
+  useDeleteFinalPageMutation
+} from "../../store/services/final"
 
-import { FiEdit, FiTrash2, FiPrinter } from "react-icons/fi";
+import {
+  FiEdit,
+  FiTrash2,
+  FiPrinter,
+} from "react-icons/fi";
 import ConfirmDialog from "../../component/ConfirmDialoge";
 import { DataTable } from "../../component/DataTable/DataTable";
 import { toast } from "react-toastify";
-import Manipulate from "./Manipulate";
+import Manipulate from './Manipulate'
 
 // Define a type for the editor form
 
@@ -32,7 +36,7 @@ type final = {
 };
 interface EditorForm {
   editorContent: string;
-  i_note?: number;
+  i_note?: number
 }
 
 const renderCleanAddress = (address: string | undefined) => {
@@ -50,7 +54,7 @@ const Inote = () => {
 
   const { data, isLoading, refetch } = useGetFinalQuery(
     { page, limit, search },
-    { refetchOnMountOrArgChange: true },
+    { refetchOnMountOrArgChange: true }
   );
 
   const [save] = usePostFinalMutation();
@@ -62,6 +66,7 @@ const Inote = () => {
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [addModal, setAddModal] = useState<boolean>(false);
   const [showEditor, setShowEditor] = useState<boolean>(false);
+
 
   // 1. Initialize React Hook Form
   const {
@@ -88,7 +93,9 @@ const Inote = () => {
         ? `${year}-${(year + 1).toString().slice(-2)}`
         : `${year - 1}-${year.toString().slice(-2)}`;
 
-    const table = [
+
+
+const table = [
   `<table border="1" cellpadding="5" cellspacing="0"
     style="border-collapse: collapse; width: 100%; font-size: 11px; text-align: center; border-color: #000;">
     <thead>
@@ -151,6 +158,8 @@ const Inote = () => {
           ${(state.info?.vendor[0]?.FirmAddress || "N/A")
             .replace(/(<br\s*\/?>\s*){2,}/gi, "<br>")}
         </div>`,
+
+
       "{{MO_ADDRESS_WAREHOUSE}}": (renderCleanAddress(moAddress) || "N/A"),
       "{{MO_ADDRESS_PROCUREMENT}}": (renderCleanAddress(moAddress) || "N/A"),
       "{{FILE_NO}}": state.user.sequenceNo?.toString() || "N/A",
@@ -183,7 +192,7 @@ const Inote = () => {
       }
       return { data: items, total: totalRecords };
     },
-    [items, totalRecords, page, search],
+    [items, totalRecords, page, search]
   );
   const handleDelete = async () => {
     if (!deleteTarget?.id) return;
@@ -198,19 +207,19 @@ const Inote = () => {
     { label: "ID", accessor: "id" },
     { label: "I-Note", accessor: "i_note" },
     { label: "Indent No", accessor: "indent_No" },
-  ];
+  ]
   const actions = [
     {
       label: "Edit",
-      onClick: () => {},
+      onClick: () => { },
 
       component: (row: final) => (
         <button
           className={`${styles.iconBtn} ${styles.edit}`}
           title="Edit User"
           onClick={() => {
-            setEditingForm(row);
-            setShowEditor(true);
+            setEditingForm(row)
+            setShowEditor(true)
             setValue("editorContent", row.content);
           }}
         >
@@ -220,7 +229,7 @@ const Inote = () => {
     },
     {
       label: "Delete",
-      onClick: () => {},
+      onClick: () => { },
       component: (row: final) => (
         <button
           className={`${styles.iconBtn} ${styles.delete}`}
@@ -233,7 +242,7 @@ const Inote = () => {
     },
     {
       label: "Print",
-      onClick: () => {},
+      onClick: () => { },
       component: (row: final) => (
         <button
           className={`${styles.iconBtn} ${styles.edit}`}
@@ -244,7 +253,7 @@ const Inote = () => {
         </button>
       ),
     },
-  ];
+  ]
   const handleStepperComplete = (state: StepperState) => {
     setStepperData(state);
     const readyHtml = processTemplate(state.content, state);
@@ -256,10 +265,9 @@ const Inote = () => {
     setAddModal(false);
   };
 
- 
 
 
-const handlePrint = (content: string) => {
+  const handlePrint = (content: string) => {
     const printWindow = window.open("", "", "width=800,height=600");
     if (!printWindow) return;
 
@@ -557,7 +565,9 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
       body.indent_no = (editingForm as final).indent_no || "";
     }
 
+
     try {
+
       if (editingForm) {
         const res = await update(body).unwrap();
 
@@ -568,7 +578,8 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
           setEditingForm(null);
           setStepperData(null);
         }
-      } else {
+      }
+      else {
         const res = await save(body).unwrap();
 
         if (res?.data) {
@@ -593,7 +604,9 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
         <Button
           label="Add I-Note"
           buttonType="one"
-          onClick={() => setAddModal(true)}
+          onClick={() =>
+
+            setAddModal(true)}
         />
 
         <Button
@@ -604,6 +617,7 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
             // setAddModal(true);
           }}
         />
+
       </div>
 
       <h1 className={styles.pageTitle}>I-Note</h1>
@@ -636,9 +650,10 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
           title="Add I-Note"
           size="xl"
           onClose={() => {
-            setShowEditor(false);
+            setShowEditor(false)
           }}
         >
+
           <form
             onSubmit={handleSubmit(onFinalSubmit)}
             className={styles.editorWrapper}
@@ -654,11 +669,7 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
             </div>
 
             <div className={styles.actionButtons}>
-              <Button
-                label="Save Final I-Note"
-                type="submit"
-                buttonType="three"
-              />
+              <Button label="Save Final I-Note" type="submit" buttonType="three" />
               <Button
                 label="Print"
                 onClick={() => handlePrint(watch("editorContent"))}
@@ -666,10 +677,12 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
               />
             </div>
           </form>
+
         </Modal>
       )}
 
-      {editingForm && showEditor && (
+
+      {(editingForm && showEditor) && (
         <Modal
           title="Edit I-Note"
           size="xl"
@@ -691,8 +704,12 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
               errors={errors}
             />
 
-            <div className={styles.modalActions}>
-              <Button label="Update I-Note" type="submit" buttonType="three" />
+            <div className={styles.modalActions} >
+              <Button
+                label="Update I-Note"
+                type="submit"
+                buttonType="three"
+              />
               <Button
                 label="Cancel"
                 buttonType="three"
@@ -703,11 +720,15 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
         </Modal>
       )}
 
-      {manipulate && (
-        <Modal title="Add I-Note" onClose={() => setManipulate(false)}>
+      {manipulate &&
+        <Modal
+          title="Add I-Note"
+          onClose={() => setManipulate(false)}
+        >
           <Manipulate onClose={() => setManipulate(false)} />
         </Modal>
-      )}
+
+      }
 
       {addModal && (
         <Modal
