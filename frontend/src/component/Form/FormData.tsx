@@ -1,5 +1,4 @@
 import type { ChangeEvent } from "react";
-import React from "react";
 import Input from "../Input/Input2";
 import type { FormProps } from "../../types/formTypes";
 

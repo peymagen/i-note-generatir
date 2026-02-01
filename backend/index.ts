@@ -1,5 +1,4 @@
 import express, { type Express, type Request, type Response } from "express";
-import bodyParser from "body-parser";
 import http from "http";
 
 import { initPassport } from "./app/common/services/passport-jwt.service";
@@ -15,9 +14,8 @@ const port = Number(process.env.PORT) ?? 5000;
 
 const app: Express = express();
 
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // For form submissions without files
 app.use(cors({
   origin: 'http://localhost:5173', // Your frontend URL
   credentials: true,

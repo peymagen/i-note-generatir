@@ -15,15 +15,11 @@ const Sidebar: React.FC = () => {
   const menuItems = [
     { label: "Dashboard", path: "dashboard" },
     { label: "Users", path: "manage-users" },
-    { label: "Change Password", path: "change-password" },
     { label: "Template Management", path: "manage-template" },
-    {label:"Item Detail", path:"item-detail"},
-    {label:"Po Detail",path:"po-detail"},
-    {label:"Po Header",path:"po-header"},
+    {label:"Data Collective", path:"data-collective"},
     {label:"Vendor Detail", path:"vendor-detail"},
     {label:"Mo Detail", path:"mo-detail"},
-    {label:"Purchase Order" , path:"purchase-order"},
-    {label:"Page", path:"page"}
+    {label:"I-Note", path:"i-note"},
   ];
  
 
@@ -38,6 +34,7 @@ const Sidebar: React.FC = () => {
       toast.success("Logged out successfully!");
     } catch (err) {
       console.error("Logout error:", err);
+      toast.error("something went wrong, logout failed");
     } finally {
       setLoading(false);
       navigate("/login", { replace: true }); 
@@ -54,7 +51,7 @@ const Sidebar: React.FC = () => {
               <Link
                 to={item.path}
                 className={`${styles.menuItem} ${
-                  location.pathname === item.path ? styles.active : ''
+                  location.pathname === `/${item.path}` ? styles.active : ""
                 }`}
               >
                 {item.label}
@@ -66,6 +63,7 @@ const Sidebar: React.FC = () => {
 
       <div className={styles.lower}>
         <Button
+        buttonType="three"
           label={loading ? "Logging out..." : "Logout"}
           onClick={handleLogout}
           disabled={loading}

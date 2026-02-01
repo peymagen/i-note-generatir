@@ -1,6 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQueryWithReauth } from "./api";
 
+
 export const poHeaderApi = createApi({
   reducerPath: "poHeaderApi",
   baseQuery: baseQueryWithReauth,
@@ -9,11 +10,27 @@ export const poHeaderApi = createApi({
 
     // GET ALL
     getAllPOHeader: builder.query({
-      query: () => ({
-        url: "/po-header",
+    query: (params?: { page?: number; limit?: number; search?: string }) => {
+      const queryString = new URLSearchParams();
+
+      if (params?.page !== undefined) {
+        queryString.append('page', String(params.page));
+      }
+
+      if (params?.limit !== undefined) {
+        queryString.append('limit', String(params.limit));
+      }
+
+      if (params?.search !== undefined && params.search.trim() !== "") {
+        queryString.append('search', params.search.trim());
+      }
+
+      return {
+        url: `/po-header${queryString.toString() ? `?${queryString}` : ''}`,
         method: "GET",
-      }),
-    }),
+      };
+    },
+  }),
 
     // GET BY ID
     getPOHeaderById: builder.query({
@@ -39,20 +56,20 @@ export const poHeaderApi = createApi({
 
     // UPDATE BY ID
     updatePOHeader: builder.mutation({
-      query: ({ id, data }: { id: number; data: any }) => ({
-        url: `/po-header/${id}`,
+      query: (body) => ({
+        url: `/po-header/${body.id}`,
         method: "PATCH",
-        body: data,
+        body: body,
       }),
     }),
     deletePoHeader: builder.mutation({
       query: (id: number) => ({
-        url: `/po-header/${id}`,
+        url: `/po-header/${id}`, 
         method: "DELETE",
       }),
-    }),
+    }), 
     addPoHeader: builder.mutation({
-      query: (data: any) => ({
+      query: (data) => ({
         url: "/po-header",
         method: "POST",
         body: data,

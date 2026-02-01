@@ -43,13 +43,13 @@
 }
 
 .active {
-  background-color: #0ea5e9;
+  background: var(--color-primary);
   color: white;
   font-weight: 600;
 }
 
 /* ----------------------------------
-   📱 Tablet (less than 1024px)
+    Tablet (less than 1024px)
 ---------------------------------- */
 @media (max-width: 64rem) {  /* 64rem = 1024px */
   .sidebar {
@@ -65,9 +65,8 @@
   }
 }
 
-/* ----------------------------------
-   📱 Mobile (less than 768px)
----------------------------------- */
+
+
 @media (max-width: 48rem) {  /* 48rem = 768px */
   .sidebar {
     width: 100%;

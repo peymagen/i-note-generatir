@@ -52,15 +52,15 @@ export const uploadExcel = async (req: Request, res: Response) => {
   }
 };
 
-export const getAllPOData =  async(req:Request,res:Response)=>{
-  try {
-      const data = await service.getAllData();
-       res.status(200).json({ success: true, data });
-    } 
-    catch (error: any) {
-       res.status(500).json({ success: false, error: error.message });
-    }
-}
+// export const getAllPOData =  async(req:Request,res:Response)=>{
+//   try {
+//       const data = await service.getAllData();
+//        res.status(200).json({ success: true, data });
+//     } 
+//     catch (error: any) {
+//        res.status(500).json({ success: false, error: error.message });
+//     }
+// }
 export const getPODataById = async(req:Request,res:Response)=>{
   try {
       const id = Number(req.params.id);
@@ -156,7 +156,7 @@ export const addData = async (req: Request, res: Response) => {
 
     try {
         const payload = req.body;
-        console.log('Received payload:', payload); // Debug log
+        console.log(' payload:', payload); // Debug log
         
         if (!payload) {
              res.status(400).json({ 
@@ -166,7 +166,7 @@ export const addData = async (req: Request, res: Response) => {
         }
 
         // Validate required fields
-        const requiredFields = ['IndentNo', 'VendorCode', 'OrderDate', 'ItemCode']; // Add other required fields
+        const requiredFields = ['MoCPRO', 'MoAddress'];
         const missingFields = requiredFields.filter(field => !(field in payload));
         
         if (missingFields.length > 0) {
@@ -226,3 +226,60 @@ export const getDatabyCon  = async(req:Request,res:Response)=>{
     })
   }
 }
+
+
+
+
+export const getItemPageSearch = async (req: Request, res: Response) => {
+  try {
+    
+    const pageParam = req.query.page;
+    const limitParam = req.query.limit;
+    const search = req.query.search?.toString();
+
+    
+    const page =
+      pageParam !== undefined ? Number(pageParam) : undefined;
+
+    const limit =
+      limitParam !== undefined ? Number(limitParam) : undefined;
+
+    if (page !== undefined && page <= 0) {
+       res.status(400).json({
+        success: false,
+        message: "Page must be greater than 0",
+      });
+    }
+
+    if (limit !== undefined && limit <= 0) {
+       res.status(400).json({
+        success: false,
+        message: "Limit must be greater than 0",
+      });
+    }
+
+    const result = await service.getPaginatedDataWithGlobalSearch(
+      page,
+      limit,
+      search
+    );
+
+    if(result.success){
+       res.status(200).json({ data: result });
+    }
+    else{
+       res.status(404).json({ 
+        success: false, 
+        message: result.message || "No records found" 
+      });
+    }
+  } 
+  catch (error: any) {
+    console.error("Controller error:", error);
+
+     res.status(500).json({
+      success: false,
+      message: error.message || "Failed to fetch item details",
+    });
+  }
+};

@@ -1,353 +1,437 @@
-// import React, { useEffect, useState, useRef } from "react";
-// import ReactQuill from "react-quill";
-// import "react-quill/dist/quill.snow.css";
-// import styles from "./RichEditor.module.css";
-// import Button from "../Button/Button";
-// import Input from "../Input/Input2";
-// import { type Props } from "../../types/page";
-// import { toast } from "react-toastify";
-// import { useSelector } from "react-redux";
-// import type { RootState } from "../../store/store";
-// import {
-//   useGetPageByIdQuery,
-//   useCreatePageMutation,
-//   useUpdatePageMutation,
-// } from "../../store/services/page.api";
-// import AuthLayout from "../Layout/Layout";
+import { useRef, useEffect } from "react";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import type { Editor } from "@ckeditor/ckeditor5-core";
+import type {
+  FieldValues,
+  FieldErrors,
+  FieldError,
+  Merge,
+  FieldErrorsImpl,
+  UseFormWatch,
+  UseFormSetValue,
+  Path,
+  PathValue,
+} from "react-hook-form";
+import type {
+  FileRepository,
+  FileLoader,
+  UploadAdapter,
+} from "@ckeditor/ckeditor5-upload";
+import type { ViewDowncastWriter } from "@ckeditor/ckeditor5-engine";
 
-
-
-// const RichEditor: React.FC<Props> = ({
-//   pageId,
-//   inline = false,
-//   initialData,
-// }) => {
-//   // console.log("Page initial", pageId);
-//   console.log("initialData", initialData);
-
-//   const { user } = useSelector((state: RootState) => state.auth);
-//   const [page, setPage] = useState({ title: "", content: "" });
-//   const quillRef = useRef<ReactQuill | null>(null);
-
-//   const { data: pageData, isFetching } = useGetPageByIdQuery(pageId!, {
-//     skip: !pageId || pageId.trim() === "",
-//   });
-
-//   const [createPage, { isLoading: isCreating }] = useCreatePageMutation();
-//   const [updatePage, { isLoading: isUpdating }] = useUpdatePageMutation();
-
-//   useEffect(() => {
-//     if (pageData?.data) {
-//       setPage({
-//         title: pageData.data.title ?? "",
-//         content: pageData.data.content ?? "",
-//       });
-//       console.log("Fetched Page:", pageData);
-//     }
-//   }, [pageData]);
-
-//   useEffect(() => {
-//   if (initialData) {
-//     setPage(initialData);
-//   }
-// }, [initialData]);
-
-
-//   const replaceVariables = (content: string): string => {
-//     if (!user) return content;
-//     return content
-//       .replace(/\{\{name\}\}/g, (user as any).name || "")
-//       .replace(/\{\{email\}\}/g, (user as any).email || "");
-//   };
-
-//   const handleSave = async () => {
-//     if (!page.title.trim()) {
-//       toast.error("Please enter a title");
-//       return;
-//     }
-
-//     try {
-//       const processedContent = replaceVariables(page.content);
-
-//       if (pageId && pageId.trim() !== "") {
-//         await updatePage({
-//           id: pageId,
-//           data: { title: page.title, content: processedContent },
-//         }).unwrap();
-//         toast.success("Page updated!");
-//       } else {
-//         const res = await createPage({
-//           title: page.title,
-//           content: processedContent,
-//         }).unwrap();
-//         console.log("Created:", res);
-//         toast.success("Page created!");
-//         setPage({
-//           title: "",
-//           content: "",
-//         });
-//         // navigate(-1)
-//       }
-//     } catch (err: any) {
-//       toast.error(err?.message || "Save failed");
-//     }
-//   };
-
-//   const insertVariable = (variable: string) => {
-//     const editor = quillRef.current?.getEditor();
-//     if (!editor) return;
-
-//     const range = editor.getSelection();
-//     const pos = range?.index ?? editor.getLength();
-//     editor.insertText(pos, variable);
-//     editor.setSelection(pos + variable.length, 0);
-//   };
-
-//   return (
-//     <AuthLayout fullWidth>
-
-      
-//       <Input
-//         fullWidth
-//         label="Title"
-//         name={"title" as any}
-//         type="text"
-//         value={page.title}
-//         onChange={(e) => setPage({ ...page, title: e.target.value })}
-//         placeholder="Enter title"
-//         required={true}
-//       />
-
-//       {/* ✅ QUILL EDITOR */}
-//       <div className={styles.editorLabel}>Content</div>
-
-//       <ReactQuill
-//         ref={quillRef}
-//         theme="snow"
-//         value={page.content}
-//         onChange={(value) => setPage({ ...page, content: value })}
-//         className={styles.quillEditor}
-//         placeholder="Start writing..."
-//       />
-
-//       {/* ✅ VARIABLE TAGS */}
-//       <div className={styles.variablesList}>
-//         {["{{name}}", "{{email}}"].map((v, i) => (
-//           <span
-//             key={i}
-//             onClick={() => insertVariable(v)}
-//             className={styles.variableTag}
-//           >
-//             {v.replace(/[{}]/g, "")}
-//           </span>
-//         ))}
-//       </div>
-
-//       {/* ✅ SAVE BUTTON */}
-//       <Button
-//         label="Save"
-//         onClick={handleSave}
-//         loading={isFetching || isCreating || isUpdating}
-//       />
-
-//     </AuthLayout>
-//   );
-// };
-
-// export default RichEditor;
-
-
-
-
-import React, { useEffect, useState, useRef } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
 import styles from "./RichEditor.module.css";
-import Button from "../Button/Button";
-import Input from "../Input/Input2";
-import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
-import type { RootState } from "../../store/store";
-import {
-  useGetPageByIdQuery,
-  useCreatePageMutation,
-  useUpdatePageMutation,
-} from "../../store/services/page.api";
+import { EditorWatchdog, ContextWatchdog } from "@ckeditor/ckeditor5-watchdog";
+import type { Editor as CKEditorCore } from "@ckeditor/ckeditor5-core";
+
+type EditorConstructor = {
+  create(
+    ...args: Parameters<typeof ClassicEditor.create>
+  ): Promise<CKEditorCore>;
+  EditorWatchdog: typeof EditorWatchdog;
+  ContextWatchdog: typeof ContextWatchdog;
+};
 
 /* ================= PROPS ================= */
 
-interface RichEditorProps {
-  pageId?: string;
-  inline?: boolean;
-  initialData?: {
-    title: string;
-    content: string;
-  };
+interface RichTextEditorProps<T extends FieldValues> {
+  label: string;
+  name: Path<T>;
+  watch: UseFormWatch<T>;
+  setValue: UseFormSetValue<T>;
+  errors?: FieldErrors<T>;
+  required?: boolean;
+  onEditorReady?: (editor: Editor) => void;
+}
+
+/* ================= IMAGE UPLOAD ADAPTER ================= */
+
+class MyUploadAdapter implements UploadAdapter {
+  private loader: FileLoader;
+  private xhr: XMLHttpRequest | null = null;
+
+  constructor(loader: FileLoader) {
+    this.loader = loader;
+  }
+
+  upload(): Promise<{ default: string }> {
+    return this.loader.file.then((file) => {
+      if (!file) {
+        return Promise.reject("No file provided");
+      }
+
+      return new Promise((resolve, reject) => {
+        const data = new FormData();
+        data.append("file", file);
+
+        this.xhr = new XMLHttpRequest();
+        this.xhr.open(
+          "POST",
+          `${import.meta.env.VITE_BASE_URL}api/upload`,
+          true
+        );
+
+        this.xhr.onload = () => {
+          try {
+            const res = JSON.parse(this.xhr!.responseText);
+            resolve({ default: res.data.url });
+          } catch {
+            reject("Invalid upload response");
+          }
+        };
+
+        this.xhr.onerror = () => reject("Image upload failed");
+        this.xhr.send(data);
+      });
+    });
+  }
+
+  abort() {
+    this.xhr?.abort();
+  }
+}
+
+/* ================= UPLOAD PLUGIN ================= */
+
+function CustomUploadPlugin(editor: Editor) {
+  const repository = editor.plugins.get("FileRepository") as FileRepository;
+  repository.createUploadAdapter = (loader: FileLoader) =>
+    new MyUploadAdapter(loader);
 }
 
 /* ================= COMPONENT ================= */
 
-const RichEditor: React.FC<RichEditorProps> = ({
-  pageId,
-  inline = false,
-  initialData,
-}) => {
-  const { user } = useSelector((state: RootState) => state.auth);
+const RichTextEditor = <T extends FieldValues>({
+  label,
+  name,
+  watch,
+  setValue,
+  errors,
+  required = false,
+  onEditorReady,
+}: RichTextEditorProps<T>) => {
+  const editorRef = useRef<Editor | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const value = watch(name) ?? "";
 
-  const [page, setPage] = useState({
-    title: "",
-    content: "",
-  });
+  const error = name
+    .split(".")
+    .reduce<unknown>(
+      (acc, key) =>
+        typeof acc === "object" && acc !== null
+          ? (acc as Record<string, unknown>)[key]
+          : undefined,
+      errors ?? {}
+    ) as
+    | FieldError
+    | Merge<FieldError, FieldErrorsImpl<FieldError>>
+    | undefined;
 
-  
-  const [initialized, setInitialized] = useState(false);
-
-  const quillRef = useRef<ReactQuill | null>(null);
-
-  /* ================= BACKEND FETCH CONTROL ================= */
-
-  const shouldFetch = !inline && !!pageId;
-
-  const { data: pageData, isFetching } = useGetPageByIdQuery(pageId!, {
-    skip: !shouldFetch,
-    refetchOnMountOrArgChange: false,
-  });
-
-  const [createPage, { isLoading: isCreating }] = useCreatePageMutation();
-  const [updatePage, { isLoading: isUpdating }] = useUpdatePageMutation();
-
-  /* ================= INITIAL LOAD FROM BACKEND ================= */
+  const ClassicEditorTyped = ClassicEditor as unknown as EditorConstructor;
 
   useEffect(() => {
-    if (!shouldFetch) return;
-    if (!pageData?.data) return;
-    if (initialized) return;
+    if (!containerRef.current) return;
 
-    setPage({
-      title: pageData.data.title ?? "",
-      content: pageData.data.content ?? "",
-    });
-    console.log("pageData", pageData);
-
-    setInitialized(true);
-  }, [pageData, shouldFetch, initialized]);
-
-  /* ================= INLINE MODE LOAD ================= */
-
-  useEffect(() => {
-    if (!inline || !initialData) return;
-
-    setPage({
-      title: initialData.title,
-      content: initialData.content,
-    });
-    console.log("initialData", initialData);
-
-    setInitialized(true);
-  }, [initialData, inline]);
-
-  /* ================= HELPERS ================= */
-
-  const replaceVariables = (content: string): string => {
-    if (!user) return content;
-    return content
-      .replace(/\{\{name\}\}/g, (user as any).name || "")
-      .replace(/\{\{email\}\}/g, (user as any).email || "");
-  };
-
-  /* ================= SAVE ================= */
-
-  const handleSave = async () => {
-    if (!page.title.trim()) {
-      toast.error("Please enter a title");
-      return;
+    // Add styles for tables
+    const styleId = "custom-table-styles";
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = `
+        .ck-content table {
+          border-collapse: collapse;
+          width: 100%;
+          margin: 10px 0;
+        }
+        
+        .ck-content table td,
+        .ck-content table th {
+          border: 1px solid #ddd;
+          padding: 8px;
+          position: relative;
+        }
+        
+        .ck-content table th {
+          background-color: #f2f2f2;
+          font-weight: bold;
+        }
+        
+        .custom-table-menu {
+          position: fixed;
+          background: white;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          padding: 4px 0;
+          z-index: 999999;
+          min-width: 200px;
+        }
+        
+        .custom-table-menu-item {
+          padding: 10px 16px;
+          cursor: pointer;
+          font-size: 14px;
+        }
+        
+        .custom-table-menu-item:hover {
+          background: #f0f0f0;
+        }
+      `;
+      document.head.appendChild(style);
     }
 
-    try {
-      const processedContent = replaceVariables(page.content);
-      if (inline) {
-        toast.success("Inspection content ready");
-        return;
+    // Setup context menu handler
+    const handleContextMenu = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+
+      // Check if we're inside the CKEditor content area
+      const ckContent = target.closest(".ck-content");
+      if (!ckContent) return;
+
+      const cell = target.closest("td, th") as HTMLTableCellElement | null;
+      const table = target.closest("table") as HTMLTableElement | null;
+
+      if (cell || table) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Remove existing menu
+        const existingMenu = document.querySelector(".custom-table-menu");
+        if (existingMenu) {
+          existingMenu.remove();
+        }
+
+        // Create menu
+        const menu = document.createElement("div");
+        menu.className = "custom-table-menu";
+        menu.style.left = `${e.pageX}px`;
+        menu.style.top = `${e.pageY}px`;
+
+        const menuOptions = [
+          {
+            label: "Set Table Width",
+            handler: () => {
+              if (table) {
+                const width = prompt(
+                  "Enter table width (e.g., 100%, 600px):",
+                  "100%"
+                );
+                if (width) {
+                  table.style.width = width;
+                  table.setAttribute("style", `width: ${width};`);
+                }
+              }
+            },
+          },
+          {
+            label: "Set Column Width",
+            handler: () => {
+              if (cell) {
+                const width = prompt("Enter column width (px):", "150");
+                if (width) {
+                  const w = width.includes("px") ? width : `${width}px`;
+                  cell.style.width = w;
+                  cell.setAttribute("width", width.replace("px", ""));
+
+                  // Apply to all cells in the column
+                  const cellIndex = Array.from(
+                    cell.parentElement!.children
+                  ).indexOf(cell);
+                  const rows = table?.querySelectorAll("tr");
+                  rows?.forEach((row) => {
+                    const targetCell = row.children[
+                      cellIndex
+                    ] as HTMLTableCellElement;
+                    if (targetCell) {
+                      targetCell.style.width = w;
+                      targetCell.setAttribute("width", width.replace("px", ""));
+                    }
+                  });
+                }
+              }
+            },
+          },
+          {
+            label: "Set Cell Background",
+            handler: () => {
+              if (cell) {
+                const color = prompt(
+                  "Enter color (e.g., #f0f0f0, lightblue):",
+                  ""
+                );
+                if (color) {
+                  cell.style.backgroundColor = color;
+                }
+              }
+            },
+          },
+          {
+            label: "Set Cell Padding",
+            handler: () => {
+              if (cell) {
+                const padding = prompt("Enter padding (px):", "8");
+                if (padding) {
+                  const p = padding.includes("px") ? padding : `${padding}px`;
+                  cell.style.padding = p;
+                }
+              }
+            },
+          },
+          {
+            label: "Set Text Alignment",
+            handler: () => {
+              if (cell) {
+                const align = prompt(
+                  "Enter alignment (left, center, right, justify):",
+                  "left"
+                );
+                if (
+                  align &&
+                  ["left", "center", "right", "justify"].includes(align)
+                ) {
+                  cell.style.textAlign = align;
+                }
+              }
+            },
+          },
+          {
+            label: "Set Cell Width & Height",
+            handler: () => {
+              if (cell) {
+                const width = prompt("Enter cell width (px):", "");
+                if (width) {
+                  const w = width.includes("px") ? width : `${width}px`;
+                  cell.style.width = w;
+                  cell.setAttribute("width", width.replace("px", ""));
+                }
+
+                const height = prompt("Enter cell height (px):", "");
+                if (height) {
+                  const h = height.includes("px") ? height : `${height}px`;
+                  cell.style.height = h;
+                  cell.setAttribute("height", height.replace("px", ""));
+                }
+              }
+            },
+          },
+        ];
+
+        menuOptions.forEach((option) => {
+          const item = document.createElement("div");
+          item.className = "custom-table-menu-item";
+          item.textContent = option.label;
+          item.onclick = (evt: MouseEvent) => {
+            evt.stopPropagation();
+            option.handler();
+            menu.remove();
+          };
+          menu.appendChild(item);
+        });
+
+        document.body.appendChild(menu);
+
+        // Close menu on click outside
+        const closeMenu = (evt: MouseEvent) => {
+          if (!menu.contains(evt.target as Node)) {
+            menu.remove();
+            document.removeEventListener("click", closeMenu);
+          }
+        };
+
+        setTimeout(() => {
+          document.addEventListener("click", closeMenu);
+        }, 100);
       }
+    };
 
-      if (pageId) {
-        await updatePage({
-          id: pageId,
-          data: { title: page.title, content: processedContent },
-        }).unwrap();
-        toast.success("Page updated!");
-      } else {
-        await createPage({
-          title: page.title,
-          content: processedContent,
-        }).unwrap();
-        toast.success("Page created!");
-        setPage({ title: "", content: "" });
-        setInitialized(false);
-      }
-    } catch (err: any) {
-      toast.error(err?.message || "Save failed");
-    }
-  };
+    // Add event listener
+    document.addEventListener("contextmenu", handleContextMenu);
 
-  /* ================= VARIABLE INSERT ================= */
-
-  const insertVariable = (variable: string) => {
-    const editor = quillRef.current?.getEditor();
-    if (!editor) return;
-
-    const range = editor.getSelection();
-    const pos = range?.index ?? editor.getLength();
-    editor.insertText(pos, variable);
-    editor.setSelection(pos + variable.length, 0);
-  };
-
-  /* ================= UI ================= */
+    return () => {
+      document.removeEventListener("contextmenu", handleContextMenu);
+    };
+  }, []);
 
   return (
-    <div className={inline ? styles.inlineWrapper : styles.pageWrapper}>
-      <Input
-        fullWidth
-        label="Title"
-        name={"title" as any}
-        type="text"
-        value={page.title}
-        onChange={(e) => setPage({ ...page, title: e.target.value })}
-        placeholder="Enter title"
-        required
-      />
+    <div className={styles.formGroup} ref={containerRef}>
+      <label className={styles.label}>
+        {label}
+        {required && <span className={styles.required}>*</span>}
+      </label>
 
+      <div className={`${styles.input} ${error ? styles.inputError : ""}`}>
+        <CKEditor
+          editor={ClassicEditorTyped}
+          data={value || ""}
+          config={{
+            extraPlugins: [CustomUploadPlugin],
+            toolbar: [
+              "heading",
+              "|",
+              "bold",
+              "italic",
+              "underline",
+              "strikethrough",
+              "code",
+              "|",
+              "alignment:left",
+              "alignment:center",
+              "alignment:right",
+              "|",
+              "link",
+              "|",
+              "bulletedList",
+              "numberedList",
+              "|",
+              "uploadImage",
+              "insertTable",
+              "blockQuote",
+              "|",
+              "undo",
+              "redo",
+            ],
 
-      <div className={styles.editorLabel}>Content</div>
+            table: {
+              contentToolbar: [
+                "tableColumn",
+                "tableRow",
+                "mergeTableCells",
+                "tableProperties",
+                "tableCellProperties",
+              ],
+            },
+          }}
+          onReady={(editor) => {
+            editorRef.current = editor;
+            onEditorReady?.(editor);
 
-      <ReactQuill
-        ref={quillRef}
-        theme="snow"
-        value={page.content}
-        onChange={(value) => setPage({ ...page, content: value })}
-        className={styles.quillEditor}
-        placeholder="Start writing..."
-      />
-
-      <div className={styles.variablesList}>
-        {["{{name}}", "{{email}}"].map((v, i) => (
-          <span
-            key={i}
-            onClick={() => insertVariable(v)}
-            className={styles.variableTag}
-          >
-            {v.replace(/[{}]/g, "")}
-          </span>
-        ))}
+            editor.editing.view.change((writer: ViewDowncastWriter) => {
+              writer.setStyle(
+                "min-height",
+                "250px",
+                editor.editing.view.document.getRoot()!
+              );
+            });
+          }}
+          onChange={(_, editor) => {
+            const data = editor.getData();
+            setValue(name, data as PathValue<T, typeof name>, {
+              shouldDirty: true,
+              shouldValidate: true,
+            });
+          }}
+        />
       </div>
 
-      <Button
-        label={inline ? "Done" : "Save"}
-        onClick={handleSave}
-        loading={isFetching || isCreating || isUpdating}
-      />
+      {error && (
+        <p className={styles.errorMessage}>
+          {typeof error.message === "string"
+            ? error.message
+            : "Invalid content"}
+        </p>
+      )}
     </div>
   );
 };
 
-export default RichEditor;
+export default RichTextEditor;

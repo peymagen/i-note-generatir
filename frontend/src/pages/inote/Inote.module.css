@@ -1,0 +1,114 @@
+.container {
+  width: 100%;
+  min-height: 100vh;
+  padding: 2rem;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  position: relative;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* BUTTON AT TOP RIGHT */
+.btnWrapper {
+  position: absolute;
+  right: 2rem;
+  top: 2rem;
+  z-index: 10;
+  display: flex;
+  /* flex-wrap: nowrap; */
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+/* PAGE TITLE */
+.pageTitle {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--color-text, #111);
+  margin: 0 auto;
+}
+
+/* Edit */
+.edit {
+  color: #2563eb;
+}
+.edit:hover {
+  background: #dbeafe;
+}
+
+/* Delete */
+.delete {
+  color: #dc2626;
+}
+.delete:hover {
+  background: #fee2e2;
+}
+
+.tableBox {
+  padding: 1rem;
+  box-shadow: 10px 14px 20px rgba(0, 0, 0, 0.05);
+  overflow-x: auto;
+}
+.tableBox table tbody tr:hover {
+  background: #f1f5f9;
+  transition: background 0.15s ease;
+}
+
+.modalActions {
+  /* marginTop: '20px', display: 'flex', gap: '10px'  */
+  display: flex;
+  margin-top: 1rem;
+  gap: 1rem;
+}
+.actionButtons {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+.iconBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+/* Edit */
+.edit {
+  color: #2563eb;
+}
+.edit:hover {
+  background: #dbeafe;
+}
+
+/* Delete */
+.delete {
+  color: #dc2626;
+}
+.delete:hover {
+  background: #fee2e2;
+}
+
+@media (max-width: 680px) {
+  .btnWrapper {
+    gap: 0.2rem;
+    top: 4rem;
+  }
+
+  /* PAGE TITLE */
+  .pageTitle {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--color-text, #111);
+    margin: 0 auto;
+  }
+}

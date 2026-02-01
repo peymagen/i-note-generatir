@@ -10,9 +10,9 @@ router
   .get("/", userController.getAllUser)
   .get("/:id", userController.getUserById)
   .delete("/:id", userController.deleteUser)
-  .patch("/:id", userController.toggleUserStatus)
+  .patch("/toggle/:id", userController.toggleUserStatus)
   .post(
-    "/createUser",
+    "/",
     upload.none(),
     userValidator.createUser,
     catchError,
@@ -37,13 +37,13 @@ router
     upload.none(),
     catchError,
     userController.changePassword
-  )
-  // .patch(
-  //   "/:id",
-  //   upload.none(),
-  //   userValidator.editUser,
-  //   catchError,
-  //   userController.editUser
-  // );
+  );
+// .patch(
+//   "/:id",
+//   upload.none(),
+//   userValidator.editUser,
+//   catchError,
+//   userController.editUser
+// );
 
 export default router;
