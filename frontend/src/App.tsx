@@ -44,7 +44,8 @@ const App: React.FC = () => {
           {/* Protected Routes with Dashboard Layout */}
           <Route element={<ProtectedRoute />}>
             <Route element={<Dashboard />}>
-              <Route index path="i-note" element={<Inote />} />
+              <Route index element={<Inote />} />
+              <Route path="i-note" element={<Inote />} />
               <Route path="manage-template" element={<ManageTemplate />} />
               <Route path="manage-users" element={<ManageCreateUser />} />
               <Route path="edit/:pageId" element={<ManageTemplate />} />
