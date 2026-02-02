@@ -40,7 +40,7 @@ const Sidebar: React.FC = () => {
   return (
     <div className={styles.sidebar}>
       <div className={styles.upper}>
-        <h1 className={styles.title}>Document Generator</h1>
+        <h1 className={styles.title}>i-note Generator</h1>
         <ul className={styles.menuList}>
           {menuItems.map((item) => (
             <li key={item.path}>
