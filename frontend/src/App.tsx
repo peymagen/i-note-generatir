@@ -10,7 +10,6 @@ import Login from "./pages/login/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import ManageTemplate from "./pages/Templates";
 import ManageCreateUser from "./pages/User";
-import Dash from "./pages/Daash/Dash";
 import VendorDetail from "./pages/VendorDetail/VendorDetail";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -45,7 +44,7 @@ const App: React.FC = () => {
           {/* Protected Routes with Dashboard Layout */}
           <Route element={<ProtectedRoute />}>
             <Route element={<Dashboard />}>
-              <Route index element={<Dash />} />
+              <Route index path="i-note" element={<Inote />} />
               <Route path="manage-template" element={<ManageTemplate />} />
               <Route path="manage-users" element={<ManageCreateUser />} />
               <Route path="edit/:pageId" element={<ManageTemplate />} />
@@ -55,7 +54,6 @@ const App: React.FC = () => {
               <Route path="po-header" element={<PoHeader />} /> */}
               <Route path="vendor-detail" element={<VendorDetail />} />
               <Route path="mo-detail" element={<MoDetail />} />
-              <Route path="i-note" element={<Inote />} />
               <Route path="data-collective" element={<Collective />} />
             </Route>
           </Route>
