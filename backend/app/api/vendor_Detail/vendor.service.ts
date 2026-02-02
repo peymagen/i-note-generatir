@@ -52,7 +52,7 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
   ]);
 
   const query = `
-    INSERT INTO vendor_Detail (
+    INSERT INTO vendor_detail (
       userId,
       FirmName,
       FirmAddress,
@@ -72,7 +72,7 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
 
 export const add = async (userId: number, payload: any) => {
   try {
-    const query = `INSERT INTO vendor_Detail(userId, FirmName, FirmAddress, vendorCode, FirmEmailId, ContactNumber) 
+    const query = `INSERT INTO vendor_detail(userId, FirmName, FirmAddress, vendorCode, FirmEmailId, ContactNumber) 
                       VALUES(?, ?, ?, ?, ?, ?)`;
 
     // Convert undefined values to null
@@ -99,7 +99,7 @@ export const add = async (userId: number, payload: any) => {
 
 export const deleteData = async (Id: number) => {
   try {
-    const query = `Delete from vendor_Detail where id = ?`;
+    const query = `Delete from vendor_detail where id = ?`;
     const value = [Id];
     const row = await pool.execute<ResultSetHeader>(query, value);
     return {
@@ -158,7 +158,7 @@ export const updateData = async (
     ];
 
     const query = `
-      UPDATE vendor_Detail
+      UPDATE vendor_detail
       SET ${setClause}
       WHERE id = ?
     `;
@@ -173,7 +173,7 @@ export const updateData = async (
     }
 
     const [updatedRecord] = await pool.query<RowDataPacket[]>(
-      "SELECT * FROM vendor_Detail WHERE id = ?",
+      "SELECT * FROM vendor_detail WHERE id = ?",
       [Id],
     );
 
@@ -194,7 +194,7 @@ export const updateData = async (
 
 // export const getAll = async()=>{
 //     try{
-//         const [rows] = await pool.execute<RowDataPacket[]>("SELECT * FROM vendor_Detail order By id ASC");
+//         const [rows] = await pool.execute<RowDataPacket[]>("SELECT * FROM vendor_detail order By id ASC");
 //         return {
 //             success: true,
 //             message: "Record fetched successfully",
@@ -209,7 +209,7 @@ export const updateData = async (
 
 export const getByVendorCode = async (vendorCode: string) => {
   try {
-    const query = "Select * from vendor_Detail where vendorCode = ? ";
+    const query = "Select * from vendor_detail where vendorCode = ? ";
     const [row] = await pool.execute<RowDataPacket[]>(query, [vendorCode]);
     if (!row || row.length == 0 || row.length == null) {
       return {
@@ -247,7 +247,7 @@ export const getPaginatedDataWithGlobalSearch = async (
       const [columnRows]: any = await pool.query(`
         SELECT COLUMN_NAME
         FROM INFORMATION_SCHEMA.COLUMNS
-        WHERE TABLE_NAME = 'vendor_Detail'
+        WHERE TABLE_NAME = 'vendor_detail'
           AND DATA_TYPE IN ('varchar', 'text', 'char')
       `);
 
@@ -267,7 +267,7 @@ export const getPaginatedDataWithGlobalSearch = async (
 
     const dataQuery = `
       SELECT *
-      FROM vendor_Detail
+      FROM vendor_detail
       ${whereClause}
       ORDER BY id ASC
       LIMIT ? OFFSET ?
@@ -281,7 +281,7 @@ export const getPaginatedDataWithGlobalSearch = async (
 
     const countQuery = `
       SELECT COUNT(*) AS total
-      FROM vendor_Detail
+      FROM vendor_detail
       ${whereClause}
     `;
 

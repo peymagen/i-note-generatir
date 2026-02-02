@@ -38,32 +38,30 @@ const Login = () => {
     mode: "onSubmit",
   });
 
-
-
-
   const onSubmit = async (formData: LoginFormValues) => {
     try {
       const response = await loginUser(formData).unwrap();
       if (response?.data?.accessToken) {
-        dispatch(setTokens({
-          accessToken: response.data.accessToken,
-          refreshToken: response.data.refreshToken || '',
-          user: response.data.user
-        }));
+        dispatch(
+          setTokens({
+            accessToken: response.data.accessToken,
+            refreshToken: response.data.refreshToken || "",
+            user: response.data.user,
+          }),
+        );
 
-        toast.success('Login successful!');
-        navigate('/dashboard', { replace: true });
+        toast.success("Login successful!");
+        navigate("/i-note", { replace: true });
       }
-    } catch  {
-      
-      toast.error('Login failed. Please check your credentials.');
+    } catch {
+      toast.error("Login failed. Please check your credentials.");
     }
   };
 
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/dashboard', { replace: true });
+      navigate("/i-note", { replace: true });
     }
   }, [isAuthenticated, navigate]);
 
@@ -90,7 +88,12 @@ const Login = () => {
           placeholder="Enter your password"
         />
 
-        <Button type="submit" label="Login" buttonType="three" loading={isLoading} />
+        <Button
+          type="submit"
+          label="Login"
+          buttonType="three"
+          loading={isLoading}
+        />
       </form>
     </AuthLayout>
   );

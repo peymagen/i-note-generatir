@@ -7,7 +7,6 @@ import {
   Outlet,
 } from "react-router-dom";
 import Login from "./pages/login/Login";
-import Dashboard from "./pages/Dashboard/Dashboard";
 import ManageTemplate from "./pages/Templates";
 import ManageCreateUser from "./pages/User";
 import Dash from "./pages/Daash/Dash";
@@ -25,7 +24,7 @@ import Inote from "./pages/inote/Inote";
 
 const ProtectedRoute: React.FC = () => {
   const { isAuthenticated, loading } = useSelector(
-    (state: RootState) => state.auth
+    (state: RootState) => state.auth,
   );
 
   if (loading) return <div>Loading...</div>;
@@ -44,13 +43,12 @@ const App: React.FC = () => {
 
           {/* Protected Routes with Dashboard Layout */}
           <Route element={<ProtectedRoute />}>
-            <Route element={<Dashboard />}>
+            <Route element={<Inote />}>
               <Route index element={<Dash />} />
               <Route path="manage-template" element={<ManageTemplate />} />
               <Route path="manage-users" element={<ManageCreateUser />} />
               <Route path="edit/:pageId" element={<ManageTemplate />} />
               <Route path="new" element={<ManageTemplate />} />
-              <Route path="dashboard" element={<Dash />} />
               {/* <Route path="item-detail" element={<ItemDetail />} />
               <Route path="po-detail" element={<PoDetail />} />
               <Route path="po-header" element={<PoHeader />} /> */}

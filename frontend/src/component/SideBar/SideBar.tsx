@@ -4,25 +4,21 @@ import Button from "../Button/Button";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { resetTokens } from "../../store/reducers/authReducers";
-import type { AppDispatch } from "../../store/store"; 
-import {toast} from "react-toastify";
+import type { AppDispatch } from "../../store/store";
+import { toast } from "react-toastify";
 
 const Sidebar: React.FC = () => {
-
-  const dispatch = useDispatch<AppDispatch>(); 
-  const navigate = useNavigate(); 
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
 
   const menuItems = [
-    { label: "Dashboard", path: "dashboard" },
     { label: "Users", path: "manage-users" },
     { label: "Template Management", path: "manage-template" },
-    {label:"Data Collective", path:"data-collective"},
-    {label:"Vendor Detail", path:"vendor-detail"},
-    {label:"Mo Detail", path:"mo-detail"},
-    {label:"I-Note", path:"i-note"},
+    { label: "Data Collective", path: "data-collective" },
+    { label: "Vendor Detail", path: "vendor-detail" },
+    { label: "Mo Detail", path: "mo-detail" },
+    { label: "I-Note", path: "i-note" },
   ];
- 
-
 
   const [loading, setLoading] = useState(false);
 
@@ -30,14 +26,14 @@ const Sidebar: React.FC = () => {
     setLoading(true);
 
     try {
-      dispatch(resetTokens()); 
+      dispatch(resetTokens());
       toast.success("Logged out successfully!");
     } catch (err) {
       console.error("Logout error:", err);
       toast.error("something went wrong, logout failed");
     } finally {
       setLoading(false);
-      navigate("/login", { replace: true }); 
+      navigate("/login", { replace: true });
     }
   };
 
@@ -63,11 +59,11 @@ const Sidebar: React.FC = () => {
 
       <div className={styles.lower}>
         <Button
-        buttonType="three"
+          buttonType="three"
           label={loading ? "Logging out..." : "Logout"}
           onClick={handleLogout}
           disabled={loading}
-          loading={loading} 
+          loading={loading}
         />
       </div>
     </div>
