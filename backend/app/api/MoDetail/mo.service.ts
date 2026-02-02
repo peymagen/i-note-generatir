@@ -41,11 +41,11 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
   const insertValues = validatedRows.map((r) => [
     r.userId,
     r.MoAddress,
-    r.MoCPRO
+    r.MoCPRO,
   ]);
 
   const query = `
-    INSERT INTO MO_DETAILS (
+    INSERT INTO mo_details (
       userId,
       MoAddress,
       MoCPRO
@@ -62,7 +62,7 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
 
 // export const getAllData = async () => {
 //   try {
-//     const [rows] = await pool.execute<ResultSetHeader>("SELECT * FROM MO_DETAILS ORDER BY id ASC");
+//     const [rows] = await pool.execute<ResultSetHeader>("SELECT * FROM mo_details ORDER BY id ASC");
 //     return {
 //       success: true,
 //       data: rows
@@ -76,60 +76,54 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
 export const getDataById = async (id: number) => {
   try {
     const [rows]: any = await pool.query(
-      "SELECT * FROM MO_DETAILS WHERE id = ?",
-      [id]
+      "SELECT * FROM mo_details WHERE id = ?",
+      [id],
     );
 
     if (!rows.length) {
       return {
         success: false,
-        message: "Record not found"
+        message: "Record not found",
       };
     }
 
     return {
       success: true,
-      data: rows[0]
+      data: rows[0],
     };
-
   } catch (error: any) {
     console.error("Error in getDataById:", error);
     throw new Error("Failed to fetch Item Detail by ID");
   }
 };
 
-
-
-
 export const updateDataById = async (id: number, payload: any) => {
   try {
-    
-    const filteredPayload = Object.entries(payload).reduce((acc, [key, value]) => {
-      if (value !== undefined && value !== null) {
-        acc[key] = value;
-      }
-      return acc;
-    }, {} as Record<string, any>);
+    const filteredPayload = Object.entries(payload).reduce(
+      (acc, [key, value]) => {
+        if (value !== undefined && value !== null) {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {} as Record<string, any>,
+    );
 
     if (Object.keys(filteredPayload).length === 0) {
       return {
         success: false,
-        message: "No valid fields to update"
+        message: "No valid fields to update",
       };
     }
 
-    
     const setClause = Object.keys(filteredPayload)
-      .map(key => `${key} = ?`)
-      .join(', ');
+      .map((key) => `${key} = ?`)
+      .join(", ");
 
-    const values = [
-      ...Object.values(filteredPayload),
-      id
-    ];
+    const values = [...Object.values(filteredPayload), id];
 
     const query = `
-      UPDATE MO_DETAILS 
+      UPDATE mo_details 
       SET ${setClause}
       WHERE id = ?
     `;
@@ -139,22 +133,21 @@ export const updateDataById = async (id: number, payload: any) => {
     if (result.affectedRows === 0) {
       return {
         success: false,
-        message: "Record not found"
+        message: "Record not found",
       };
     }
 
     // Fetch and return the updated record
     const [updatedRows]: any = await pool.query(
-      "SELECT * FROM MO_DETAILS WHERE id = ?",
-      [id]
+      "SELECT * FROM mo_details WHERE id = ?",
+      [id],
     );
 
     return {
       success: true,
       message: "Record updated successfully",
-      data: updatedRows[0]
+      data: updatedRows[0],
     };
-
   } catch (error: any) {
     console.error("Error in updateDataById:", error);
     throw new Error("Failed to update PO detail: " + error.message);
@@ -164,52 +157,46 @@ export const updateDataById = async (id: number, payload: any) => {
 export const deleteDataById = async (id: number) => {
   try {
     const [result]: any = await pool.query(
-      "DELETE FROM MO_DETAILS WHERE id = ?",
-      [id]
+      "DELETE FROM mo_details WHERE id = ?",
+      [id],
     );
 
     if (result.affectedRows === 0) {
       return {
         success: false,
-        message: "Record not found"
+        message: "Record not found",
       };
     }
 
     return {
       success: true,
-      message: "Record deleted successfully"
+      message: "Record deleted successfully",
     };
-
   } catch (error: any) {
     console.error("Error in deleteDataById:", error);
     throw new Error("Failed to delete PO detail: " + error.message);
   }
 };
 
-export  const addData = async (userId: number, payload: any) => {
+export const addData = async (userId: number, payload: any) => {
   try {
     const [result]: any = await pool.query(
-      "INSERT INTO MO_DETAILS (userId, MoAddress, MoCPRO) VALUES (?, ?, ?)",
-      [
-        userId,
-        payload.MoAddress,
-        payload.MoCPRO,
-      ]
+      "INSERT INTO mo_details (userId, MoAddress, MoCPRO) VALUES (?, ?, ?)",
+      [userId, payload.MoAddress, payload.MoCPRO],
     );
 
     return {
       success: true,
       message: "Record added successfully",
-      data: result
+      data: result,
     };
-
   } catch (error: any) {
     console.error("Error in addData:", error);
     throw new Error("Failed to add PO detail: " + error.message);
   }
 };
 
-export const getDatabyCon = async(consignee: string) => {
+export const getDatabyCon = async (consignee: string) => {
   try {
     const searchPattern = `MO(${consignee}) /CPRO(${consignee})`;
     const query = `
@@ -218,49 +205,44 @@ export const getDatabyCon = async(consignee: string) => {
       WHERE MoCPRO = ?;
     `;
     const [rows] = await pool.execute<RowDataPacket[]>(query, [searchPattern]);
-//     console.log(`
-      // SELECT *
-      // FROM mo_details
-      // WHERE MoCPRO = 'MO(${consignee})'
-      //    OR CPRO   = 'CPRO(${consignee})'
-      // `,);
+    //     console.log(`
+    // SELECT *
+    // FROM mo_details
+    // WHERE MoCPRO = 'MO(${consignee})'
+    //    OR CPRO   = 'CPRO(${consignee})'
+    // `,);
 
-    // console.log("Query result:", rows);  
+    // console.log("Query result:", rows);
     console.log("Service response:", rows);
-    
+
     if (!rows || rows.length === 0) {
       console.log("No rows found for consignee:", consignee);
       return {
         success: false,
-        message: "No record found with the given code"
+        message: "No record found with the given code",
       };
     }
-    
+
     return {
       success: true,
-      data: rows
+      data: rows,
     };
   } catch (error) {
     console.error("Error in getDatabyCon service:", error);
     return {
       success: false,
       message: "Database error occurred",
-      error: error instanceof Error ? error.message : "Unknown error"
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
-}
-
-
-
-
+};
 
 export const getPaginatedDataWithGlobalSearch = async (
   page?: number,
   limit?: number,
-  search?: string
+  search?: string,
 ) => {
   try {
-    
     const safePage = page && page > 0 ? page : 1;
     const safeLimit = limit && limit > 0 ? limit : 50;
     const offset = (safePage - 1) * safeLimit;
@@ -270,33 +252,31 @@ export const getPaginatedDataWithGlobalSearch = async (
     let whereClause = "";
     const values: any[] = [];
 
-    
     if (normalizedSearch) {
       const [columnRows]: any = await pool.query(`
         SELECT COLUMN_NAME
         FROM INFORMATION_SCHEMA.COLUMNS
-        WHERE TABLE_NAME = 'MO_DETAILS'
+        WHERE TABLE_NAME = 'mo_details'
           AND DATA_TYPE IN ('varchar', 'text', 'char')
       `);
 
       const searchableColumns: string[] = columnRows.map(
-        (c: any) => c.COLUMN_NAME
+        (c: any) => c.COLUMN_NAME,
       );
 
       if (searchableColumns.length > 0) {
         whereClause =
           "WHERE " +
-          searchableColumns.map(col => `${col} LIKE ?`).join(" OR ");
+          searchableColumns.map((col) => `${col} LIKE ?`).join(" OR ");
 
         const searchValue = `%${normalizedSearch}%`;
         searchableColumns.forEach(() => values.push(searchValue));
       }
     }
 
-    
     const dataQuery = `
       SELECT *
-      FROM MO_DETAILS
+      FROM mo_details
       ${whereClause}
       ORDER BY id ASC
       LIMIT ? OFFSET ?
@@ -308,17 +288,13 @@ export const getPaginatedDataWithGlobalSearch = async (
       offset,
     ]);
 
-    
     const countQuery = `
       SELECT COUNT(*) AS total
-      FROM MO_DETAILS
+      FROM mo_details
       ${whereClause}
     `;
 
-    const [[countResult]]: any = await pool.query(
-      countQuery,
-      values
-    );
+    const [[countResult]]: any = await pool.query(countQuery, values);
 
     const totalRecords = countResult.total;
 
@@ -335,6 +311,6 @@ export const getPaginatedDataWithGlobalSearch = async (
     };
   } catch (error: any) {
     console.error("Error in getPaginatedDataWithGlobalSearch:", error);
-    throw new Error("Failed to fetch data");
+    throw new Error("Failed to fetch data" + error);
   }
 };

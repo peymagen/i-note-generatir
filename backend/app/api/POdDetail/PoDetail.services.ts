@@ -72,7 +72,7 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
   ]);
 
   const query = `
-    INSERT INTO PO_DETAILS (
+    INSERT INTO po_details (
       userId,
       IndentNo, 
       VendorCode, 
@@ -102,10 +102,10 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
 
 export const getAllData = async () => {
   try {
-    const [rows] = await pool.query("SELECT * FROM PO_DETAILS ORDER BY id ASC");
+    const [rows] = await pool.query("SELECT * FROM po_details ORDER BY id ASC");
     return {
       success: true,
-      data: rows
+      data: rows,
     };
   } catch (error: any) {
     console.error("Error in getAllData:", error);
@@ -116,60 +116,54 @@ export const getAllData = async () => {
 export const getDataById = async (id: number) => {
   try {
     const [rows]: any = await pool.query(
-      "SELECT * FROM PO_DETAILS WHERE id = ?",
-      [id]
+      "SELECT * FROM po_details WHERE id = ?",
+      [id],
     );
 
     if (!rows.length) {
       return {
         success: false,
-        message: "Record not found"
+        message: "Record not found",
       };
     }
 
     return {
       success: true,
-      data: rows[0]
+      data: rows[0],
     };
-
   } catch (error: any) {
     console.error("Error in getDataById:", error);
     throw new Error("Failed to fetch Item Detail by ID");
   }
 };
 
-
-
-
 export const updateDataById = async (id: number, payload: any) => {
   try {
-    
-    const filteredPayload = Object.entries(payload).reduce((acc, [key, value]) => {
-      if (value !== undefined && value !== null) {
-        acc[key] = value;
-      }
-      return acc;
-    }, {} as Record<string, any>);
+    const filteredPayload = Object.entries(payload).reduce(
+      (acc, [key, value]) => {
+        if (value !== undefined && value !== null) {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {} as Record<string, any>,
+    );
 
     if (Object.keys(filteredPayload).length === 0) {
       return {
         success: false,
-        message: "No valid fields to update"
+        message: "No valid fields to update",
       };
     }
 
-    
     const setClause = Object.keys(filteredPayload)
-      .map(key => `${key} = ?`)
-      .join(', ');
+      .map((key) => `${key} = ?`)
+      .join(", ");
 
-    const values = [
-      ...Object.values(filteredPayload),
-      id
-    ];
+    const values = [...Object.values(filteredPayload), id];
 
     const query = `
-      UPDATE PO_DETAILS 
+      UPDATE po_details 
       SET ${setClause}
       WHERE id = ?
     `;
@@ -179,22 +173,21 @@ export const updateDataById = async (id: number, payload: any) => {
     if (result.affectedRows === 0) {
       return {
         success: false,
-        message: "Record not found"
+        message: "Record not found",
       };
     }
 
     // Fetch and return the updated record
     const [updatedRows]: any = await pool.query(
-      "SELECT * FROM PO_DETAILS WHERE id = ?",
-      [id]
+      "SELECT * FROM po_details WHERE id = ?",
+      [id],
     );
 
     return {
       success: true,
       message: "Record updated successfully",
-      data: updatedRows[0]
+      data: updatedRows[0],
     };
-
   } catch (error: any) {
     console.error("Error in updateDataById:", error);
     throw new Error("Failed to update PO detail: " + error.message);
@@ -204,32 +197,31 @@ export const updateDataById = async (id: number, payload: any) => {
 export const deleteDataById = async (id: number) => {
   try {
     const [result]: any = await pool.query(
-      "DELETE FROM PO_DETAILS WHERE id = ?",
-      [id]
+      "DELETE FROM po_details WHERE id = ?",
+      [id],
     );
 
     if (result.affectedRows === 0) {
       return {
         success: false,
-        message: "Record not found"
+        message: "Record not found",
       };
     }
 
     return {
       success: true,
-      message: "Record deleted successfully"
+      message: "Record deleted successfully",
     };
-
   } catch (error: any) {
     console.error("Error in deleteDataById:", error);
     throw new Error("Failed to delete PO detail: " + error.message);
   }
 };
 
-export  const addData = async (userId: number, payload: any) => {
+export const addData = async (userId: number, payload: any) => {
   try {
     const [result]: any = await pool.query(
-      "INSERT INTO PO_DETAILS (userId, IndentNo, VendorCode, OrderDate, OrderLineNo, ItemCode, ConsigneeCode, OrderLineDRB, Specs, Qty, UniCostCC, PilotSampleDRb, MIQPQty, PackType, StationCode, ReReferencedItemCode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO po_details (userId, IndentNo, VendorCode, OrderDate, OrderLineNo, ItemCode, ConsigneeCode, OrderLineDRB, Specs, Qty, UniCostCC, PilotSampleDRb, MIQPQty, PackType, StationCode, ReReferencedItemCode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         userId,
         payload.IndentNo,
@@ -246,40 +238,38 @@ export  const addData = async (userId: number, payload: any) => {
         payload.MIQPQty,
         payload.PackType,
         payload.StationCode,
-        payload.ReReferencedItemCode
-      ]
+        payload.ReReferencedItemCode,
+      ],
     );
 
     return {
       success: true,
       message: "Record added successfully",
-      data: result
+      data: result,
     };
-
   } catch (error: any) {
     console.error("Error in addData:", error);
     throw new Error("Failed to add PO detail: " + error.message);
   }
 };
 
-
-export const getByIndent = async (indentNo: string, ) => {
+export const getByIndent = async (indentNo: string) => {
   try {
     const [rows]: any = await pool.query(
-      "SELECT * FROM PO_DETAILS WHERE indentno = ?",
-      [indentNo]
+      "SELECT * FROM po_details WHERE indentno = ?",
+      [indentNo],
     );
 
     if (!rows || rows.length === 0) {
       return {
         success: false,
-        message: "No records found for this indent number"
+        message: "No records found for this indent number",
       };
     }
 
     return {
       success: true,
-      data: rows 
+      data: rows,
     };
   } catch (error: any) {
     console.error("Error in getByIndent service:", error);
@@ -287,16 +277,12 @@ export const getByIndent = async (indentNo: string, ) => {
   }
 };
 
-
-
-
 export const getPaginatedDataWithGlobalSearch = async (
   page?: number,
   limit?: number,
-  search?: string
+  search?: string,
 ) => {
   try {
-    
     const safePage = page && page > 0 ? page : 1;
     const safeLimit = limit && limit > 0 ? limit : 50;
     const offset = (safePage - 1) * safeLimit;
@@ -306,33 +292,31 @@ export const getPaginatedDataWithGlobalSearch = async (
     let whereClause = "";
     const values: any[] = [];
 
-    
     if (normalizedSearch) {
       const [columnRows]: any = await pool.query(`
         SELECT COLUMN_NAME
         FROM INFORMATION_SCHEMA.COLUMNS
-        WHERE TABLE_NAME = 'PO_DETAILS'
+        WHERE TABLE_NAME = 'po_details'
           AND DATA_TYPE IN ('varchar', 'text', 'char')
       `);
 
       const searchableColumns: string[] = columnRows.map(
-        (c: any) => c.COLUMN_NAME
+        (c: any) => c.COLUMN_NAME,
       );
 
       if (searchableColumns.length > 0) {
         whereClause =
           "WHERE " +
-          searchableColumns.map(col => `${col} LIKE ?`).join(" OR ");
+          searchableColumns.map((col) => `${col} LIKE ?`).join(" OR ");
 
         const searchValue = `%${normalizedSearch}%`;
         searchableColumns.forEach(() => values.push(searchValue));
       }
     }
 
-    
     const dataQuery = `
       SELECT *
-      FROM PO_DETAILS
+      FROM po_details
       ${whereClause}
       ORDER BY id ASC
       LIMIT ? OFFSET ?
@@ -344,17 +328,13 @@ export const getPaginatedDataWithGlobalSearch = async (
       offset,
     ]);
 
-    
     const countQuery = `
       SELECT COUNT(*) AS total
-      FROM PO_DETAILS
+      FROM po_details
       ${whereClause}
     `;
 
-    const [[countResult]]: any = await pool.query(
-      countQuery,
-      values
-    );
+    const [[countResult]]: any = await pool.query(countQuery, values);
 
     const totalRecords = countResult.total;
 
@@ -371,6 +351,6 @@ export const getPaginatedDataWithGlobalSearch = async (
     };
   } catch (error: any) {
     console.error("Error in getPaginatedDataWithGlobalSearch:", error);
-    throw new Error("Failed to fetch data");
+    throw new Error("Failed to fetch data" + error);
   }
 };

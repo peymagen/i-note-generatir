@@ -12,7 +12,7 @@ const formatDate = (value: any): string | null => {
     const d = xlsx.SSF.parse_date_code(value);
     return `${d.y}-${String(d.m).padStart(2, "0")}-${String(d.d).padStart(
       2,
-      "0"
+      "0",
     )}`;
   }
 
@@ -78,7 +78,7 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
   ]);
 
   const query = `
-    INSERT INTO ITEMS_DETAILS (
+    INSERT INTO items_details (
       userId,
       IndentNo, VendorCode, OrderDate, OrderLineNo, ItemCode,
       SectionHead, ItemDesc, CountryCode, ItemDeno, MonthsShelfLife,
@@ -97,7 +97,7 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
 // export const getAllData = async () => {
 //   try {
 //     console.log("hello")
-//     const [rows] = await pool.execute<RowDataPacket[]>("SELECT * FROM ITEMS_DETAILS ORDER BY id ASC");
+//     const [rows] = await pool.execute<RowDataPacket[]>("SELECT * FROM items_details ORDER BY id ASC");
 //     return {
 //       success: true,
 //       data: rows
@@ -111,8 +111,8 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
 export const getDataById = async (id: number) => {
   try {
     const [rows] = await pool.execute<RowDataPacket[]>(
-      "SELECT * FROM ITEMS_DETAILS WHERE id = ?",
-      [id]
+      "SELECT * FROM items_details WHERE id = ?",
+      [id],
     );
 
     if (!rows.length) {
@@ -134,11 +134,11 @@ export const getDataById = async (id: number) => {
 
 export const getItemByIndentNoAndOrderDate = async (
   indentNo: string,
-  orderDate: string
+  orderDate: string,
 ) => {
   try {
     const query = `       
-      SELECT *, I.id ItemId, D.id DetailId FROM ITEMS_DETAILS I RIGHT JOIN PO_DETAILS D ON I.ItemCode = D.ItemCode
+      SELECT *, I.id ItemId, D.id DetailId FROM items_details I RIGHT JOIN PO_DETAILS D ON I.ItemCode = D.ItemCode
       WHERE I.IndentNo = ? 
       AND I.OrderDate = ? 
       ORDER BY I.OrderLineNo ASC
@@ -167,7 +167,7 @@ export const updateDataById = async (id: number, payload: any) => {
         }
         return acc;
       },
-      {} as Record<string, any>
+      {} as Record<string, any>,
     );
 
     if (Object.keys(filteredPayload).length === 0) {
@@ -185,7 +185,7 @@ export const updateDataById = async (id: number, payload: any) => {
     const values = [...Object.values(filteredPayload), id];
 
     const query = `
-      UPDATE ITEMS_DETAILS 
+      UPDATE items_details 
       SET ${setClause}
       WHERE id = ?
     `;
@@ -201,8 +201,8 @@ export const updateDataById = async (id: number, payload: any) => {
 
     // Fetch and return the updated record
     const [updatedRows]: any = await pool.execute<ResultSetHeader>(
-      "SELECT * FROM ITEMS_DETAILS WHERE id = ?",
-      [id]
+      "SELECT * FROM items_details WHERE id = ?",
+      [id],
     );
 
     return {
@@ -218,7 +218,7 @@ export const updateDataById = async (id: number, payload: any) => {
 
 export const deleteDataById = async (id: number) => {
   try {
-    const query = "DELETE FROM ITEMS_DETAILS WHERE id = ?";
+    const query = "DELETE FROM items_details WHERE id = ?";
     const [result] = await pool.execute<ResultSetHeader>(query, [id]);
 
     if ((result as ResultSetHeader).affectedRows === 0) {
@@ -262,7 +262,7 @@ export const addData = async (userId: number, payload: any) => {
     const toNull = (v: any) => (v === undefined || v === "" ? null : v);
 
     const query = `
-      INSERT INTO ITEMS_DETAILS (
+      INSERT INTO items_details (
         userId,
         IndentNo,
         ItemDesc,
@@ -319,11 +319,10 @@ export const addData = async (userId: number, payload: any) => {
   }
 };
 
-
 export const getPaginatedDataWithGlobalSearch = async (
   page?: number,
   limit?: number,
-  search?: string
+  search?: string,
 ) => {
   try {
     const safePage = page && page > 0 ? page : 1;
@@ -339,12 +338,12 @@ export const getPaginatedDataWithGlobalSearch = async (
       const [columnRows]: any = await pool.query(`
         SELECT COLUMN_NAME
         FROM INFORMATION_SCHEMA.COLUMNS
-        WHERE TABLE_NAME = 'items_DETAILS'
+        WHERE TABLE_NAME = 'items_details'
           AND DATA_TYPE IN ('varchar', 'text', 'char')
       `);
 
       const searchableColumns: string[] = columnRows.map(
-        (c: any) => c.COLUMN_NAME
+        (c: any) => c.COLUMN_NAME,
       );
 
       if (searchableColumns.length > 0) {
@@ -359,7 +358,7 @@ export const getPaginatedDataWithGlobalSearch = async (
 
     const dataQuery = `
       SELECT *
-      FROM items_DETAILS
+      FROM items_details
       ${whereClause}
       ORDER BY id ASC
       LIMIT ? OFFSET ?
@@ -373,7 +372,7 @@ export const getPaginatedDataWithGlobalSearch = async (
 
     const countQuery = `
       SELECT COUNT(*) AS total
-      FROM items_DETAILS
+      FROM items_details
       ${whereClause}
     `;
 
@@ -394,6 +393,6 @@ export const getPaginatedDataWithGlobalSearch = async (
     };
   } catch (error: any) {
     console.error("Error in getPaginatedDataWithGlobalSearch:", error);
-    throw new Error("Failed to fetch data");
+    throw new Error("Failed to fetch data" + error);
   }
 };

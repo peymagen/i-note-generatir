@@ -1,8 +1,7 @@
-import { pool } from '../../common/services/sql.service';
+import { pool } from "../../common/services/sql.service";
 import { vendor } from "./vendor.dto";
 import { type RowDataPacket, type ResultSetHeader } from "mysql2";
 import xlsx from "xlsx";
-
 
 const formatDate = (value: any): string | null => {
   if (!value) return null;
@@ -33,11 +32,11 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
   const validatedRows: vendor[] = rows.map((row) => {
     const dto: vendor = {
       userId,
-      FirmName:  row["FIRM NAME"]?.toString() || "",
+      FirmName: row["FIRM NAME"]?.toString() || "",
       FirmAddress: row["FIRM ADDRESS"]?.toString() || "",
-      vendorCode:  row["VENDOR CODE"]?.toString() || "",
-      FirmEmailId:  row["FIRM E-MAIL ID"]?.toString() || null,
-      ContactNumber:  row["FIRM CONTACT NUMBER"]?.toString() || null,
+      vendorCode: row["VENDOR CODE"]?.toString() || "",
+      FirmEmailId: row["FIRM E-MAIL ID"]?.toString() || null,
+      ContactNumber: row["FIRM CONTACT NUMBER"]?.toString() || null,
     };
     return dto;
   });
@@ -49,7 +48,7 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
     r.FirmAddress,
     r.vendorCode,
     r.FirmEmailId,
-    r.ContactNumber
+    r.ContactNumber,
   ]);
 
   const query = `
@@ -71,7 +70,6 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
   };
 };
 
-
 export const add = async (userId: number, payload: any) => {
   try {
     const query = `INSERT INTO vendor_Detail(userId, FirmName, FirmAddress, vendorCode, FirmEmailId, ContactNumber) 
@@ -84,20 +82,20 @@ export const add = async (userId: number, payload: any) => {
       payload.FirmAddress,
       payload.vendorCode,
       payload.FirmEmailId || null,
-      payload.ContactNumber || null
+      payload.ContactNumber || null,
     ];
 
     const [row]: any = await pool.execute<ResultSetHeader>(query, values);
     return {
       success: true,
       message: "Record added successfully",
-      data: row
+      data: row,
     };
   } catch (error: any) {
-    console.error('Error in vendor service add:', error);
+    console.error("Error in vendor service add:", error);
     throw error;
   }
-}
+};
 
 export const deleteData = async (Id: number) => {
   try {
@@ -107,35 +105,34 @@ export const deleteData = async (Id: number) => {
     return {
       success: true,
       message: "Record deleted successfully",
-      data: row
-    }
+      data: row,
+    };
+  } catch (error: any) {
+    console.log(error);
+    throw new Error(error);
   }
-  catch (error: any) {
-    console.log(error)
-    throw new Error(error)
-  }
-}
+};
 
 export const updateData = async (
   payload: Partial<vendor>,
   Id: number,
-  userId: number
+  userId: number,
 ) => {
   try {
-
-    const filteredPayload = Object.entries(payload).reduce((acc, [key, value]) => {
-      acc[key] = value !== undefined ? value : null;
-      return acc;
-    }, {} as Record<string, any>);
-
+    const filteredPayload = Object.entries(payload).reduce(
+      (acc, [key, value]) => {
+        acc[key] = value !== undefined ? value : null;
+        return acc;
+      },
+      {} as Record<string, any>,
+    );
 
     const updateFields: Partial<vendor> = {
       ...filteredPayload,
-      updateBy: userId
+      updateBy: userId,
     };
 
-
-    Object.keys(updateFields).forEach(key => {
+    Object.keys(updateFields).forEach((key) => {
       if (updateFields[key as keyof vendor] === undefined) {
         delete updateFields[key as keyof vendor];
       }
@@ -144,18 +141,20 @@ export const updateData = async (
     if (Object.keys(updateFields).length === 0) {
       return {
         success: false,
-        message: "No valid fields to update"
+        message: "No valid fields to update",
       };
     }
 
     const setClause = Object.keys(updateFields)
-      .filter(key => key !== 'id')
-      .map(key => `${key} = ?`)
-      .join(', ');
+      .filter((key) => key !== "id")
+      .map((key) => `${key} = ?`)
+      .join(", ");
 
     const values = [
-      ...Object.values(updateFields).filter((_, i) => Object.keys(updateFields)[i] !== 'id'),
-      Id
+      ...Object.values(updateFields).filter(
+        (_, i) => Object.keys(updateFields)[i] !== "id",
+      ),
+      Id,
     ];
 
     const query = `
@@ -169,26 +168,26 @@ export const updateData = async (
     if (result.affectedRows === 0) {
       return {
         success: false,
-        message: "No record found with the given ID"
+        message: "No record found with the given ID",
       };
     }
 
     const [updatedRecord] = await pool.query<RowDataPacket[]>(
       "SELECT * FROM vendor_Detail WHERE id = ?",
-      [Id]
+      [Id],
     );
 
     return {
       success: true,
       message: "Record updated successfully",
-      data: updatedRecord[0]
+      data: updatedRecord[0],
     };
   } catch (error: any) {
-    console.error('Error in vendor service updateData:', error);
+    console.error("Error in vendor service updateData:", error);
     return {
       success: false,
       message: error.message || "Update failed",
-      error: error
+      error: error,
     };
   }
 };
@@ -210,38 +209,31 @@ export const updateData = async (
 
 export const getByVendorCode = async (vendorCode: string) => {
   try {
-    const query = "Select * from vendor_Detail where vendorCode = ? "
-    const [row] = await pool.execute<RowDataPacket[]>(query, [vendorCode])
+    const query = "Select * from vendor_Detail where vendorCode = ? ";
+    const [row] = await pool.execute<RowDataPacket[]>(query, [vendorCode]);
     if (!row || row.length == 0 || row.length == null) {
       return {
         success: false,
-        message: "No record found with the given vendor code"
-      }
+        message: "No record found with the given vendor code",
+      };
     }
     return {
       success: true,
       message: "Record fetched successfully",
-      data: row
-    }
+      data: row,
+    };
+  } catch (error: any) {
+    console.log(error);
+    throw new Error(error);
   }
-  catch (error: any) {
-    console.log(error)
-    throw new Error(error)
-  }
-}
-
-
-
-
-
+};
 
 export const getPaginatedDataWithGlobalSearch = async (
   page?: number,
   limit?: number,
-  search?: string
+  search?: string,
 ) => {
   try {
-
     const safePage = page && page > 0 ? page : 1;
     const safeLimit = limit && limit > 0 ? limit : 50;
     const offset = (safePage - 1) * safeLimit;
@@ -250,7 +242,6 @@ export const getPaginatedDataWithGlobalSearch = async (
 
     let whereClause = "";
     const values: any[] = [];
-
 
     if (normalizedSearch) {
       const [columnRows]: any = await pool.query(`
@@ -261,19 +252,18 @@ export const getPaginatedDataWithGlobalSearch = async (
       `);
 
       const searchableColumns: string[] = columnRows.map(
-        (c: any) => c.COLUMN_NAME
+        (c: any) => c.COLUMN_NAME,
       );
 
       if (searchableColumns.length > 0) {
         whereClause =
           "WHERE " +
-          searchableColumns.map(col => `${col} LIKE ?`).join(" OR ");
+          searchableColumns.map((col) => `${col} LIKE ?`).join(" OR ");
 
         const searchValue = `%${normalizedSearch}%`;
         searchableColumns.forEach(() => values.push(searchValue));
       }
     }
-
 
     const dataQuery = `
       SELECT *
@@ -289,17 +279,13 @@ export const getPaginatedDataWithGlobalSearch = async (
       offset,
     ]);
 
-
     const countQuery = `
       SELECT COUNT(*) AS total
       FROM vendor_Detail
       ${whereClause}
     `;
 
-    const [[countResult]]: any = await pool.query(
-      countQuery,
-      values
-    );
+    const [[countResult]]: any = await pool.query(countQuery, values);
 
     const totalRecords = countResult.total;
 
@@ -316,6 +302,6 @@ export const getPaginatedDataWithGlobalSearch = async (
     };
   } catch (error: any) {
     console.error("Error in getPaginatedDataWithGlobalSearch:", error);
-    throw new Error("Failed to fetch data");
+    throw new Error("Failed to fetch data" + error);
   }
 };

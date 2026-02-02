@@ -78,11 +78,11 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
     r.Remarks1,
     r.Name,
     r.City,
-    r.State
+    r.State,
   ]);
 
   const query = `
-    INSERT INTO PO_HEADER (
+    INSERT INTO po_header (
       userId,
       IndentNo,
       VendorCode,
@@ -113,17 +113,19 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
   await pool.query(query, [insertValues]);
 
   return {
-    totalInserted: validatedRows.length, 
-    message: "Excel imported successfully", 
+    totalInserted: validatedRows.length,
+    message: "Excel imported successfully",
   };
 };
 
 export const getAllData = async () => {
   try {
-    const [rows] = await pool.execute<RowDataPacket[]>("SELECT * FROM PO_HEADER ORDER BY id ASC");
+    const [rows] = await pool.execute<RowDataPacket[]>(
+      "SELECT * FROM po_header ORDER BY id ASC",
+    );
     return {
       success: true,
-      data: rows
+      data: rows,
     };
   } catch (error: any) {
     console.error("Error in getAllData:", error);
@@ -134,57 +136,59 @@ export const getAllData = async () => {
 export const getDataById = async (id: number) => {
   try {
     const [rows]: any = await pool.query(
-      "SELECT * FROM PO_HEADER WHERE id = ?",
-      [id]
+      "SELECT * FROM po_header WHERE id = ?",
+      [id],
     );
 
     if (!rows.length) {
       return {
         success: false,
-        message: "Record not found"
+        message: "Record not found",
       };
     }
 
     return {
       success: true,
-      data: rows[0]
+      data: rows[0],
     };
-
   } catch (error: any) {
     console.error("Error in getDataById:", error);
     throw new Error(`Failed to fetch PO Header with ID ${id}`);
   }
 };
 
-export const updateDataById = async (id: number, payload: Partial<PoHeader>) => {
+export const updateDataById = async (
+  id: number,
+  payload: Partial<PoHeader>,
+) => {
   try {
     // Filter out undefined or null values from payload
-    const filteredPayload = Object.entries(payload).reduce((acc, [key, value]) => {
-      if (value !== undefined && value !== null) {
-        acc[key] = value;
-      }
-      return acc;
-    }, {} as Record<string, any>);
+    const filteredPayload = Object.entries(payload).reduce(
+      (acc, [key, value]) => {
+        if (value !== undefined && value !== null) {
+          acc[key] = value;
+        }
+        return acc;
+      },
+      {} as Record<string, any>,
+    );
 
     if (Object.keys(filteredPayload).length === 0) {
       return {
         success: false,
-        message: "No valid fields to update"
+        message: "No valid fields to update",
       };
     }
 
     // Build dynamic SET clause
     const setClause = Object.keys(filteredPayload)
-      .map(key => `${key} = ?`)
-      .join(', ');
+      .map((key) => `${key} = ?`)
+      .join(", ");
 
-    const values = [
-      ...Object.values(filteredPayload),
-      id
-    ];
+    const values = [...Object.values(filteredPayload), id];
 
     const query = `
-      UPDATE PO_HEADER 
+      UPDATE po_header 
       SET ${setClause}
       WHERE id = ?
     `;
@@ -194,58 +198,55 @@ export const updateDataById = async (id: number, payload: Partial<PoHeader>) => 
     if (result.affectedRows === 0) {
       return {
         success: false,
-        message: "Record not found"
+        message: "Record not found",
       };
     }
 
     // Fetch and return the updated record
     const [updatedRows]: any = await pool.query(
-      "SELECT * FROM PO_HEADER WHERE id = ?",
-      [id]
+      "SELECT * FROM po_header WHERE id = ?",
+      [id],
     );
 
     return {
       success: true,
       message: "Record updated successfully",
-      data: updatedRows[0]
+      data: updatedRows[0],
     };
-
   } catch (error: any) {
     console.error("Error in updateDataById:", error);
     throw new Error("Failed to update PO Header: " + error.message);
   }
 };
 
-
 export const deleteDataById = async (id: number) => {
   try {
     const [result]: any = await pool.query(
-      "DELETE FROM PO_HEADER WHERE id = ?",
-      [id]
+      "DELETE FROM po_header WHERE id = ?",
+      [id],
     );
 
     if (result.affectedRows === 0) {
       return {
         success: false,
-        message: "Record not found"
+        message: "Record not found",
       };
     }
 
     return {
       success: true,
-      message: "Record deleted successfully"
+      message: "Record deleted successfully",
     };
-
   } catch (error: any) {
     console.error("Error in deleteDataById:", error);
     throw new Error("Failed to delete PO Header: " + error.message);
   }
 };
 
-export const addData = async(userId:number, payload:any)=>{
+export const addData = async (userId: number, payload: any) => {
   try {
-        const query = `
-      INSERT INTO PO_HEADER (
+    const query = `
+      INSERT INTO po_header (
         userId,
         IndentNo,
         VendorCode,
@@ -295,30 +296,26 @@ export const addData = async(userId:number, payload:any)=>{
       payload.Remarks1,
       payload.Name,
       payload.City,
-      payload.State
+      payload.State,
     ];
-    const [result]: any = await pool.query(
-      query,
-      insertValues
-    );
+    const [result]: any = await pool.query(query, insertValues);
 
     return {
       success: true,
       message: "Record added successfully",
-      data: result
-    }
-  }
-   catch (error:any) {
+      data: result,
+    };
+  } catch (error: any) {
     console.error("Error in addData:", error);
     throw new Error("Failed to add PO Header: " + error.message);
   }
-}
+};
 
 // export const searchPO = async (IndentNo?: string, OrderDate?: string) => {
 //   try {
 //     console.log("Searching with params:", { IndentNo, OrderDate });
 
-//     let query = `SELECT * FROM PO_HEADER WHERE 1=1`;
+//     let query = `SELECT * FROM po_header WHERE 1=1`;
 //     const params: any[] = [];
 
 //     // --------------------------
@@ -330,7 +327,7 @@ export const addData = async(userId:number, payload:any)=>{
 //     }
 
 //     if (OrderDate && OrderDate.trim() !== "" && OrderDate !== "undefined") {
-     
+
 //       const cleanDate = OrderDate.includes("T")
 //         ? OrderDate.split("T")[0]
 //         : OrderDate;
@@ -355,14 +352,12 @@ export const addData = async(userId:number, payload:any)=>{
 //   }
 // };
 
-
-
 export const searchPO = async (IndentNo?: string, OrderDate?: string) => {
   try {
     console.log("Searching with params:", { IndentNo, OrderDate });
 
     // 1. Prepare Header Query
-    let headerQuery = `SELECT * FROM PO_HEADER WHERE 1=1`;
+    let headerQuery = `SELECT * FROM po_header WHERE 1=1`;
     const headerParams: any[] = [];
 
     if (IndentNo && IndentNo.trim() !== "" && IndentNo !== "undefined") {
@@ -371,7 +366,9 @@ export const searchPO = async (IndentNo?: string, OrderDate?: string) => {
     }
 
     if (OrderDate && OrderDate.trim() !== "" && OrderDate !== "undefined") {
-      const cleanDate = OrderDate.includes("T") ? OrderDate.split("T")[0] : OrderDate;
+      const cleanDate = OrderDate.includes("T")
+        ? OrderDate.split("T")[0]
+        : OrderDate;
       headerQuery += ` AND OrderDate = ?`;
       headerParams.push(cleanDate);
     }
@@ -381,48 +378,40 @@ export const searchPO = async (IndentNo?: string, OrderDate?: string) => {
     console.log("Header Rows:", headerRows);
 
     if (!headerRows || headerRows.length === 0) {
-      console.log("header  found",headerRows)
-      return { 
+      console.log("header  found", headerRows);
+      return {
         success: false,
         header: null,
-        details: [], 
-        
+        details: [],
       };
       console.log("No header found");
     }
 
     // 4. Fetch Details based on the IndentNo found in the Header
     // console.log("Indent Number:", headerRows[0].IndentNo);
-    const foundIndentNo = headerRows[0].IndentNo
+    const foundIndentNo = headerRows[0].IndentNo;
     console.log("Found IndentNo:", foundIndentNo);
     const detailQuery = `SELECT * FROM PO_DETAILS WHERE IndentNo = ?`;
-    
+
     const [detailRows]: any = await pool.query(detailQuery, [foundIndentNo]);
 
     return {
       success: true,
-      header: headerRows[0], 
-      details: detailRows,    
+      header: headerRows[0],
+      details: detailRows,
     };
-
   } catch (error: any) {
     console.error("Error in searchPO:", error);
     throw new Error("Database search failed: " + error.message);
   }
 };
 
-
-
-
-
-
 export const getPaginatedDataWithGlobalSearch = async (
   page?: number,
   limit?: number,
-  search?: string
+  search?: string,
 ) => {
   try {
-    
     const safePage = page && page > 0 ? page : 1;
     const safeLimit = limit && limit > 0 ? limit : 50;
     const offset = (safePage - 1) * safeLimit;
@@ -432,33 +421,31 @@ export const getPaginatedDataWithGlobalSearch = async (
     let whereClause = "";
     const values: any[] = [];
 
-    
     if (normalizedSearch) {
       const [columnRows]: any = await pool.query(`
         SELECT COLUMN_NAME
         FROM INFORMATION_SCHEMA.COLUMNS
-        WHERE TABLE_NAME = 'PO_HEADER'
+        WHERE TABLE_NAME = 'po_header'
           AND DATA_TYPE IN ('varchar', 'text', 'char')
       `);
 
       const searchableColumns: string[] = columnRows.map(
-        (c: any) => c.COLUMN_NAME
+        (c: any) => c.COLUMN_NAME,
       );
 
       if (searchableColumns.length > 0) {
         whereClause =
           "WHERE " +
-          searchableColumns.map(col => `${col} LIKE ?`).join(" OR ");
+          searchableColumns.map((col) => `${col} LIKE ?`).join(" OR ");
 
         const searchValue = `%${normalizedSearch}%`;
         searchableColumns.forEach(() => values.push(searchValue));
       }
     }
 
-    
     const dataQuery = `
       SELECT *
-      FROM PO_HEADER
+      FROM po_header
       ${whereClause}
       ORDER BY id ASC
       LIMIT ? OFFSET ?
@@ -470,17 +457,13 @@ export const getPaginatedDataWithGlobalSearch = async (
       offset,
     ]);
 
-    
     const countQuery = `
       SELECT COUNT(*) AS total
-      FROM PO_HEADER
+      FROM po_header
       ${whereClause}
     `;
 
-    const [[countResult]]: any = await pool.query(
-      countQuery,
-      values
-    );
+    const [[countResult]]: any = await pool.query(countQuery, values);
 
     const totalRecords = countResult.total;
 
@@ -497,6 +480,6 @@ export const getPaginatedDataWithGlobalSearch = async (
     };
   } catch (error: any) {
     console.error("Error in getPaginatedDataWithGlobalSearch:", error);
-    throw new Error("Failed to fetch data");
+    throw new Error("Failed to fetch data" + error);
   }
 };

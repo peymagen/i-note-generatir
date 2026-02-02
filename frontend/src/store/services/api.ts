@@ -6,7 +6,7 @@ import { resetTokens, setTokens } from "../reducers/authReducers";
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_BASE_URL
     ? `${import.meta.env.VITE_BASE_URL}api/`
-    : "https://note.peymagen.com/ap/api/",
+    : "https://note.peymagen.com/api/",
   prepareHeaders: (headers, { getState }) => {
     const state = getState() as RootState;
     const token = state.auth.accessToken;
