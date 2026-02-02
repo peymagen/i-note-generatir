@@ -7,6 +7,7 @@ import {
   Outlet,
 } from "react-router-dom";
 import Login from "./pages/login/Login";
+import Dashboard from "./pages/Dashboard/Dashboard";
 import ManageTemplate from "./pages/Templates";
 import ManageCreateUser from "./pages/User";
 import Dash from "./pages/Daash/Dash";
@@ -43,7 +44,7 @@ const App: React.FC = () => {
 
           {/* Protected Routes with Dashboard Layout */}
           <Route element={<ProtectedRoute />}>
-            <Route element={<Inote />}>
+            <Route element={<Dashboard />}>
               <Route index element={<Dash />} />
               <Route path="manage-template" element={<ManageTemplate />} />
               <Route path="manage-users" element={<ManageCreateUser />} />
