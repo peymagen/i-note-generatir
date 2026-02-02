@@ -45,8 +45,6 @@ const StepTwo: React.FC<StepTwoProps> = ({
   vendorCode,
   consigneeCode,
 }) => {
-
-
   const [triggerVendor, { isLoading: isFetching }] =
     useLazyGetByVendorCodeQuery();
   const [triggerConsignee, { isLoading: isFetchingCon }] =
@@ -63,7 +61,6 @@ const StepTwo: React.FC<StepTwoProps> = ({
   });
 
   const onSubmit: SubmitHandler<formData> = async (data) => {
-    
     const [vendorRes, moRes] = await Promise.all([
       triggerVendor(vendorCode).unwrap(),
       triggerConsignee(consigneeCode).unwrap(),
@@ -80,7 +77,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
         id: iNoteData.data.id,
       },
     };
-   
+
     onNext(data, dbData);
     toast.success("Preparing I-Note editor...");
   };
@@ -91,7 +88,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
         <h3 className={styles.stepTitle}>Inspection Details</h3>
 
         <Input
-          label="Sequence No"
+          label="File No"
           name="sequenceNo"
           type="number"
           register={register}
@@ -99,7 +96,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
         />
 
         <Input
-          label="Inspection Date"
+          label="Indent Date"
           name="date"
           type="date"
           register={register}
@@ -107,18 +104,17 @@ const StepTwo: React.FC<StepTwoProps> = ({
         />
 
         <Input
-          label="Offered Date (Range)"
-          name="InspectionOfferedDate"
-          type="text"
-          placeholder="e.g. 02/01/26-03/01/26"
+          label="Store offered for inspection on"
+          name="InspectedOn"
+          type="date"
           register={register}
           errors={errors}
         />
-
         <Input
-          label="Inspected On"
-          name="InspectedOn"
-          type="date"
+          label="Store inspected on"
+          name="InspectionOfferedDate"
+          type="text"
+          placeholder="e.g. 02/01/26-03/01/26"
           register={register}
           errors={errors}
         />

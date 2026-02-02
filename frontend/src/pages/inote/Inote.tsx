@@ -93,15 +93,15 @@ const Inote = () => {
     style="border-collapse: collapse; width: 100%; font-size: 11px; text-align: center; border-color: #000;">
     <thead>
       <tr> 
-        <th>Item No in A/T (OL No)</th>
-        <th colspan="2"><u>Description of store</u><br/>Total Quantity Ordered.<br/>The Inspector should indicate whether the supply has been made...</th>
-        <th>Acc Unit</th>
-        <th>Tendered Quantity</th>
-        <th>Accepted Quantity</th>
-        <th>Brought to account in ledger folio Total Qty Accepted to Date</th>
-        <th>Rejected Quantity</th>
-        <th style="border-right: 1px solid black;">No and date of inspection certificate...</th>
-        <th>Remarks</th>
+        <td>Item No in A/T (OL No)</td>
+        <td colspan="2"><u>Description of store</u><br/>Total Quantity Ordered.<br/>The Inspector should indicate whether<br/>the supply has been made i seller's / buyer's</td>
+        <td>Acc Unit</td>
+        <td>Tendered Quantity</td>
+        <td>Accepted Quantity</td>
+        <td>Brought to account in ledger folio Total Qty Accepted to Date</td>
+        <td>Rejected Quantity</td>
+        <td style="border-right: 1px solid black;">No and date of inspection certificate (if any) issued by DGISAM or other Isp. Authority</td>
+        <td>Remarks</td>
       </tr>
     </thead>`,
       ...(state?.products?.map(
@@ -111,11 +111,11 @@ const Inote = () => {
           const acceptedQty = p.acceptedQty || p.Qty || 0;
 
           const noRowBorder =
-            'style="border-top: none; border-bottom: none; vertical-align: top; padding-top: 15px;"';
+            'style=" vertical-align: top; padding-top: 15px;"';
           const descText =
-            'style="border-top: none; border-bottom: none; border-right: none; text-align: left; vertical-align: top; padding-top: 15px; width:40%;"';
+            'style="border-right: none; text-align: left; vertical-align: top; padding-top: 15px; width:40%;"';
           const qtyColumn =
-            'style="border-top: none; border-bottom: none; border-left: none; vertical-align: top; padding-top: 15px; width:10%;"';
+            'style=" border-left: none; vertical-align: top; padding-top: 15px; width:10%;"';
 
           // Removed border-right for the Inspection column to merge it visually with Remarks
           const noBorderRight =
@@ -124,14 +124,17 @@ const Inote = () => {
           const noBorderLeft =
             'style="border-top: none; border-bottom: none; border-left: none; vertical-align: top; padding-top: 15px;"';
 
+          const qty = p.Qty || 0;
+          const qtyFullFill = p.QtyFullFill || 0;
+
           return `<tr>
         <td ${noRowBorder}>${p.OrderLineNo}</td>
         <td ${descText}>${p.ItemCode}<br/>${itemDesc}</td>
-        <td ${qtyColumn}>Qty ${p.Qty}</td>
+        <td ${qtyColumn}>Qty ${qty}</td>
         <td ${noRowBorder}>${itemDeno}</td>
-        <td ${noRowBorder}>${p.Qty}</td>
-        <td ${noRowBorder}>${acceptedQty}</td>
-        <td ${noRowBorder}>${acceptedQty === p.Qty ? acceptedQty : acceptedQty + " / " + p.Qty}</td>
+        <td ${noRowBorder}>${qty - qtyFullFill}</td>
+        <td ${noRowBorder}>${acceptedQty - qtyFullFill}</td>
+        <td ${noRowBorder}>${acceptedQty === qty && qtyFullFill === 0 ? acceptedQty : acceptedQty + " / " + qty}</td>
         <td ${noRowBorder}>0</td>
         <td ${noBorderRight}></td>
         <td ${noBorderLeft}></td>
@@ -145,7 +148,14 @@ const Inote = () => {
       "{{FINANCIAL_YEAR}}": financialYear,
       "{{INDENT_NO}}": state.user.IndentNo || "N/A",
       "{{CURRENT_DATE}}": new Date().toLocaleDateString("en-GB"),
-      "{{ORDER_DATE}}": state.user.OrderDate || "N/A",
+      "{{ORDER_DATE}}":
+        new Date(state.user.OrderDate)
+          .toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+          .replace(/ /g, "-") || "N/A",
       "{{CONSIGNEE_CODE}}": state.indentInfo.details[0].ConsigneeCode || "N/A",
       "{{INSPECTION_EVAL_RANGE}}": state.user.InspectionOfferedDate || "N/A",
       "{{INSPECTION_DATE}}": state.user.InspectedOn || "N/A",
@@ -163,7 +173,7 @@ const Inote = () => {
       "{{MO_ADDRESS_PROCUREMENT}}": renderCleanAddress(moAddress) || "N/A",
       "{{FILE_NO}}": state.user.sequenceNo?.toString() || "N/A",
       "{{INOTE_NO}}": state.info?.iNote?.iNote?.toString() || "N/A",
-      "{{TOTAL_ITEMS_ WORD}}":
+      "{{TOTAL_ITEMS_WORD}}":
         toWords(state?.products?.length.toString() || 0).toUpperCase() ||
         "Zero",
       "{{ITEM_DETAILS}}": table,

@@ -11,12 +11,16 @@ interface Action<T = { [x: string]: unknown }> {
 
 interface DataTableProps<T = { [x: string]: unknown }> {
   fetchData: (
-    params?: { page: number; search?: string } | undefined
+    params?: { page: number; search?: string } | undefined,
   ) => Promise<{
     data: T[];
     total?: number;
   }>;
-  columns: { label: string; accessor: string;render?: (row: T) => React.ReactNode; }[];
+  columns: {
+    label: string;
+    accessor: string;
+    render?: (row: T) => React.ReactNode;
+  }[];
   actions?: Action<T>[];
   loading: boolean;
   isNavigate?: boolean;
@@ -111,9 +115,9 @@ export const DataTable = <T extends { [x: string]: unknown }>({
       [
         ...(hasCheckbox ? [selectedRows.includes(row) ? "Yes" : "No"] : []),
         ...columns.map(
-          (col) => `"${(row as Record<string, unknown>)[col.accessor] ?? ""}"`
+          (col) => `"${(row as Record<string, unknown>)[col.accessor] ?? ""}"`,
         ),
-      ].join(",")
+      ].join(","),
     );
 
     const csvContent = [csvHeader, ...csvRows].join("\n");
@@ -132,7 +136,7 @@ export const DataTable = <T extends { [x: string]: unknown }>({
     const win = window.open("", "", "width=800,height=600");
     if (win && printContents) {
       win.document.write(
-        `<html><head><title>Print</title></head><body>${printContents}</body></html>`
+        `<html><head><title>Print</title></head><body>${printContents}</body></html>`,
       );
       win.document.close();
       win.focus();
@@ -232,14 +236,15 @@ export const DataTable = <T extends { [x: string]: unknown }>({
 
                         // if (typeof value === "string") {
                         //   const lower = value.toLowerCase();
-                         const value = row[col.accessor];
-                          if (!value && value !== 0 && value !== false) return " -";
-                          // Check if this column has a custom render function
-                          if (col.render) {
-                            return col.render(row);
-                          }
-                          if (typeof value === "string") {
-                            const lower = value.toLowerCase();
+                        const value = row[col.accessor];
+                        if (!value && value !== 0 && value !== false)
+                          return " -";
+                        // Check if this column has a custom render function
+                        if (col.render) {
+                          return col.render(row);
+                        }
+                        if (typeof value === "string") {
+                          const lower = value.toLowerCase();
 
                           // Check for image
                           if (/\.(jpg|jpeg|png|gif|webp|svg)$/i.test(lower)) {
@@ -308,9 +313,9 @@ export const DataTable = <T extends { [x: string]: unknown }>({
 
                           if (
                             (col.accessor.toLowerCase().startsWith("create") ||
-                              col.accessor
-                                .toLowerCase()
-                                .startsWith("update")) &&
+                              col.accessor.toLowerCase().startsWith("update") ||
+                              col.accessor.toLowerCase().startsWith("date") ||
+                              col.accessor.toLowerCase().endsWith("date")) &&
                             !isNaN(Date.parse(value))
                           ) {
                             return new Date(value).toLocaleString("en-IN", {
