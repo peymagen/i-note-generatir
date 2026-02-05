@@ -192,20 +192,6 @@ export const updateData = async (
   }
 };
 
-// export const getAll = async()=>{
-//     try{
-//         const [rows] = await pool.execute<RowDataPacket[]>("SELECT * FROM vendor_detail order By id ASC");
-//         return {
-//             success: true,
-//             message: "Record fetched successfully",
-//             data: rows
-//         }
-//     }
-//     catch(error:any){
-//         console.log(error)
-//         throw new Error(error)
-//     }
-// }
 
 export const getByVendorCode = async (vendorCode: string) => {
   try {

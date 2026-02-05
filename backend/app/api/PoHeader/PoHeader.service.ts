@@ -311,50 +311,10 @@ export const addData = async (userId: number, payload: any) => {
   }
 };
 
-// export const searchPO = async (IndentNo?: string, OrderDate?: string) => {
-//   try {
-//     console.log("Searching with params:", { IndentNo, OrderDate });
-
-//     let query = `SELECT * FROM po_header WHERE 1=1`;
-//     const params: any[] = [];
-
-//     // --------------------------
-//     // Search By Indent No
-//     // --------------------------
-//     if (IndentNo && IndentNo.trim() !== "" && IndentNo !== "undefined") {
-//       query += ` AND IndentNo = ?`;
-//       params.push(IndentNo.trim());
-//     }
-
-//     if (OrderDate && OrderDate.trim() !== "" && OrderDate !== "undefined") {
-
-//       const cleanDate = OrderDate.includes("T")
-//         ? OrderDate.split("T")[0]
-//         : OrderDate;
-
-//       console.log("Clean OrderDate used:", cleanDate);
-
-//       query += ` AND OrderDate = ?`;
-//       params.push(cleanDate);
-//     }
-
-//     console.log("Final Query:", query);
-//     console.log("Params:", params);
-
-//     const [rows]: any = await pool.query(query, params);
-//     console.log("Query Result:", rows);
-
-//     return rows;
-
-//   } catch (error: any) {
-//     console.error("Error in searchPO:", error);
-//     throw new Error("Database search failed: " + error.message);
-//   }
-// };
 
 export const searchPO = async (IndentNo?: string, OrderDate?: string) => {
   try {
-    console.log("Searching with params:", { IndentNo, OrderDate });
+    
 
     // 1. Prepare Header Query
     let headerQuery = `SELECT * FROM po_header WHERE 1=1`;
@@ -375,22 +335,22 @@ export const searchPO = async (IndentNo?: string, OrderDate?: string) => {
 
     // 2. Execute Header Query
     const [headerRows]: any = await pool.query(headerQuery, headerParams);
-    console.log("Header Rows:", headerRows);
+    
 
     if (!headerRows || headerRows.length === 0) {
-      console.log("header  found", headerRows);
+      
       return {
         success: false,
         header: null,
         details: [],
       };
-      console.log("No header found");
+      
     }
 
     // 4. Fetch Details based on the IndentNo found in the Header
     // console.log("Indent Number:", headerRows[0].IndentNo);
     const foundIndentNo = headerRows[0].IndentNo;
-    console.log("Found IndentNo:", foundIndentNo);
+   
     const detailQuery = `SELECT * FROM PO_DETAILS WHERE IndentNo = ?`;
 
     const [detailRows]: any = await pool.query(detailQuery, [foundIndentNo]);

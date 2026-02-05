@@ -21,11 +21,10 @@ export const uploadExcel = async (req: Request, res: Response) => {
     }
 
     // 3) Process Excel File
-    console.log("Starting Excel processing...");
+  
 
     const result = await service.importExcel(req.file.buffer, userId);
 
-    console.log("Excel processing finished.");
 
     // 4) Send Successful Response
     res.status(200).json({
@@ -42,16 +41,7 @@ export const uploadExcel = async (req: Request, res: Response) => {
   }
 };
 
-// export const getAllPOData =  async(req:Request,res:Response)=>{
-//   try {
 
-//       const data = await service.getAllData();
-//        res.status(200).json({ success: true, data });
-//     }
-//     catch (error: any) {
-//        res.status(500).json({ success: false, error: error.message });
-//     }
-// }
 
 export const getPODataById = async (req: Request, res: Response) => {
   try {
@@ -186,7 +176,7 @@ export const addData = async (req: Request, res: Response) => {
         message: "Record not found",
       });
     }
-    console.log("afteer add", record);
+   
 
     res.status(200).json({ success: true, data: record });
   } catch (error: any) {
@@ -198,29 +188,7 @@ export const addData = async (req: Request, res: Response) => {
   }
 };
 
-// export const getItemsByPage = async (req: Request, res: Response) => {
-//   const page = Number(req.query.page) || 1;
-//   const limit = Number(req.query.limit) || 50;
-//   console.log('Page:', page, 'Limit:', limit);
 
-//   try{
-//     const result = await service.getPaginatedData(page, limit);
-//     if(result.success) {
-//       res.json(result);
-//     } else {
-//       res.status(404).json({
-//         success: false,
-//         message: result.message || "No records found"
-//       });
-//     }
-//   }
-//   catch (error: any) {
-//     res.status(500).json({
-//       success: false,
-//       message:"Failed to get records",
-//       error: error.message });
-//   }
-// };
 
 export const getItemPageSearch = async (req: Request, res: Response) => {
   try {

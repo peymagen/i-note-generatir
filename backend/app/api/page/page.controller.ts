@@ -8,8 +8,8 @@ import {
   getOnlyTitles,
   getContent
 } from "./page.service";
-import { RowDataPacket } from "mysql2/promise";
-import { string } from "joi";
+
+
 
 // @ts-ignore – for commonjs import libs in TS
 const pdf = require("html-pdf");
@@ -47,7 +47,7 @@ export const createPageHandler = async (req: Request, res: Response) => {
   try {
     const { title, content } = req.body;
     const userId = Number((req.user as any)?.id);
-    console.log("Creating page for user ID:", req.user);
+   
     if (!userId) {
       res.status(401).json({
         success: false,
@@ -79,7 +79,7 @@ export const createPageHandler = async (req: Request, res: Response) => {
 
 export const updatePageHandler = async (req: Request, res: Response) => {
   const { id } = req.params;
-  console.log(typeof id);
+ 
   const { title, content } = req.body;
 
   const page = await updatePage(id, { title, content });
@@ -145,7 +145,7 @@ export const exportPagePdfHandler = async (req: Request, res: Response) => {
 
   pdf.create(html).toBuffer((err: any, buffer: Buffer) => {
     if (err) {
-      console.log(err);
+      
       res.status(500).json({
         success: false,
         error: "PDF_ERROR",

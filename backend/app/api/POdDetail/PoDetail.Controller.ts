@@ -11,11 +11,6 @@ export const uploadExcel = async (req: Request, res: Response) => {
       });
     }
 
-    console.log("Uploaded file:", {
-      name: req.file.originalname,
-      type: req.file.mimetype,
-      size: req.file.size,
-    });
 
     // 2) Check user authentication
     const userId = (req as any).user?.id;
@@ -27,11 +22,11 @@ export const uploadExcel = async (req: Request, res: Response) => {
     }
 
     // 3) Process Excel File
-    console.log("Starting Excel processing...");
+ 
 
     const result = await service.importExcel(req.file.buffer, userId);
 
-    console.log("Excel processing finished.");
+   
 
     // 4) Send Successful Response
     res.status(200).json({
@@ -39,7 +34,7 @@ export const uploadExcel = async (req: Request, res: Response) => {
       ...result,
     });
   } catch (error: any) {
-    console.error("Excel Upload Error:", error);
+   
     res.status(500).json({
       success: false,
       message: "Excel processing failed",
@@ -201,7 +196,7 @@ export const addData = async (req: Request, res: Response) => {
 
   try {
     const payload = req.body;
-    // console.log('Received payload:', payload);
+   
 
     if (!payload) {
       res.status(400).json({
@@ -271,7 +266,7 @@ export const getItemPageSearch = async (req: Request, res: Response) => {
     const pageParam = req.query.page;
     const limitParam = req.query.limit;
     const search = req.query.search?.toString();
-    console.log("Hello", pageParam);
+
 
     const page = pageParam !== undefined ? Number(pageParam) : undefined;
 

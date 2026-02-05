@@ -1,14 +1,10 @@
 import { pool } from "../../common/services/sql.service";
 import { type RowDataPacket, type ResultSetHeader } from "mysql2";
 import { page } from "./finalPage.dto";
-import { deletePage } from '../page/page.service';
-import { deletePageHandler } from '../page/page.controller';
 
 
 export const createPage = async (data: page) => {
-  console.log("content",data.content);
-  console.log("iNote",data.i_note);
-  console.log("indentNo",data.indent_no);
+  
     try {
         const query = "INSERT INTO certificate  (content,i_note,indent_No) VALUES (?,?,?)";
         const values = [data.content,data.i_note,data.indent_no];
@@ -34,12 +30,11 @@ export const getPageById = async (id: number) => {
 
 export const updatePage = async (id: number, data: page) => {
     try {
-      console.log("id",id)
-      console.log("data",data)
+      
         const query = "UPDATE certificate  SET content = ? WHERE id = ?";
         const values = [data.content,id];
         const [result] = await pool.execute(query, values);
-        console.log("Result",result)
+        
         if(!result){
             return null
         }

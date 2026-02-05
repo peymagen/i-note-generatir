@@ -11,11 +11,7 @@ export const uploadExcel = async (req: Request, res: Response) => {
       });
     }
 
-    console.log("Uploaded file:", {
-      name: req.file.originalname,
-      type: req.file.mimetype,
-      size: req.file.size
-    });
+    
 
     // 2) Check user authentication
     const userId = (req as any).user?.id;
@@ -26,15 +22,14 @@ export const uploadExcel = async (req: Request, res: Response) => {
       });
     }
 
-    // 3) Process Excel File
-    console.log("Starting Excel processing...");
+ 
     
     const result = await service.importExcel(
       req.file.buffer,
       userId
     );
 
-    console.log("Excel processing finished.");
+  
 
     // 4) Send Successful Response
      res.status(200).json({
@@ -52,15 +47,7 @@ export const uploadExcel = async (req: Request, res: Response) => {
   }
 };
 
-// export const getAllPOData =  async(req:Request,res:Response)=>{
-//   try {
-//       const data = await service.getAllData();
-//        res.status(200).json({ success: true, data });
-//     } 
-//     catch (error: any) {
-//        res.status(500).json({ success: false, error: error.message });
-//     }
-// }
+
 export const getPODataById = async(req:Request,res:Response)=>{
   try {
       const id = Number(req.params.id);
@@ -156,7 +143,7 @@ export const addData = async (req: Request, res: Response) => {
 
     try {
         const payload = req.body;
-        console.log(' payload:', payload); // Debug log
+        
         
         if (!payload) {
              res.status(400).json({ 
@@ -195,16 +182,16 @@ export const getDatabyCon  = async(req:Request,res:Response)=>{
   
   try{
     const code = (req.params.code || req.query.code ||" ")as string
-    console.log("Received code",code)
+    
     if (!code || code === " ") {
-      console.log("Empty code detected");
+      
        res.status(400).json({
         success: false,
         message: "consignee code is required"
       });
     }
     const data = await service.getDatabyCon(code)
-    console.log("Service response:", data);
+    
     if(data.success){
       res.status(200).json({
         success:true,

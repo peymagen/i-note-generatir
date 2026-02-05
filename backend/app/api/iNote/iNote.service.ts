@@ -32,8 +32,7 @@ export const getLastInote = async()=>{
     try{
 
         const [rows] = await pool.query<RowDataPacket[]>("SELECT * FROM i_note ORDER BY id DESC LIMIT 1");
-        console.log(rows);
-        // console.log(rows.iNote)
+       
         if(rows.length === 0){
              return null
         }
@@ -73,19 +72,3 @@ export const createUpdate = async (iNote: Inote,id:number) => {
 };
 
 
-// Example usage in your controller
-// const handleSave = async (req, res) => {
-//     const { iNoteValue } = req.body; // e.g., 202501
-
-//     try {
-//         const result = await createUpdate(iNoteValue);
-        
-//         if(result.action === "created") {
-//             res.json({ msg: "New I-Note sequence started" });
-//         } else {
-//             res.json({ msg: "Last I-Note updated" });
-//         }
-//     } catch (e) {
-//         res.status(500).send("Error");
-//     }
-// }

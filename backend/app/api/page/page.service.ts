@@ -1,7 +1,7 @@
 import { pool } from "../../common/services/sql.service";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
 import { IPage } from "./page.dto";
-import { query } from "express-validator";
+
 
 // Create Page
 export const createPage = async (data: {
@@ -33,8 +33,6 @@ export const updatePage = async (
     const query = "UPDATE pages SET title = ?, content = ? WHERE id = ?";
     const pageId = Number(id);
     const values = [data.title, data.content, pageId];
-
-    console.log("Updating page with ID:", pageId, "Values:", values);
 
     const [result] = await pool.execute<ResultSetHeader>(query, values);
 
@@ -94,7 +92,7 @@ export const getAllPages = async () => {
     const query =
       "SELECT id, title, content, created_on, updated_on FROM pages ORDER BY ID ASC";
     const [rows] = await pool.execute<RowDataPacket[]>(query);
-    console.log(rows);
+    
     return rows;
   } catch (error) {
     console.log(error);
@@ -107,7 +105,7 @@ export const getOnlyTitles = async()=>{
   try{
     const query = "SELECT title FROM pages ORDER BY ID ASC";
     const [rows] = await pool.execute<RowDataPacket[]>(query);
-    console.log(rows);
+  
     if(!rows.length) {
       return{
         success: false,

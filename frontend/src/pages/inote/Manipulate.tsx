@@ -76,7 +76,7 @@ const Manipulate: React.FC<Props> = ({ onClose }) => {
       }
     } catch (error) {
       console.error("Update failed", error);
-      toast.error("Failed to update sequence");
+      toast.error("Failed to update or I-Note already exists");
     }
   };
 
