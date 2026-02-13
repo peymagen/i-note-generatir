@@ -8,7 +8,7 @@ import Input from "../../component/Input/Input2";
 import styles from "./Stepper.module.css";
 import { useLazyGetIndentDateQuery } from "../../store/services/po-header";
 import { useGetTitleQuery, useLazyGetContentQuery } from "../../store/services/page.api";
-import type { formOne,StepperState } from "../../types/inote";
+import type { formOne, StepperState } from "../../types/inote";
 
 
 
@@ -28,7 +28,7 @@ interface StepOneProps {
 const StepOne: React.FC<StepOneProps> = ({ onNext, initialValues }) => {
   const { data: titleData, isLoading: isLoadingTitles } = useGetTitleQuery(undefined);
   const [triggerCheckPO, { isLoading: isCheckingPO }] = useLazyGetIndentDateQuery();
-  
+
   // Use LAZY query so we can trigger it in onSubmit
   const [triggerGetContent, { isLoading: isFetchingContent }] = useLazyGetContentQuery();
 
@@ -48,28 +48,28 @@ const StepOne: React.FC<StepOneProps> = ({ onNext, initialValues }) => {
     try {
       // 1. Fetch both Indent Data and Template Content in parallel
       const [poResponse, contentResponse] = await Promise.all([
-        triggerCheckPO({ IndentNo: data.IndentNo, OrderDate: data.OrderDate }).unwrap(),
-        triggerGetContent(data.template).unwrap()
+        triggerCheckPO({ IndentNo: data.IndentNo, OrderDate: data.OrderDate }, false).unwrap(),
+        triggerGetContent(data.template, false).unwrap()
       ]);
 
-      
-      if (poResponse.success ) {
+
+      if (poResponse.success) {
         toast.success("Purchase Order and Content loaded!");
-        
+
         const indentData = {
           header: Array.isArray(poResponse.data.header) ? poResponse.data.header : [poResponse.data.header],
           details: poResponse.data.details || []
         };
-        
+
 
         const content = contentResponse?.data[0] || "";
-       
-        onNext(data, indentData, content); 
+
+        onNext(data, indentData, content);
       } else {
         toast.error("No Purchase Order found.");
       }
     } catch (err: unknown) {
-      if(err instanceof Error){
+      if (err instanceof Error) {
         console.error("Error fetching PO or Content:", err);
         toast.error(`Error: ${err.message}`);
       }

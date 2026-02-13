@@ -31,7 +31,7 @@ const StepThree: React.FC<StepThreeProps> = ({
   const { data, isLoading, isError } = useGetItemsIndentQuery({
     indentNo: initialValues?.IndentNo || "",
     orderDate: initialValues?.OrderDate || "",
-  });
+  }, { refetchOnMountOrArgChange: true });
 
   /* ---------------------------------------------------------
    * USER INTERACTION STATE (ONLY)

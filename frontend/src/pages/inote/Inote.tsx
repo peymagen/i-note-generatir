@@ -85,8 +85,8 @@ const Inote = () => {
     const year = now.getFullYear();
     const financialYear =
       now.getMonth() >= 3
-        ? `${year}-${(year + 1).toString().slice(-2)}`
-        : `${year - 1}-${year.toString().slice(-2)}`;
+        ? `${year}`
+        : `${year - 1}`;
 
     const table = [
       `<table border="1" cellpadding="5" cellspacing="0"
@@ -147,7 +147,10 @@ const Inote = () => {
     const replacements: Record<string, string> = {
       "{{FINANCIAL_YEAR}}": financialYear,
       "{{INDENT_NO}}": state.user.IndentNo || "N/A",
-      "{{CURRENT_DATE}}": new Date().toLocaleDateString("en-GB"),
+      "{{CURRENT_DATE}}": new Date()
+            .toLocaleDateString("en-GB")
+            .replace(/\//g, "-"),
+
       "{{ORDER_DATE}}":
         new Date(state.user.OrderDate)
           .toLocaleDateString("en-GB", {
@@ -274,6 +277,8 @@ const Inote = () => {
     setAddModal(false);
   };
 
+
+
   const handlePrint = (content: string) => {
     const printWindow = window.open("", "", "width=800,height=600");
     if (!printWindow) return;
@@ -327,8 +332,7 @@ const Inote = () => {
 
     printWindow.document.write(`
     <html>
-      <head>
-        <title>Print I-Note</title>
+      <head>       
         <style>
       
         
