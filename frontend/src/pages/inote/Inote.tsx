@@ -42,6 +42,11 @@ const renderCleanAddress = (address: string | undefined) => {
   return startPos !== -1 ? address?.substring(startPos) : address;
 };
 
+const extractFromParens = (str: string | null | undefined) => {
+  const match = str?.match(/\((.*?)\)/);
+  return match ? match[1] : str;
+};
+
 const Inote = () => {
   const [stepperData, setStepperData] = useState<StepperState | null>(null);
   const [page, setPage] = useState(1);
@@ -148,8 +153,8 @@ const Inote = () => {
       "{{FINANCIAL_YEAR}}": financialYear,
       "{{INDENT_NO}}": state.user.IndentNo || "N/A",
       "{{CURRENT_DATE}}": new Date()
-            .toLocaleDateString("en-GB")
-            .replace(/\//g, "-"),
+        .toLocaleDateString("en-GB")
+        .replace(/\//g, "-"),
 
       "{{ORDER_DATE}}":
         new Date(state.user.OrderDate)
@@ -159,7 +164,9 @@ const Inote = () => {
             year: "numeric",
           })
           .replace(/ /g, "-") || "N/A",
-      "{{CONSIGNEE_CODE}}": state.indentInfo.details[0].ConsigneeCode || "N/A",
+      // "{{CONSIGNEE_CODE}}": state.indentInfo.details[0].ConsigneeCode || "N/A",   setConsigneeCode;
+      "{{CONSIGNEE_CODE}}":(extractFromParens(state.indentInfo.details[0]?.ConsigneeCode) || "")|| "N/A",
+      "{{INDENT_DATE}}": state.user.date || "N/A",
       "{{INSPECTION_EVAL_RANGE}}": state.user.InspectionOfferedDate || "N/A",
       "{{INSPECTION_DATE}}": state.user.InspectedOn || "N/A",
       "{{TOTAL_ITEMS}}": state?.products?.length.toString() || "0",
@@ -167,9 +174,9 @@ const Inote = () => {
       "{{VENDOR_DETAILS}}": `
         <div style="margin-top:-8px;"id="vendorBlock" >
           ${(state.info?.vendor[0]?.FirmAddress || "N/A").replace(
-            /(<br\s*\/?>\s*){2,}/gi,
-            "<br>",
-          )}
+        /(<br\s*\/?>\s*){2,}/gi,
+        "<br>",
+      )}
         </div>`,
 
       "{{MO_ADDRESS_WAREHOUSE}}": renderCleanAddress(moAddress) || "N/A",
@@ -223,7 +230,7 @@ const Inote = () => {
   const actions = [
     {
       label: "Edit",
-      onClick: () => {},
+      onClick: () => { },
 
       component: (row: final) => (
         <button
@@ -241,7 +248,7 @@ const Inote = () => {
     },
     {
       label: "Delete",
-      onClick: () => {},
+      onClick: () => { },
       component: (row: final) => (
         <button
           className={`${styles.iconBtn} ${styles.delete}`}
@@ -254,7 +261,7 @@ const Inote = () => {
     },
     {
       label: "Print",
-      onClick: () => {},
+      onClick: () => { },
       component: (row: final) => (
         <button
           className={`${styles.iconBtn} ${styles.edit}`}
