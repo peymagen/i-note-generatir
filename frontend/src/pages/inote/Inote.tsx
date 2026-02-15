@@ -47,6 +47,12 @@ const extractFromParens = (str: string | null | undefined) => {
   return match ? match[1] : str;
 };
 
+function formatDate(dateStr) {
+  const [year, month, day] = dateStr.split("-");
+  return `${day}-${month}-${year}`;
+}
+
+
 const Inote = () => {
   const [stepperData, setStepperData] = useState<StepperState | null>(null);
   const [page, setPage] = useState(1);
@@ -166,9 +172,9 @@ const Inote = () => {
           .replace(/ /g, "-") || "N/A",
       // "{{CONSIGNEE_CODE}}": state.indentInfo.details[0].ConsigneeCode || "N/A",   setConsigneeCode;
       "{{CONSIGNEE_CODE}}":(extractFromParens(state.indentInfo.details[0]?.ConsigneeCode) || "")|| "N/A",
-      "{{INDENT_DATE}}": state.user.date || "N/A",
+      "{{INDENT_DATE}}": formatDate(state.user.date) || "N/A",
       "{{INSPECTION_EVAL_RANGE}}": state.user.InspectionOfferedDate || "N/A",
-      "{{INSPECTION_DATE}}": state.user.InspectedOn || "N/A",
+      "{{INSPECTION_DATE}}": formatDate(state.user.InspectedOn) || "N/A",
       "{{TOTAL_ITEMS}}": state?.products?.length.toString() || "0",
       "{{VENDOR_NAME}}": state.info?.vendor[0]?.FirmName || "N/A",
       "{{VENDOR_DETAILS}}": `
