@@ -21,8 +21,13 @@ interface StepTwoProps {
   consigneeCode?: string;
 }
 
+// const dateRangeRegex =
+//   /^(\d{1,2}\/\d{1,2}\/\d{2,4})-(\d{1,2}\/\d{1,2}\/\d{2,4})$/;
+
+// const dateRangeRegex = /^(\d{1,2})(\s+to\s+\d{1,2})?-(0[1-9]|1[0-2])-\d{2,4}$/;
+
 const dateRangeRegex =
-  /^(\d{1,2}\/\d{1,2}\/\d{2,4})-(\d{1,2}\/\d{1,2}\/\d{2,4})$/;
+  /^(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d{4}(?:\s-\s(0[1-9]|[12][0-9]|3[01])-(0[1-9]|1[0-2])-\d{4})?$/;
 
 const Schema: yup.ObjectSchema<formTwo> = yup.object({
   sequenceNo: yup.number().typeError("Must be a number").required("Required"),
@@ -34,7 +39,7 @@ const Schema: yup.ObjectSchema<formTwo> = yup.object({
     .required("Required")
     .matches(
       dateRangeRegex,
-      "Use format DD/MM/YY-DD/MM/YY (e.g., 02/1/26-01/02/26)",
+      "Use format DD-MM-YYYY or DD to DD-MM-YYYY (e.g., 14-02-2026 or 18-02-2026 - 20-02-2026)",
     ),
 });
 
@@ -49,7 +54,9 @@ const StepTwo: React.FC<StepTwoProps> = ({
     useLazyGetByVendorCodeQuery();
   const [triggerConsignee, { isLoading: isFetchingCon }] =
     useLazyGetDatabyConQuery();
-  const { data: iNoteData } = useGetInoteQuery(undefined);
+  const { data: iNoteData } = useGetInoteQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
 
   const {
     register,
@@ -62,8 +69,8 @@ const StepTwo: React.FC<StepTwoProps> = ({
 
   const onSubmit: SubmitHandler<formData> = async (data) => {
     const [vendorRes, moRes] = await Promise.all([
-      triggerVendor(vendorCode).unwrap(),
-      triggerConsignee(consigneeCode).unwrap(),
+      triggerVendor(vendorCode, false).unwrap(),
+      triggerConsignee(consigneeCode, false).unwrap(),
     ]);
     const dbData = {
       vendor: Array.isArray(vendorRes.data.data[0])
@@ -114,7 +121,7 @@ const StepTwo: React.FC<StepTwoProps> = ({
           label="Store inspected on"
           name="InspectionOfferedDate"
           type="text"
-          placeholder="e.g. 02/01/26-03/01/26"
+          placeholder="e.g. DD-MM-YYYY or DD-MM-YYYY-DD-MM-YYYY"
           register={register}
           errors={errors}
         />

@@ -39,7 +39,7 @@ export const roleAuth = (publicRoutes: string[] = []) =>
 
      
       req.user = decodedUser as IUser & { role: string };
-      console.log("User:", req.user);
+      // console.log("User:", req.user);
       
       next();
     }
@@ -48,7 +48,7 @@ export const roleAuth = (publicRoutes: string[] = []) =>
 export const requireRole = (allowedRoles: string[] = []) =>
   expressAsyncHandler(async (req: Request, res: Response, next: NextFunction) => {
     const role = (req.user as (IUser & { role?: string }) | undefined)?.role;
-    console.log(role);
+    // console.log(role);
     if (allowedRoles.length === 0 || (role && allowedRoles.includes(role))) {
       next();
       return;

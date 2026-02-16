@@ -2,7 +2,7 @@ import xlsx from "xlsx";
 import { pool } from "../../common/services/sql.service";
 import { ItemImportDTO } from "./ItemDetail.dto";
 import { type RowDataPacket, type ResultSetHeader } from "mysql2";
-import { Console } from "console";
+
 
 const formatDate = (value: any): string | null => {
   if (!value) return null;

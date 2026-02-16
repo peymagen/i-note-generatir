@@ -7,7 +7,7 @@ import { type Request, type Response } from "express";
 export const uploadExcel = async (req: Request, res: Response) => {
   try {
     // 1) Check file upload
-    console.log("hello vendor")
+   
     if (!req.file) {
       res.status(400).json({
         success: false,
@@ -16,11 +16,7 @@ export const uploadExcel = async (req: Request, res: Response) => {
       return;
     }
 
-    console.log("Uploaded file:", {
-      name: req.file.originalname,
-      type: req.file.mimetype,
-      size: req.file.size
-    });
+  
 
     // 2) Check user authentication
     const userId = (req as any).user?.id;
@@ -33,14 +29,13 @@ export const uploadExcel = async (req: Request, res: Response) => {
     }
 
     // 3) Process Excel File
-    console.log("Starting Excel processing...");
+   
 
     const result = await service.importExcel(
       req.file.buffer,
       userId
     );
 
-    console.log("Excel processing finished.");
 
     // 4) Send Successful Response
     res.status(200).json({
@@ -60,7 +55,7 @@ export const uploadExcel = async (req: Request, res: Response) => {
 
 export const createRow = asyncHandler(async (req: Request, res: Response) => {
   const userId = (req as any).user?.id;
-  console.log(userId)
+  
   if (!userId) {
     res.status(401).json({
       success: false,
@@ -101,7 +96,7 @@ export const createRow = asyncHandler(async (req: Request, res: Response) => {
 
 // vendor.controller.ts
 export const updateRow = asyncHandler(async (req: Request, res: Response) => {
-  console.log("Req", req.body)
+  
   try {
     const userId = (req as any).user?.id;
     if (!userId) {
@@ -113,7 +108,7 @@ export const updateRow = asyncHandler(async (req: Request, res: Response) => {
     }
 
     const payload = req.body;
-    console.log(payload)
+
     const Id = Number(req.params.id);
 
     if (!Id || isNaN(Id)) {
@@ -187,23 +182,7 @@ export const deleteById = asyncHandler(async (req: Request, res: Response) => {
   }
 })
 
-// export const getAllData= async(req:Request, res:Response)=>{
-//     try{
-//         const data = await service.getAll()
 
-//         // if()
-//         res.status(200).json({
-//             success:true,
-//             data:data
-//         })
-//     }
-//     catch{
-//         res.status(500).json({
-//             success:false,
-//             message:"Failed to fetch data"
-//         })
-//     }
-// }
 
 export const getByVendorCode = async (req: Request, res: Response) => {
   try {

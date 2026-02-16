@@ -29,7 +29,7 @@ export type VendorFormData = vendor.FormData;
 export type iNote = {
   iNote: number;
   id?: number;
-}
+};
 
 export interface StepperState {
   user: formData;
@@ -42,14 +42,13 @@ export interface StepperState {
     vendor: VendorFormData[];
     mo: MoFormData[];
     iNote?: iNote;
-  }
-
-
+  };
 }
 
 export interface ProductItem {
   id: number;
   name: string;
+  ol: number;
   availableQty: number;
   acceptedQty: number;
   selected: boolean;
@@ -67,7 +66,7 @@ export interface StepperState {
     vendor: VendorFormData[];
     mo: MoFormData[];
     iNote?: iNote;
-  }
+  };
 
   products?: ProductItem[];
 }

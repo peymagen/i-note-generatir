@@ -11,11 +11,7 @@ export const uploadExcel = async (req: Request, res: Response) => {
       });
     }
 
-    console.log("Uploaded file:", {
-      name: req.file.originalname,
-      type: req.file.mimetype,
-      size: req.file.size
-    });
+ 
 
     // 2) Check user authentication
     const userId = (req as any).user?.id;
@@ -27,14 +23,14 @@ export const uploadExcel = async (req: Request, res: Response) => {
     }
 
     // 3) Process Excel File
-    console.log("Starting Excel processing...");
+    
     
     const result = await service.importExcel(
       req.file.buffer,
       userId
     );
 
-    console.log("Excel processing finished.");
+ 
 
     // 4) Send Successful Response
      res.status(200).json({
@@ -145,7 +141,7 @@ export const deleteDataById = async(req:Request,res:Response)=>{
 }
 
 export const addData = async(req:Request,res:Response)=>{
-  console.log("Req",req.body)
+ 
    const userId = (req as any).user?.id;
     if (!userId) {
        res.status(401).json({
@@ -187,7 +183,7 @@ export const searchPO = async (req: Request, res: Response) => {
   try {
 
     const { IndentNo, OrderDate } = req.query;
-    console.log("Received search request with:", { IndentNo, OrderDate });
+    
 
     if (!IndentNo && !OrderDate) {
        res.status(400).json({
@@ -199,20 +195,20 @@ export const searchPO = async (req: Request, res: Response) => {
     const indentNo = typeof IndentNo === 'string' ? IndentNo.trim() : undefined;
     const orderDate = typeof OrderDate === 'string' ? OrderDate.trim() : undefined;
 
-    console.log("Processed parameters:", { indentNo, orderDate });
+    
 
     const records = await service.searchPO(indentNo, orderDate);
     
 
     if(records.success){
-      console.log("Records found:", records);
+
       res.json({
       success: true,
       data: records,
     });
     }
     else{
-      console.log("Records found:", records);
+      
         res.status(200).json({
         success: false,
         message: "No records found matching the search criteria",

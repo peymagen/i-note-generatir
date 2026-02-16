@@ -60,18 +60,7 @@ export const importExcel = async (buffer: Buffer, userId: number) => {
   };
 };
 
-// export const getAllData = async () => {
-//   try {
-//     const [rows] = await pool.execute<ResultSetHeader>("SELECT * FROM mo_details ORDER BY id ASC");
-//     return {
-//       success: true,
-//       data: rows
-//     };
-//   } catch (error: any) {
-//     console.error("Error in getAllData:", error);
-//     throw new Error("Failed to fetch Item Details");
-//   }
-// };
+
 
 export const getDataById = async (id: number) => {
   try {
@@ -205,18 +194,11 @@ export const getDatabyCon = async (consignee: string) => {
       WHERE MoCPRO = ?;
     `;
     const [rows] = await pool.execute<RowDataPacket[]>(query, [searchPattern]);
-    //     console.log(`
-    // SELECT *
-    // FROM mo_details
-    // WHERE MoCPRO = 'MO(${consignee})'
-    //    OR CPRO   = 'CPRO(${consignee})'
-    // `,);
-
-    // console.log("Query result:", rows);
-    console.log("Service response:", rows);
+   
+  
 
     if (!rows || rows.length === 0) {
-      console.log("No rows found for consignee:", consignee);
+      
       return {
         success: false,
         message: "No record found with the given code",

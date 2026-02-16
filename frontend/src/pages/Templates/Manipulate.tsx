@@ -100,6 +100,8 @@ const TemplateFormModal: React.FC<Props> = ({
       label: "Inspection Evaluation (From–To)",
       value: "{{INSPECTION_EVAL_RANGE}}",
     },
+    { label: "Indent Date", value: "{{INDENT_DATE}}" },
+      
     { label: "Total Items Selected", value: "{{TOTAL_ITEMS}}" },
     { label: "Item Details", value: "{{ITEM_DETAILS}}" },
   ];

@@ -28,10 +28,13 @@ const StepThree: React.FC<StepThreeProps> = ({
   /* ---------------------------------------------------------
    * API DATA
    * ------------------------------------------------------- */
-  const { data, isLoading, isError } = useGetItemsIndentQuery({
-    indentNo: initialValues?.IndentNo || "",
-    orderDate: initialValues?.OrderDate || "",
-  });
+  const { data, isLoading, isError } = useGetItemsIndentQuery(
+    {
+      indentNo: initialValues?.IndentNo || "",
+      orderDate: initialValues?.OrderDate || "",
+    },
+    { refetchOnMountOrArgChange: true },
+  );
 
   /* ---------------------------------------------------------
    * USER INTERACTION STATE (ONLY)
@@ -54,6 +57,7 @@ const StepThree: React.FC<StepThreeProps> = ({
         return {
           id: p.DetailId,
           name: `${p.ItemCode} - ${p.ItemDesc}`,
+          ol: p.OrderLineNo,
           availableQty: p.Qty,
           QtyFullFill: p.QtyFullFill || 0,
           selected: ui.selected,
@@ -131,43 +135,60 @@ const StepThree: React.FC<StepThreeProps> = ({
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Select</th>
+              <th className={styles.checkCol}></th>
+              <th>OL</th>
               <th>Product</th>
               <th>Available Qty</th>
               <th>Accepted Qty</th>
             </tr>
           </thead>
+
           <tbody>
-            {products.map((p) => (
-              <tr key={p.id}>
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={p.selected}
-                    onChange={() => toggleSelect(p.id)}
-                    disabled={p.availableQty - p.QtyFullFill <= 0}
-                  />
-                </td>
-                <td>{p.name}</td>
-                <td>{p.availableQty - (p?.QtyFullFill || 0)}</td>
-                <td>
-                  <input
-                    type="number"
-                    min={0}
-                    max={p.availableQty - (p?.QtyFullFill || 0)}
-                    disabled={!p.selected}
-                    value={p.acceptedQty}
-                    onChange={(e) =>
-                      updateQty(
-                        p.id,
-                        Number(e.target.value),
-                        p.availableQty - (p?.QtyFullFill || 0),
-                      )
-                    }
-                  />
-                </td>
-              </tr>
-            ))}
+            {products.map((p) => {
+              const available = p.availableQty - (p?.QtyFullFill || 0);
+
+              return (
+                <tr key={p.id} className={p.selected ? styles.rowSelected : ""}>
+                  <td className={styles.checkCol}>
+                    <input
+                      type="checkbox"
+                      checked={p.selected}
+                      onChange={() => toggleSelect(p.id)}
+                      disabled={available <= 0}
+                      className={styles.checkbox}
+                    />
+                  </td>
+
+                  <td>{p.ol}</td>
+
+                  <td className={styles.productName}>{p.name}</td>
+
+                  <td>
+                    <span
+                      className={
+                        available <= 0 ? styles.qtyZero : styles.qtyAvailable
+                      }
+                    >
+                      {available}
+                    </span>
+                  </td>
+
+                  <td>
+                    <input
+                      type="number"
+                      min={0}
+                      max={available}
+                      disabled={!p.selected}
+                      value={p.acceptedQty}
+                      className={styles.qtyInput}
+                      onChange={(e) =>
+                        updateQty(p.id, Number(e.target.value), available)
+                      }
+                    />
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
