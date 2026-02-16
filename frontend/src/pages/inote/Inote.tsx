@@ -47,10 +47,42 @@ const extractFromParens = (str: string | null | undefined) => {
   return match ? match[1] : str;
 };
 
-function formatDate(dateStr) {
-  const [year, month, day] = dateStr.split("-");
-  return `${day}-${month}-${year}`;
-}
+// function formatDate(dateStr:string) {
+//   const [year, month, day] = dateStr.split("-");
+//   return `${day}-${month}-${year}`;
+// }
+
+
+const formatDate = (dateStr: string): string => {
+  // Handle ranges like "26 to 28-02-2026"
+  if (dateStr.includes(' to ')) {
+    const parts = dateStr.split(' to ');
+    return `${formatSingleDate(parts[0])} to ${formatSingleDate(parts[1])}`;
+  }
+  return formatSingleDate(dateStr);
+};
+
+const formatSingleDate = (dateStr: string): string => {
+  // Clean the string and handle DD-MM-YYYY or YYYY-MM-DD
+  let date: Date;
+  
+  if (dateStr.includes('-') && dateStr.split('-')[0].length === 2) {
+    // Convert DD-MM-YYYY to YYYY-MM-DD for standard parsing
+    const [d, m, y] = dateStr.split('-');
+    date = new Date(`${y}-${m}-${d}`);
+  } else {
+    date = new Date(dateStr);
+  }
+
+  if (isNaN(date.getTime())) return dateStr; // Fallback if parsing fails
+
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: '2-digit'
+  }).format(date).replace(/ /g, '-'); 
+  // Result: 14-Feb-26
+};
 
 
 const Inote = () => {
@@ -158,9 +190,11 @@ const Inote = () => {
     const replacements: Record<string, string> = {
       "{{FINANCIAL_YEAR}}": financialYear,
       "{{INDENT_NO}}": state.user.IndentNo || "N/A",
-      "{{CURRENT_DATE}}": new Date()
-        .toLocaleDateString("en-GB")
-        .replace(/\//g, "-"),
+      "{{CURRENT_DATE}}":  new Date().toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "long",
+          year: "2-digit",
+        }).replace(/ /g, "-"),
 
       "{{ORDER_DATE}}":
         new Date(state.user.OrderDate)
@@ -173,7 +207,7 @@ const Inote = () => {
       // "{{CONSIGNEE_CODE}}": state.indentInfo.details[0].ConsigneeCode || "N/A",   setConsigneeCode;
       "{{CONSIGNEE_CODE}}":(extractFromParens(state.indentInfo.details[0]?.ConsigneeCode) || "")|| "N/A",
       "{{INDENT_DATE}}": formatDate(state.user.date) || "N/A",
-      "{{INSPECTION_EVAL_RANGE}}": state.user.InspectionOfferedDate || "N/A",
+      "{{INSPECTION_EVAL_RANGE}}": formatDate(state.user.InspectionOfferedDate) || "N/A",
       "{{INSPECTION_DATE}}": formatDate(state.user.InspectedOn) || "N/A",
       "{{TOTAL_ITEMS}}": state?.products?.length.toString() || "0",
       "{{VENDOR_NAME}}": state.info?.vendor[0]?.FirmName || "N/A",
