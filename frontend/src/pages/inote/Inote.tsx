@@ -52,11 +52,10 @@ const extractFromParens = (str: string | null | undefined) => {
 //   return `${day}-${month}-${year}`;
 // }
 
-
 const formatDate = (dateStr: string): string => {
   // Handle ranges like "26 to 28-02-2026"
-  if (dateStr.includes(' to ')) {
-    const parts = dateStr.split(' to ');
+  if (dateStr.includes(" to ")) {
+    const parts = dateStr.split(" to ");
     return `${formatSingleDate(parts[0])} to ${formatSingleDate(parts[1])}`;
   }
   return formatSingleDate(dateStr);
@@ -65,10 +64,10 @@ const formatDate = (dateStr: string): string => {
 const formatSingleDate = (dateStr: string): string => {
   // Clean the string and handle DD-MM-YYYY or YYYY-MM-DD
   let date: Date;
-  
-  if (dateStr.includes('-') && dateStr.split('-')[0].length === 2) {
+
+  if (dateStr.includes("-") && dateStr.split("-")[0].length === 2) {
     // Convert DD-MM-YYYY to YYYY-MM-DD for standard parsing
-    const [d, m, y] = dateStr.split('-');
+    const [d, m, y] = dateStr.split("-");
     date = new Date(`${y}-${m}-${d}`);
   } else {
     date = new Date(dateStr);
@@ -76,14 +75,15 @@ const formatSingleDate = (dateStr: string): string => {
 
   if (isNaN(date.getTime())) return dateStr; // Fallback if parsing fails
 
-  return new Intl.DateTimeFormat('en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: '2-digit'
-  }).format(date).replace(/ /g, '-'); 
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "2-digit",
+  })
+    .format(date)
+    .replace(/ /g, "-");
   // Result: 14-Feb-26
 };
-
 
 const Inote = () => {
   const [stepperData, setStepperData] = useState<StepperState | null>(null);
@@ -126,10 +126,7 @@ const Inote = () => {
     // Financial Year Logic
     const now = new Date();
     const year = now.getFullYear();
-    const financialYear =
-      now.getMonth() >= 3
-        ? `${year}`
-        : `${year - 1}`;
+    const financialYear = now.getMonth() >= 3 ? `${year}` : `${year - 1}`;
 
     const table = [
       `<table border="1" cellpadding="5" cellspacing="0"
@@ -190,11 +187,13 @@ const Inote = () => {
     const replacements: Record<string, string> = {
       "{{FINANCIAL_YEAR}}": financialYear,
       "{{INDENT_NO}}": state.user.IndentNo || "N/A",
-      "{{CURRENT_DATE}}":  new Date().toLocaleDateString("en-GB", {
+      "{{CURRENT_DATE}}": new Date()
+        .toLocaleDateString("en-GB", {
           day: "2-digit",
-          month: "long",
+          month: "short",
           year: "2-digit",
-        }).replace(/ /g, "-"),
+        })
+        .replace(/ /g, "-"),
 
       "{{ORDER_DATE}}":
         new Date(state.user.OrderDate)
@@ -205,18 +204,22 @@ const Inote = () => {
           })
           .replace(/ /g, "-") || "N/A",
       // "{{CONSIGNEE_CODE}}": state.indentInfo.details[0].ConsigneeCode || "N/A",   setConsigneeCode;
-      "{{CONSIGNEE_CODE}}":(extractFromParens(state.indentInfo.details[0]?.ConsigneeCode) || "")|| "N/A",
+      "{{CONSIGNEE_CODE}}":
+        extractFromParens(state.indentInfo.details[0]?.ConsigneeCode) ||
+        "" ||
+        "N/A",
       "{{INDENT_DATE}}": formatDate(state.user.date) || "N/A",
-      "{{INSPECTION_EVAL_RANGE}}": formatDate(state.user.InspectionOfferedDate) || "N/A",
+      "{{INSPECTION_EVAL_RANGE}}":
+        formatDate(state.user.InspectionOfferedDate) || "N/A",
       "{{INSPECTION_DATE}}": formatDate(state.user.InspectedOn) || "N/A",
       "{{TOTAL_ITEMS}}": state?.products?.length.toString() || "0",
       "{{VENDOR_NAME}}": state.info?.vendor[0]?.FirmName || "N/A",
       "{{VENDOR_DETAILS}}": `
         <div style="margin-top:-8px;"id="vendorBlock" >
           ${(state.info?.vendor[0]?.FirmAddress || "N/A").replace(
-        /(<br\s*\/?>\s*){2,}/gi,
-        "<br>",
-      )}
+            /(<br\s*\/?>\s*){2,}/gi,
+            "<br>",
+          )}
         </div>`,
 
       "{{MO_ADDRESS_WAREHOUSE}}": renderCleanAddress(moAddress) || "N/A",
@@ -270,7 +273,7 @@ const Inote = () => {
   const actions = [
     {
       label: "Edit",
-      onClick: () => { },
+      onClick: () => {},
 
       component: (row: final) => (
         <button
@@ -288,7 +291,7 @@ const Inote = () => {
     },
     {
       label: "Delete",
-      onClick: () => { },
+      onClick: () => {},
       component: (row: final) => (
         <button
           className={`${styles.iconBtn} ${styles.delete}`}
@@ -301,7 +304,7 @@ const Inote = () => {
     },
     {
       label: "Print",
-      onClick: () => { },
+      onClick: () => {},
       component: (row: final) => (
         <button
           className={`${styles.iconBtn} ${styles.edit}`}
@@ -323,8 +326,6 @@ const Inote = () => {
     setShowEditor(true);
     setAddModal(false);
   };
-
-
 
   const handlePrint = (content: string) => {
     const printWindow = window.open("", "", "width=800,height=600");
