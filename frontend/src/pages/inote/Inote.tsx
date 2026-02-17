@@ -137,7 +137,7 @@ const Inote = () => {
     <thead>
       <tr> 
         <td>Item No in A/T (OL No)</td>
-        <td colspan="2"><u>Description of store</u><br/>Total Quantity Ordered.<br/>The Inspector should indicate whether<br/>the supply has been made i seller's / buyer's</td>
+        <td colspan="2"><u>Description of store</u><br/>Total Quantity Ordered.<br/>The Inspector should indicate whether<br/>the supply has been made in seller's / buyer's<br> container's, where stores are required int he supplied in containers</td>
         <td>Acc Unit</td>
         <td>Tendered Quantity</td>
         <td>Accepted Quantity</td>
