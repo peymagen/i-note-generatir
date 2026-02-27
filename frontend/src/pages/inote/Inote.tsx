@@ -134,7 +134,7 @@ const Inote = () => {
     <thead>
       <tr> 
         <td>Item No in A/T (OL No)</td>
-        <td colspan="2"><u>Description of store</u><br/>Total Quantity Ordered.<br/>The Inspector should indicate whether<br/>the supply has been made i seller's / buyer's</td>
+        <td colspan="2"><u>Description of store</u><br/>Total Quantity Ordered.<br/>The Inspector should indicate whether<br/>the supply has been made i seller's / buyer's containers, where stores are required in the supplied in containers</td>
         <td>Acc Unit</td>
         <td>Tendered Quantity</td>
         <td>Accepted Quantity</td>
@@ -155,14 +155,7 @@ const Inote = () => {
           const descText =
             'style="border-right: none; text-align: left; vertical-align: top; padding-top: 15px; width:40%;"';
           const qtyColumn =
-            'style=" border-left: none; vertical-align: top; padding-top: 15px; width:10%;"';
-
-          // Removed border-right for the Inspection column to merge it visually with Remarks
-          const noBorderRight =
-            'style="border-top: none; border-bottom: none; border-right: none; vertical-align: top; padding-top: 15px;"';
-          // Removed border-left for the Remarks column
-          const noBorderLeft =
-            'style="border-top: none; border-bottom: none; border-left: none; vertical-align: top; padding-top: 15px;"';
+            'style="vertical-align: top; padding-top: 15px; width:10%;"';
 
           const qty = p.Qty || 0;
           const qtyFullFill = p.QtyFullFill || 0;
@@ -176,8 +169,7 @@ const Inote = () => {
         <td ${noRowBorder}>${acceptedQty - qtyFullFill}</td>
         <td ${noRowBorder}>${acceptedQty === qty && qtyFullFill === 0 ? acceptedQty : acceptedQty + " / " + qty}</td>
         <td ${noRowBorder}>0</td>
-        <td ${noBorderRight}></td>
-        <td ${noBorderLeft}></td>
+        <td colspan="2"></td>
       </tr>`;
         },
       ) || []),
@@ -191,7 +183,7 @@ const Inote = () => {
         .toLocaleDateString("en-GB", {
           day: "2-digit",
           month: "short",
-          year: "2-digit",
+          year: "numeric",
         })
         .replace(/ /g, "-"),
 
@@ -500,11 +492,14 @@ const Inote = () => {
               
           }
 
-
           // ol li {
           //     position: relative;
           // }
-
+          ol figure.table:nth-of-type(4) table, 
+          ol figure.table:nth-of-type(4) table td,
+          ol figure.table:nth-of-type(4) table th {
+              border:none !important;
+          }
           /* cells of 1st and 2nd table */
           ol figure.table:nth-of-type(1) table td,
           ol figure.table:nth-of-type(1) table th,
