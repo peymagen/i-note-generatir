@@ -1,5 +1,5 @@
-import { useMemo, useCallback, useState } from "react";
-import { useForm } from "react-hook-form"; // Import this
+import { useMemo, useCallback, useState, useRef, useEffect } from "react";
+import { useForm } from "react-hook-form";
 import styles from "./Inote.module.css";
 import Button from "../../component/Button/Button";
 import Modal from "../../component/Modal/index";
@@ -78,7 +78,7 @@ const formatSingleDate = (dateStr: string): string => {
   return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
     month: "short",
-    year: "2-digit",
+    year: "numeric",
   })
     .format(date)
     .replace(/ /g, "-");
@@ -96,6 +96,10 @@ const Inote = () => {
     { refetchOnMountOrArgChange: true },
   );
 
+  // Add refs to track modal states to prevent unnecessary re-renders
+  const modalContentRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true);
+
   const [save] = usePostFinalMutation();
   const [update] = useUpdateFinalPageMutation();
   const [deleteFinalPage] = useDeleteFinalPageMutation();
@@ -112,11 +116,34 @@ const Inote = () => {
     setValue,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<EditorForm>({
     defaultValues: {
       editorContent: "",
     },
+    mode: "onChange", // Change to onChange to prevent re-renders on submit
+    reValidateMode: "onChange",
   });
+
+  // Effect to handle editor content initialization without causing re-renders
+  useEffect(() => {
+    if (showEditor && stepperData && !editingForm && isInitialMount.current) {
+      const readyHtml = processTemplate(stepperData.content, stepperData);
+      setValue("editorContent", readyHtml, {
+        shouldValidate: false,
+        shouldDirty: false,
+        shouldTouch: false,
+      });
+      isInitialMount.current = false;
+    }
+  }, [showEditor, stepperData, editingForm, setValue]);
+
+  // Reset the initial mount flag when modal closes
+  useEffect(() => {
+    if (!showEditor) {
+      isInitialMount.current = true;
+    }
+  }, [showEditor]);
 
   const processTemplate = (html: string, state: StepperState) => {
     if (!html) return "";
@@ -274,7 +301,13 @@ const Inote = () => {
           onClick={() => {
             setEditingForm(row);
             setShowEditor(true);
-            setValue("editorContent", row.content);
+            // setValue("editorContent", row.content);
+            setTimeout(() => {
+              setValue("editorContent", row.content, {
+                shouldValidate: false,
+                shouldDirty: false,
+              });
+            }, 0);
           }}
         >
           <FiEdit size={18} />
@@ -310,10 +343,10 @@ const Inote = () => {
   ];
   const handleStepperComplete = (state: StepperState) => {
     setStepperData(state);
-    const readyHtml = processTemplate(state.content, state);
+    // const readyHtml = processTemplate(state.content, state);
 
     // 2. Set the processed HTML into the form state
-    setValue("editorContent", readyHtml);
+    // setValue("editorContent", readyHtml);
 
     setShowEditor(true);
     setAddModal(false);
@@ -634,6 +667,7 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
           setShowEditor(false);
           setEditingForm(null);
           setStepperData(null);
+          reset({ editorContent: "" });
         }
       } else {
         const res = await save(body).unwrap();
@@ -644,6 +678,7 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
           setShowEditor(false);
           setEditingForm(null); // Clear edit state
           setStepperData(null); // Clear stepper state
+          reset({ editorContent: "" });
         }
       }
     } catch (error) {
@@ -653,6 +688,14 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
   };
 
   const [manipulate, setManipulate] = useState<boolean>(false);
+
+  // Handle modal close with proper cleanup
+  const handleEditorClose = useCallback(() => {
+    setShowEditor(false);
+    setEditingForm(null);
+    setStepperData(null);
+    reset({ editorContent: "" });
+  }, [reset]);
 
   return (
     <div className={styles.container}>
@@ -700,73 +743,57 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
 
       {showEditor && (
         <Modal
-          title="Add I-Note"
+          key={editingForm ? `edit-${editingForm.id}` : "new"}
+          title={editingForm ? "Edit I-Note" : "Add I-Note"}
           size="xl"
-          onClose={() => {
-            setShowEditor(false);
-          }}
+          onClose={handleEditorClose}
         >
-          <form
-            onSubmit={handleSubmit(onFinalSubmit)}
-            className={styles.editorWrapper}
-          >
-            <div className={styles.pagePaper}>
-              <RichTextEditor<EditorForm>
-                label="Edit I-Note Content"
-                name="editorContent"
-                watch={watch}
-                setValue={setValue}
-                errors={errors}
-              />
-            </div>
+          {" "}
+          <div ref={modalContentRef} className={styles.modalContent}>
+            <form
+              onSubmit={handleSubmit(onFinalSubmit)}
+              className={
+                editingForm ? styles.modalEditorWrapper : styles.editorWrapper
+              }
+            >
+              <div className={styles.pagePaper}>
+                <RichTextEditor<EditorForm>
+                  label="Edit I-Note Content"
+                  name="editorContent"
+                  watch={watch}
+                  setValue={setValue}
+                  errors={errors}
+                />
+              </div>
 
-            <div className={styles.actionButtons}>
-              <Button
-                label="Save Final I-Note"
-                type="submit"
-                buttonType="three"
-              />
-              <Button
-                label="Print"
-                onClick={() => handlePrint(watch("editorContent"))}
-                buttonType="two"
-              />
-            </div>
-          </form>
-        </Modal>
-      )}
+              <div className={styles.actionButtons}>
+                <Button
+                  label={editingForm ? "Update I-Note" : "Save Final I-Note"}
+                  type="submit"
+                  buttonType="three"
+                />
 
-      {editingForm && showEditor && (
-        <Modal
-          title="Edit I-Note"
-          size="xl"
-          onClose={() => {
-            setEditingForm(null);
-            setShowEditor(false);
-            setValue("editorContent", "");
-          }}
-        >
-          <form
-            onSubmit={handleSubmit(onFinalSubmit)}
-            className={styles.modalEditorWrapper}
-          >
-            <RichTextEditor<EditorForm>
-              label="Edit I-Note Content"
-              name="editorContent"
-              watch={watch}
-              setValue={setValue}
-              errors={errors}
-            />
+                {!editingForm && (
+                  <Button
+                    label="Print"
+                    onClick={() => handlePrint(watch("editorContent"))}
+                    buttonType="two"
+                  />
+                )}
 
-            <div className={styles.modalActions}>
-              <Button label="Update I-Note" type="submit" buttonType="three" />
-              <Button
-                label="Cancel"
-                buttonType="three"
-                onClick={() => setEditingForm(null)}
-              />
-            </div>
-          </form>
+                {editingForm && (
+                  <Button
+                    label="Cancel"
+                    buttonType="two"
+                    onClick={() => {
+                      setEditingForm(null);
+                      setShowEditor(false);
+                    }}
+                  />
+                )}
+              </div>
+            </form>
+          </div>
         </Modal>
       )}
 

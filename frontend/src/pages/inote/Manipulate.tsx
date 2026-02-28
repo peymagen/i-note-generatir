@@ -6,20 +6,20 @@ import { toast } from "react-toastify";
 
 import Button from "../../component/Button/Button";
 import Input from "../../component/Input/Input2";
-import { 
-  useCreteUpdateInoteMutation, 
-  useGetLastInoteQuery 
+import {
+  useCreteUpdateInoteMutation,
+  useGetLastInoteQuery,
 } from "../../store/services/i-note";
-import type { iNote } from '../../types/inote';
-import styles from './Manipulate.module.css'
-
+import type { iNote } from "../../types/inote";
+import styles from "./Manipulate.module.css";
 
 const Schema: yup.ObjectSchema<iNote> = yup.object({
-  iNote: yup.number()
-    .typeError('Must be a number')
+  iNote: yup
+    .number()
+    .typeError("Must be a number")
     .required("I-Note number is required")
     .min(1, "Must be greater than 0"),
-  id: yup.number().optional()
+  id: yup.number().optional(),
 });
 
 interface Props {
@@ -27,11 +27,15 @@ interface Props {
 }
 
 const Manipulate: React.FC<Props> = ({ onClose }) => {
-  const { data: currentData, isLoading: isFetching } = useGetLastInoteQuery(undefined, {
-    refetchOnMountOrArgChange: true
-  });
+  const { data: currentData, isLoading: isFetching } = useGetLastInoteQuery(
+    undefined,
+    {
+      refetchOnMountOrArgChange: true,
+    },
+  );
 
-  const [updateInote, { isLoading: isUpdating }] = useCreteUpdateInoteMutation();
+  const [updateInote, { isLoading: isUpdating }] =
+    useCreteUpdateInoteMutation();
 
   const {
     register,
@@ -47,22 +51,21 @@ const Manipulate: React.FC<Props> = ({ onClose }) => {
 
   useEffect(() => {
     if (currentData) {
-     
-      const actualData = (currentData as { data?: iNote}).data || currentData;
+      const actualData = (currentData as { data?: iNote }).data || currentData;
 
       const iNoteValue = actualData?.iNote;
       const idValue = actualData?.id;
 
       // 3. Set values if they exist
       if (iNoteValue !== undefined && iNoteValue !== null) {
-        setValue("iNote", Number(iNoteValue), { 
-          shouldValidate: true, 
-          shouldDirty: true 
+        setValue("iNote", Number(iNoteValue), {
+          shouldValidate: true,
+          shouldDirty: true,
         });
       }
 
       if (idValue !== undefined && idValue !== null) {
-         setValue("id", Number(idValue));
+        setValue("id", Number(idValue));
       }
     }
   }, [currentData, setValue]);
@@ -70,7 +73,7 @@ const Manipulate: React.FC<Props> = ({ onClose }) => {
   const onSubmit: SubmitHandler<iNote> = async (formData) => {
     try {
       const res = await updateInote(formData).unwrap();
-      if(res) {
+      if (res) {
         toast.success("Current I-Note Sequence Updated");
         if (onClose) onClose();
       }
@@ -81,42 +84,36 @@ const Manipulate: React.FC<Props> = ({ onClose }) => {
   };
 
   if (isFetching) {
-    return (
-      <div className={styles.loadingContainer}>
-        Loading...
-      </div>
-    );
+    return <div className={styles.loadingContainer}>Loading...</div>;
   }
 
   return (
     <div className={styles.stepContainer}>
-      <h2 className={styles.title}>
-        Update Sequence
-      </h2>
-      
+      <h2 className={styles.title}>Update Sequence</h2>
+
       <form onSubmit={handleSubmit(onSubmit)} className={styles.formWrapper}>
         <div className={styles.row}>
           <Input
             label="Current I-Note Number"
-            name="iNote"  
+            name="iNote"
             type="number"
             placeholder="I-Note Number"
             register={register}
-            errors={errors} 
+            errors={errors}
           />
         </div>
 
         <div className={styles.btnRow}>
-          <Button 
-            label="Cancel" 
-            type="button" 
-            buttonType="three" 
+          <Button
+            label="Cancel"
+            type="button"
+            buttonType="three"
             onClick={onClose}
             disabled={isUpdating}
           />
-          <Button 
-            label="Update" 
-            type="submit" 
+          <Button
+            label="Update"
+            type="submit"
             loading={isUpdating}
             buttonType="three"
           />
