@@ -70,12 +70,12 @@ const StepThree: React.FC<StepThreeProps> = ({
   /* ---------------------------------------------------------
    * HANDLERS
    * ------------------------------------------------------- */
-  const toggleSelect = (id: number) => {
+  const toggleSelect = (id: number, available: number) => {
     setUiState((prev) => ({
       ...prev,
       [id]: {
         selected: !prev[id]?.selected,
-        acceptedQty: prev[id]?.acceptedQty ?? 0,
+        acceptedQty: prev[id]?.acceptedQty ?? available,
       },
     }));
   };
@@ -153,7 +153,7 @@ const StepThree: React.FC<StepThreeProps> = ({
                     <input
                       type="checkbox"
                       checked={p.selected}
-                      onChange={() => toggleSelect(p.id)}
+                      onChange={() => toggleSelect(p.id, available)}
                       disabled={available <= 0}
                       className={styles.checkbox}
                     />
@@ -179,7 +179,7 @@ const StepThree: React.FC<StepThreeProps> = ({
                       min={0}
                       max={available}
                       disabled={!p.selected}
-                      value={p.acceptedQty}
+                      value={p.acceptedQty > 0 ? p.acceptedQty : available}
                       className={styles.qtyInput}
                       onChange={(e) =>
                         updateQty(p.id, Number(e.target.value), available)
