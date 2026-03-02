@@ -161,7 +161,7 @@ const Inote = () => {
     <thead>
       <tr> 
         <td>Item No in A/T (OL No)</td>
-        <td colspan="2"><u>Description of store</u><br/>Total Quantity Ordered.<br/>The Inspector should indicate whether<br/>the supply has been made i seller's / buyer's containers, where stores are required in the supplied in containers</td>
+        <td colspan="2"><u>Description of store</u><br/>Total Quantity Ordered.<br/>The Inspector should indicate whether<br/>the supply has been made in seller's / buyer's<br> container's, where stores are required int he supplied in containers</td>
         <td>Acc Unit</td>
         <td>Tendered Quantity</td>
         <td>Accepted Quantity</td>
@@ -512,40 +512,42 @@ const Inote = () => {
             text-decoration: underline !important;
           }
 
-
-          ol figure.table:nth-of-type(1) table,
-          // ol figure.table:nth-of-type(2) table
-          {
-                display: block;
-                
-                // width: 150% !important;        
-                // transform: scale(0.68);         
-                // transform-origin: top left;    
-                // table-layout: auto !important; 
-              
+        /* Make all tables in bullet 9 wider and left-aligned */
+          ol > li:nth-of-type(9) figure.table table,
+          ol > li:nth-of-type(9) figure.table table{
+              width: 108% !important;   /* expand left */
+              transform: translateX(-6.5%) !important; 
+              // margin-left: -4% !important;
+              table-layout: auto !important;
           }
 
-          // ol li {
-          //     position: relative;
-          // }
-          ol figure.table:nth-of-type(4) table, 
-          ol figure.table:nth-of-type(4) table td,
-          ol figure.table:nth-of-type(4) table th {
-              border:none !important;
+         ol > li:nth-of-type(9) figure.table:nth-of-type(1) table,
+        ol > li:nth-of-type(9) figure.table:nth-of-type(2) table {
+              display: block;
+              border-collapse: collapse !important;
+
+              /* Remove all normal borders */
+              border: none !important;
+
+              /* Add only TOP + BOTTOM border */
+              border-top: 1px solid black !important;
+              border-bottom: 1px solid black !important;
+
+              margin: 0 !important;
+              padding: 0 !important;
           }
-          /* cells of 1st and 2nd table */
-          ol figure.table:nth-of-type(1) table td,
-          ol figure.table:nth-of-type(1) table th,
-          ol figure.table:nth-of-type(2) table td,
-          ol figure.table:nth-of-type(2) table th {
-              padding-top:2pt;
+
+          /* Remove ALL cell borders */
+          ol > li:nth-of-type(9) figure.table:nth-of-type(1) table td,
+          ol > li:nth-of-type(9) figure.table:nth-of-type(1) table th,
+          ol > li:nth-of-type(9) figure.table:nth-of-type(2) table td,
+          ol > li:nth-of-type(9) figure.table:nth-of-type(2) table th {
+              border: none !important;       
+              padding: 3pt !important;
               line-height: 1.2 !important;
               word-break: break-word !important;
-              border:none !important;
-              border-left: 1px solid white !important;
-              border-right: 1px solid white !important;
-              text-align:center !important;
-              font-size: 7.3pt !important;
+              text-align: center !important;
+              font-size: 7.8pt !important;
           }
 
           ol li {
@@ -574,15 +576,25 @@ const Inote = () => {
               display: none !important;
           }
 
-          /* Make all tables in bullet 9 wider and left-aligned */
-          ol > li:nth-of-type(9) figure.table table:nth-of-type(1),
-          ol > li:nth-of-type(9) figure.table table:nth-of-type(2){
-              width: 108% !important;   /* expand left */
-              transform: translateX(-6.5%) !important; 
-              // margin-left: -4% !important;
-              table-layout: auto !important;
+          
+          /* Font size 8pt ONLY for the 3rd table inside point 9 */
+          ol > li:nth-of-type(9) figure.table:nth-of-type(3) table,
+          ol > li:nth-of-type(9) figure.table:nth-of-type(3) table td,
+          ol > li:nth-of-type(9) figure.table:nth-of-type(3) table th {
+              font-size: 8pt !important;
+          }
+          /* Apply 6pt to ONLY the Hindi text inside 9th point → 3rd table */
+          ol > li:nth-of-type(9) figure.table:nth-of-type(3) table .hindi-text {
+              font-size: 10pt !important;
           }
 
+          /* Remove border ONLY from the LAST table inside LIST ITEM 9 */
+          ol > li:nth-of-type(9) figure.table:last-of-type table,
+          ol > li:nth-of-type(9) figure.table:last-of-type table td,
+          ol > li:nth-of-type(9) figure.table:last-of-type table th {
+              border: none !important;
+              font-size: 10.5pt !important;
+          }
        /* TABLE 4 SPACER FIX — DO NOT HIDE COLUMN 4 */
 figure.table:nth-of-type(4) table td:nth-child(4),
 figure.table:nth-of-type(4) table th:nth-child(4) {
@@ -605,7 +617,6 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
     border-left: 1.5px solid black !important;
 }
  
-
 
 
         </style>
