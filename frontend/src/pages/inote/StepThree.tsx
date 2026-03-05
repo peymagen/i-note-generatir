@@ -179,7 +179,7 @@ const StepThree: React.FC<StepThreeProps> = ({
                       min={0}
                       max={available}
                       disabled={!p.selected}
-                      value={p.acceptedQty > 0 ? p.acceptedQty : available}
+                      value={p.acceptedQty > -1 ? p.acceptedQty : available}
                       className={styles.qtyInput}
                       onChange={(e) =>
                         updateQty(p.id, Number(e.target.value), available)
