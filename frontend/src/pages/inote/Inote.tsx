@@ -167,7 +167,7 @@ const Inote = () => {
         <td>Acc<br>Unit</td>
         <td>Tendered<br>Quantity</td>
         <td>Accepted<br>Quantity</td>
-        <td>Brought <br>to <br>account <br>in <br>ledger<br> folio <br>Total <br>Qty <br>Accepted <br>to <br>Date</td>
+        <td>Brought to <br>account in <br>ledger folio <br>Total Qty <br>Accepted to <br>Date</td>
         <td>Rejected <br>Quantity</td>
         <td >No and <br>date of inspection <br>certificate <br>(if any)<br> issued by <br>DGISAM or<br> other Isp.<br> Authority</td>
         <td>Remarks</td>
@@ -633,6 +633,7 @@ figure.table:nth-of-type(5) table {
     width: 100% !important;
     border-collapse: collapse !important;
     font-size: 7.5pt !important; /* Fixed small font size */
+    table-layout: auto !important;
 }
 
 /* 1. Header Styling: No bold, Centered */
@@ -643,15 +644,17 @@ figure.table:nth-of-type(5)  thead  td {
     vertical-align: top !important;
     padding: 1px !important;
     border: 1px solid black !important;
+     word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
 }
 
 /* 2. Data Cell Styling */
 figure.table:nth-of-type(5) tbody  td {
-    // border: 1px solid black !important;
-    // text-align: center !important;
-    // vertical-align: top !important;
     padding: 4px !important;
-    word-wrap: break-word !important;
+     word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    white-space: normal !important;
 }
 
 
@@ -659,16 +662,21 @@ figure.table:nth-of-type(5) tbody  td {
 figure.table:nth-of-type(5) thead  th:nth-child(1) { width: 4% !important; }
 
 /* 2 & 3. Description Area (The "Wide" columns) */
-figure.table:nth-of-type(5) thead th:nth-child(2) { width: 36% !important; } /* Item Text */
+figure.table:nth-of-type(5) thead th:nth-child(2) { width: 36% !important; } 
 
 /* 4-10. Numerical Columns (Keep these small) */
-figure.table:nth-of-type(5) thead th:nth-child(4) { width: 8% !important; }  /* Acc Unit */
-figure.table:nth-of-type(5) thead th:nth-child(5) { width: 8% !important; }  /* Tendered */
-figure.table:nth-of-type(5) thead th:nth-child(6) { width: 8% !important; }  /* Accepted */
-figure.table:nth-of-type(5) thead th:nth-child(7) { width: 10% !important; text-align: left !important; }  /* Brought to */
-figure.table:nth-of-type(5) thead th:nth-child(8) { width: 8% !important; }  /* Rejected */
-figure.table:nth-of-type(5) thead th:nth-child(9) { width: 9% !important; }  /* Insp Cert */
-figure.table:nth-of-type(5) thead th:nth-child(10) { width: 9% !important; } /* Remarks */
+figure.table:nth-of-type(5) thead th:nth-child(3) { width: 8% !important; }
+figure.table:nth-of-type(5) thead th:nth-child(4) { width: 8% !important; } 
+figure.table:nth-of-type(5) thead th:nth-child(5) { width: 8% !important; }  
+figure.table:nth-of-type(5) thead th:nth-child(6) { 
+  width: 8% !important; 
+  // text-align: left !important; 
+  padding-left:4px !important
+  }  
+figure.table:nth-of-type(5) thead th:nth-child(7) { width: 10% !important; }  
+figure.table:nth-of-type(5) thead th:nth-child(8) { width: 8% !important; }  
+figure.table:nth-of-type(5) thead th:nth-child(9) { width: 9% !important; }  
+figure.table:nth-of-type(5) thead th:nth-child(10) { width: 9% !important; } 
 
 
 
@@ -685,8 +693,6 @@ figure.table:nth-of-type(5)tbody td:nth-child(2) {
   padding: 20px !important;
     width: 28.8% !important;
     text-align: left !important;
-   
-    vertical-align: top !important;
     padding: 4px !important;
 }
 
@@ -713,9 +719,11 @@ figure.table:nth-of-type(5) tbody td:nth-child(8) { width: 7.5% !important;  tex
 
 /* 9. The Merged Remarks/Cert Column */
 figure.table:nth-of-type(5) tbody td:nth-child(9) { 
-    width: 17% !important; 
-    vertical-align: top !important; 
+    width: 5% !important;
+    max-width: 5% !important; 
+    vertical-align: middle !important; 
      text-align: center !important;
+    //  font-style: italic !important;
     
 }
 
