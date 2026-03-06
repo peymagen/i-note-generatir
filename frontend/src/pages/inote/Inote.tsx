@@ -157,56 +157,7 @@ const Inote = () => {
     const year = now.getFullYear();
     const financialYear = now.getMonth() >= 3 ? `${year}` : `${year - 1}`;
 
-    // const table = [
-    //   `<table border="1" cellpadding="5" cellspacing="0"
-    // style="border-collapse: collapse; width: 100%; font-size: 11px; text-align: center; border-color: #000;">
-    // <thead>
-    //   <tr> 
-    //     <td>Item No<br> A/T <br>(OL No)</td>
-    //     <td colspan="2"><u>Description of store</u><br/>Total Quantity Ordered.<br/>The Inspector should indicate whether the<br/>supply has been made in seller's / buyer's<br> container's, where stores are required in the <br> supplied in containers</td>
-    //     <td>Acc<br>Unit</td>
-    //     <td>Tendered<br>Quantity</td>
-    //     <td>Accepted<br>Quantity</td>
-    //     <td>Brought <br>to <br>account <br>in <br>ledger<br> folio <br>Total <br>Qty <br>Accepted <br>to <br>Date</td>
-    //     <td>Rejected <br>Quantity</td>
-    //     <td style="border-right: 1px solid black;">No and <br>date of inspection <br>certificate <br>(if any)<br> issued by <br>DGISAM or<br> other Isp.<br> Authority</td>
-    //     <td>Remarks</td>
-    //   </tr>
-    // </thead>`,
-    //   ...(state?.products?.map(
-    //     (p: PoDetailItem & itemDetail & { acceptedQty: number }) => {
-    //       const itemDesc = p.ItemDesc || "";
-    //       const itemDeno = p.ItemDeno || "";
-    //       const acceptedQty = p.acceptedQty || p.Qty || 0;
-
-    //       const qty = p.Qty || 0;
-    //       const qtyFullFill = p.QtyFullFill || 0;
-
-    //     // Remove the large top padding to close the "gap"
-    //     const noRowBorder = 'style="vertical-align: top; padding: 2px 4px; border: 1px solid black;"';
-
-    //     // Set the Description text to align left and the Qty to align center/right
-    //     const descText = 'style="border-right: none; text-align: left; vertical-align: top; padding: 2px 4px; border: 1px solid black;"';
-    //     const qtyColumn = 'style="border-left: none; text-align: center; vertical-align: top; padding: 2px 4px; border: 1px solid black;"';
-
-    //     // Update your return statement to ensure every cell has the border logic
-    //   return `<tr>
-    //       <td ${noRowBorder}>${p.OrderLineNo}</td>
-    //       <td ${descText}>${p.ItemCode}<br/>${itemDesc}</td>
-    //       <td ${qtyColumn}>Qty ${qty}</td>
-    //       <td ${noRowBorder}>${itemDeno}</td>
-    //       <td ${noRowBorder}>${qty - qtyFullFill}</td>
-    //       <td ${noRowBorder}>${acceptedQty - qtyFullFill}</td>
-    //       <td ${noRowBorder}>${acceptedQty === qty && qtyFullFill === 0 ? acceptedQty : acceptedQty + " / " + qty}</td>
-    //       <td ${noRowBorder}>0</td>
-    //       <td ${noRowBorder}></td> <td ${noRowBorder}> </td>
-    //   </tr>`;
-    //     },
-    //   ) || []),
-    //   "</table>",
-    // ].join("");
-
-
+    
      const table = [
       `<table>
     <thead>
