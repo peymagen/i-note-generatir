@@ -23,17 +23,32 @@ import { toast } from "react-toastify";
 import Manipulate from "./Manipulate";
 
 // Define a type for the editor form
-
 type final = {
   id?: number;
   content: string;
   i_note: number;
   indent_no?: string;
 };
+
 interface EditorForm {
   editorContent: string;
   i_note?: number;
 }
+
+const removeHtmlTags = (html: string | null | undefined): string => {
+  if (!html) return "N/A";
+  
+  // 1. Swap <br> for a comma so words don't squash together
+  const preparedHtml = html.replace(/<br\s*\/?>/gi, ", ");
+  
+  // 2. Your Senior's exact DOMParser logic
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(preparedHtml, "text/html");
+  const plainText = doc.body.textContent || "";
+  
+  // Clean up any double commas and return
+  return plainText.replace(/,\s*,/g, ",").trim();
+};
 
 const renderCleanAddress = (address: string | undefined) => {
   if (!address) return undefined;
@@ -47,13 +62,7 @@ const extractFromParens = (str: string | null | undefined) => {
   return match ? match[1] : str;
 };
 
-// function formatDate(dateStr:string) {
-//   const [year, month, day] = dateStr.split("-");
-//   return `${day}-${month}-${year}`;
-// }
-
 const formatDate = (dateStr: string): string => {
-  // Handle ranges like "26 to 28-02-2026"
   if (dateStr.includes(" to ")) {
     const parts = dateStr.split(" to ");
     return `${formatSingleDate(parts[0])} to ${formatSingleDate(parts[1])}`;
@@ -62,18 +71,16 @@ const formatDate = (dateStr: string): string => {
 };
 
 const formatSingleDate = (dateStr: string): string => {
-  // Clean the string and handle DD-MM-YYYY or YYYY-MM-DD
   let date: Date;
 
   if (dateStr.includes("-") && dateStr.split("-")[0].length === 2) {
-    // Convert DD-MM-YYYY to YYYY-MM-DD for standard parsing
     const [d, m, y] = dateStr.split("-");
     date = new Date(`${y}-${m}-${d}`);
   } else {
     date = new Date(dateStr);
   }
 
-  if (isNaN(date.getTime())) return dateStr; // Fallback if parsing fails
+  if (isNaN(date.getTime())) return dateStr; 
 
   return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
@@ -82,7 +89,6 @@ const formatSingleDate = (dateStr: string): string => {
   })
     .format(date)
     .replace(/ /g, "-");
-  // Result: 14-Feb-26
 };
 
 const Inote = () => {
@@ -96,7 +102,6 @@ const Inote = () => {
     { refetchOnMountOrArgChange: true },
   );
 
-  // Add refs to track modal states to prevent unnecessary re-renders
   const modalContentRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
 
@@ -110,7 +115,6 @@ const Inote = () => {
   const [addModal, setAddModal] = useState<boolean>(false);
   const [showEditor, setShowEditor] = useState<boolean>(false);
 
-  // 1. Initialize React Hook Form
   const {
     watch,
     setValue,
@@ -121,11 +125,10 @@ const Inote = () => {
     defaultValues: {
       editorContent: "",
     },
-    mode: "onChange", // Change to onChange to prevent re-renders on submit
+    mode: "onChange", 
     reValidateMode: "onChange",
   });
 
-  // Effect to handle editor content initialization without causing re-renders
   useEffect(() => {
     if (showEditor && stepperData && !editingForm && isInitialMount.current) {
       const readyHtml = processTemplate(stepperData.content, stepperData);
@@ -138,7 +141,6 @@ const Inote = () => {
     }
   }, [showEditor, stepperData, editingForm, setValue]);
 
-  // Reset the initial mount flag when modal closes
   useEffect(() => {
     if (!showEditor) {
       isInitialMount.current = true;
@@ -155,48 +157,97 @@ const Inote = () => {
     const year = now.getFullYear();
     const financialYear = now.getMonth() >= 3 ? `${year}` : `${year - 1}`;
 
-    const table = [
-      `<table border="1" cellpadding="5" cellspacing="0"
-    style="border-collapse: collapse; width: 100%; font-size: 11px; text-align: center; border-color: #000;">
+    // const table = [
+    //   `<table border="1" cellpadding="5" cellspacing="0"
+    // style="border-collapse: collapse; width: 100%; font-size: 11px; text-align: center; border-color: #000;">
+    // <thead>
+    //   <tr> 
+    //     <td>Item No<br> A/T <br>(OL No)</td>
+    //     <td colspan="2"><u>Description of store</u><br/>Total Quantity Ordered.<br/>The Inspector should indicate whether the<br/>supply has been made in seller's / buyer's<br> container's, where stores are required in the <br> supplied in containers</td>
+    //     <td>Acc<br>Unit</td>
+    //     <td>Tendered<br>Quantity</td>
+    //     <td>Accepted<br>Quantity</td>
+    //     <td>Brought <br>to <br>account <br>in <br>ledger<br> folio <br>Total <br>Qty <br>Accepted <br>to <br>Date</td>
+    //     <td>Rejected <br>Quantity</td>
+    //     <td style="border-right: 1px solid black;">No and <br>date of inspection <br>certificate <br>(if any)<br> issued by <br>DGISAM or<br> other Isp.<br> Authority</td>
+    //     <td>Remarks</td>
+    //   </tr>
+    // </thead>`,
+    //   ...(state?.products?.map(
+    //     (p: PoDetailItem & itemDetail & { acceptedQty: number }) => {
+    //       const itemDesc = p.ItemDesc || "";
+    //       const itemDeno = p.ItemDeno || "";
+    //       const acceptedQty = p.acceptedQty || p.Qty || 0;
+
+    //       const qty = p.Qty || 0;
+    //       const qtyFullFill = p.QtyFullFill || 0;
+
+    //     // Remove the large top padding to close the "gap"
+    //     const noRowBorder = 'style="vertical-align: top; padding: 2px 4px; border: 1px solid black;"';
+
+    //     // Set the Description text to align left and the Qty to align center/right
+    //     const descText = 'style="border-right: none; text-align: left; vertical-align: top; padding: 2px 4px; border: 1px solid black;"';
+    //     const qtyColumn = 'style="border-left: none; text-align: center; vertical-align: top; padding: 2px 4px; border: 1px solid black;"';
+
+    //     // Update your return statement to ensure every cell has the border logic
+    //   return `<tr>
+    //       <td ${noRowBorder}>${p.OrderLineNo}</td>
+    //       <td ${descText}>${p.ItemCode}<br/>${itemDesc}</td>
+    //       <td ${qtyColumn}>Qty ${qty}</td>
+    //       <td ${noRowBorder}>${itemDeno}</td>
+    //       <td ${noRowBorder}>${qty - qtyFullFill}</td>
+    //       <td ${noRowBorder}>${acceptedQty - qtyFullFill}</td>
+    //       <td ${noRowBorder}>${acceptedQty === qty && qtyFullFill === 0 ? acceptedQty : acceptedQty + " / " + qty}</td>
+    //       <td ${noRowBorder}>0</td>
+    //       <td ${noRowBorder}></td> <td ${noRowBorder}> </td>
+    //   </tr>`;
+    //     },
+    //   ) || []),
+    //   "</table>",
+    // ].join("");
+
+
+     const table = [
+      `<table>
     <thead>
       <tr> 
-        <td>Item No in A/T (OL No)</td>
-        <td colspan="2"><u>Description of store</u><br/>Total Quantity Ordered.<br/>The Inspector should indicate whether<br/>the supply has been made in seller's / buyer's<br> container's, where stores are required int he supplied in containers</td>
-        <td>Acc Unit</td>
-        <td>Tendered Quantity</td>
-        <td>Accepted Quantity</td>
-        <td>Brought to account in ledger folio Total Qty Accepted to Date</td>
-        <td>Rejected Quantity</td>
-        <td style="border-right: 1px solid black;">No and date of inspection certificate (if any) issued by DGISAM or other Isp. Authority</td>
+        <td>Item No<br> A/T <br>(OL No)</td>
+        <td colspan="2"><u>Description of store</u><br/>Total Quantity Ordered.<br/>The Inspector should indicate whether the<br/>supply has been made in seller's / buyer's<br> container's, where stores are required in the <br> supplied in containers</td>
+        <td>Acc<br>Unit</td>
+        <td>Tendered<br>Quantity</td>
+        <td>Accepted<br>Quantity</td>
+        <td>Brought <br>to <br>account <br>in <br>ledger<br> folio <br>Total <br>Qty <br>Accepted <br>to <br>Date</td>
+        <td>Rejected <br>Quantity</td>
+        <td >No and <br>date of inspection <br>certificate <br>(if any)<br> issued by <br>DGISAM or<br> other Isp.<br> Authority</td>
         <td>Remarks</td>
       </tr>
     </thead>`,
       ...(state?.products?.map(
-        (p: PoDetailItem & itemDetail & { acceptedQty: number }) => {
+        (p: PoDetailItem & itemDetail & { acceptedQty: number }, index: number) => {
           const itemDesc = p.ItemDesc || "";
           const itemDeno = p.ItemDeno || "";
           const acceptedQty = p.acceptedQty || p.Qty || 0;
 
-          const noRowBorder =
-            'style=" vertical-align: top; padding-top: 15px;"';
-          const descText =
-            'style="border-right: none; text-align: left; vertical-align: top; padding-top: 15px; width:40%;"';
-          const qtyColumn =
-            'style="vertical-align: top; padding-top: 15px; width:10%;"';
-
           const qty = p.Qty || 0;
           const qtyFullFill = p.QtyFullFill || 0;
-
-          return `<tr>
-        <td ${noRowBorder}>${p.OrderLineNo}</td>
-        <td ${descText}>${p.ItemCode}<br/>${itemDesc}</td>
-        <td ${qtyColumn}>Qty ${qty}</td>
-        <td ${noRowBorder}>${itemDeno}</td>
-        <td ${noRowBorder}>${qty - qtyFullFill}</td>
-        <td ${noRowBorder}>${acceptedQty - qtyFullFill}</td>
-        <td ${noRowBorder}>${acceptedQty === qty && qtyFullFill === 0 ? acceptedQty : acceptedQty + " / " + qty}</td>
-        <td ${noRowBorder}>0</td>
-        <td colspan="2"></td>
+          // Check if this is the very first row
+    const isFirstRow = index === 0;
+    // Calculate how many rows this last cell needs to cover
+    const totalRows = state.products?.length || 0;
+      /* ... inside your map function ... */
+      return `<tr>
+          <td >${p.OrderLineNo}</td>
+          <td >${p.ItemCode}<br/>${itemDesc}</td>
+          <td >Qty ${qty}</td>
+          <td >${itemDeno}</td>
+          <td >${qty - qtyFullFill}</td>
+          <td >${acceptedQty - qtyFullFill}</td>
+          <td >${acceptedQty === qty && qtyFullFill === 0 ? acceptedQty : acceptedQty + " / " + qty}</td>
+          <td >0</td>
+          ${isFirstRow ? `
+          <td rowspan="${totalRows}" colspan="2" style="vertical-align: top; text-align: left; padding: 8px; border: 1px solid black;">
+            ${ ""}
+          </td>` : ``}
       </tr>`;
         },
       ) || []),
@@ -222,7 +273,6 @@ const Inote = () => {
             year: "numeric",
           })
           .replace(/ /g, "-") || "N/A",
-      // "{{CONSIGNEE_CODE}}": state.indentInfo.details[0].ConsigneeCode || "N/A",   setConsigneeCode;
       "{{CONSIGNEE_CODE}}":
         extractFromParens(state.indentInfo.details[0]?.ConsigneeCode) ||
         "" ||
@@ -233,14 +283,6 @@ const Inote = () => {
       "{{INSPECTION_DATE}}": formatDate(state.user.InspectedOn) || "N/A",
       "{{TOTAL_ITEMS}}": state?.products?.length.toString() || "0",
       "{{VENDOR_NAME}}": state.info?.vendor[0]?.FirmName || "N/A",
-      "{{VENDOR_DETAILS}}": `
-        <div style="margin-top:-8px;"id="vendorBlock" >
-          ${(state.info?.vendor[0]?.FirmAddress || "N/A").replace(
-            /(<br\s*\/?>\s*){2,}/gi,
-            "<br>",
-          )}
-        </div>`,
-
       "{{MO_ADDRESS_WAREHOUSE}}": renderCleanAddress(moAddress) || "N/A",
       "{{MO_ADDRESS_PROCUREMENT}}": renderCleanAddress(moAddress) || "N/A",
       "{{FILE_NO}}": state.user.sequenceNo?.toString() || "N/A",
@@ -254,6 +296,33 @@ const Inote = () => {
     let updatedHtml = html;
     Object.keys(replacements).forEach((key) => {
       updatedHtml = updatedHtml.replaceAll(key, replacements[key]);
+    });
+
+    const rawAddress = state.info?.vendor[0]?.FirmAddress || "N/A";
+    
+    const cleanedForMultiLine = rawAddress
+      .replace(/<\/?p[^>]*>/gi, "") 
+      .replace(/(<br\s*\/?>\s*){2,}/gi, "<br>"); 
+
+    const multiLineAddress = `
+      <span id="vendorBlock">
+        ${cleanedForMultiLine}
+      </span>`;
+      
+    const singleLineAddress = `
+      <span class="vendorBlockSingle">
+        ${removeHtmlTags(rawAddress)}
+      </span>`;
+
+    let vendorCount = 0;
+    
+    updatedHtml = updatedHtml.replace(/\{\{VENDOR_DETAILS\}\}/g, () => {
+      vendorCount++;
+      if (vendorCount === 1) {
+        return multiLineAddress;  
+      } else {
+        return singleLineAddress; 
+      }
     });
 
     return updatedHtml;
@@ -275,6 +344,7 @@ const Inote = () => {
     },
     [items, totalRecords, page, search],
   );
+
   const handleDelete = async () => {
     if (!deleteTarget?.id) return;
     setLoadingAction(deleteTarget?.id?.toString() || "");
@@ -289,11 +359,11 @@ const Inote = () => {
     { label: "I-Note", accessor: "i_note" },
     { label: "Indent No", accessor: "indent_No" },
   ];
+
   const actions = [
     {
       label: "Edit",
       onClick: () => {},
-
       component: (row: final) => (
         <button
           className={`${styles.iconBtn} ${styles.edit}`}
@@ -301,7 +371,6 @@ const Inote = () => {
           onClick={() => {
             setEditingForm(row);
             setShowEditor(true);
-            // setValue("editorContent", row.content);
             setTimeout(() => {
               setValue("editorContent", row.content, {
                 shouldValidate: false,
@@ -341,13 +410,9 @@ const Inote = () => {
       ),
     },
   ];
+
   const handleStepperComplete = (state: StepperState) => {
     setStepperData(state);
-    // const readyHtml = processTemplate(state.content, state);
-
-    // 2. Set the processed HTML into the form state
-    // setValue("editorContent", readyHtml);
-
     setShowEditor(true);
     setAddModal(false);
   };
@@ -366,7 +431,6 @@ const Inote = () => {
 
     let updatedContent = content;
 
-    // underline static words
     underlineStatic.forEach((word) => {
       const regex = new RegExp(
         word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"),
@@ -377,6 +441,7 @@ const Inote = () => {
         `<span class="underline-IN">${word}</span>`,
       );
     });
+
     updatedContent = updatedContent.replace(
       /सामान का विवरण[\s\S]*?(?=<\/td>)/g,
       (match) => `<span class="underline-IN">${match}</span>`,
@@ -387,30 +452,20 @@ const Inote = () => {
       `<strong><span class="underline-IN">INSPECTION NOTE</span></strong>`,
     );
 
-    // underline dynamic "INSPECTION NOTE NO. …"
     updatedContent = updatedContent.replace(
       /<strong>INSPECTION NOTE NO\.[^<]*<\/strong>/g,
       (match) =>
         `<strong><span class="underline-IN">${match.replace(/<\/?strong>/g, "")}</span></strong>`,
     );
 
-    // updatedContent = updatedContent.replace(
-    //   /Contractor's Name and Address/g,
-    //   `<span class="force-newline">Contractor's Name and Address</span>`
-    // );
-
     const processedContent = updatedContent
-      // Wrap Hindi characters with <span class="hindi-text">
       .replace(/([\u0900-\u097F]+)/g, '<span class="hindi-text">$1</span>');
 
     printWindow.document.write(`
     <html>
       <head>       
         <style>
-      
-        
-
-        @font-face {
+          @font-face {
           font-family: 'Shivaji01';
           src: url('${fontUrl}') format('truetype');
         }
@@ -618,6 +673,102 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
 }
  
 
+ 
+
+        /* Target the very last table container in the PDF */
+
+   
+figure.table:nth-of-type(5) table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 7.5pt !important; /* Fixed small font size */
+}
+
+/* 1. Header Styling: No bold, Centered */
+figure.table:nth-of-type(5)  thead  th,
+figure.table:nth-of-type(5)  thead  td {
+    font-weight: normal !important;
+    text-align: center !important;
+    vertical-align: top !important;
+    padding: 1px !important;
+    border: 1px solid black !important;
+}
+
+/* 2. Data Cell Styling */
+figure.table:nth-of-type(5) tbody  td {
+    // border: 1px solid black !important;
+    // text-align: center !important;
+    // vertical-align: top !important;
+    padding: 4px !important;
+    word-wrap: break-word !important;
+}
+
+
+/* 1. Item No (Very narrow) */
+figure.table:nth-of-type(5) thead  th:nth-child(1) { width: 4% !important; }
+
+/* 2 & 3. Description Area (The "Wide" columns) */
+figure.table:nth-of-type(5) thead th:nth-child(2) { width: 36% !important; } /* Item Text */
+
+/* 4-10. Numerical Columns (Keep these small) */
+figure.table:nth-of-type(5) thead th:nth-child(4) { width: 8% !important; }  /* Acc Unit */
+figure.table:nth-of-type(5) thead th:nth-child(5) { width: 8% !important; }  /* Tendered */
+figure.table:nth-of-type(5) thead th:nth-child(6) { width: 8% !important; }  /* Accepted */
+figure.table:nth-of-type(5) thead th:nth-child(7) { width: 10% !important; text-align: left !important; }  /* Brought to */
+figure.table:nth-of-type(5) thead th:nth-child(8) { width: 8% !important; }  /* Rejected */
+figure.table:nth-of-type(5) thead th:nth-child(9) { width: 9% !important; }  /* Insp Cert */
+figure.table:nth-of-type(5) thead th:nth-child(10) { width: 9% !important; } /* Remarks */
+
+
+
+
+/* 1. Item No */
+figure.table:nth-of-type(5)tbody td:nth-child(1) { 
+    // width: 4% !important;  
+    text-align: center !important;
+    vertical-align: top !important;}
+
+/* 2 & 3. Description (80/20 Partition) */
+/* Left Side: Item Details (Larger) */
+figure.table:nth-of-type(5)tbody td:nth-child(2) { 
+  padding: 20px !important;
+    width: 28.8% !important;
+    text-align: left !important;
+   
+    vertical-align: top !important;
+    padding: 4px !important;
+}
+
+/* Right Side: Quantity (Smaller) */
+figure.table:nth-of-type(5) tbody td:nth-child(3) { 
+    width: 7.2% !important;
+    text-align: right !important;
+    vertical-align: top !important;
+    padding: 4px !important;
+
+}
+
+/* 4-8. Numerical Data (Lock these small) */
+figure.table:nth-of-type(5) tbody td:nth-child(4) { width: 7.5% !important;  text-align: center !important;
+    vertical-align: top !important;}
+figure.table:nth-of-type(5) tbody td:nth-child(5) { width: 7.5% !important;  text-align: center !important;
+    vertical-align: top !important;}
+figure.table:nth-of-type(5) tbody td:nth-child(6) { width: 7.5% !important;  text-align: center !important;
+    vertical-align: top !important;}
+figure.table:nth-of-type(5) tbody td:nth-child(7) { width: 10% !important; text-align: center !important;
+    vertical-align: top !important; }
+figure.table:nth-of-type(5) tbody td:nth-child(8) { width: 7.5% !important;  text-align: center !important;
+    vertical-align: top !important;}
+
+/* 9. The Merged Remarks/Cert Column */
+figure.table:nth-of-type(5) tbody td:nth-child(9) { 
+    width: 17% !important; 
+    vertical-align: top !important; 
+     text-align: center !important;
+    
+}
+
+
 
         </style>
       </head>
@@ -637,7 +788,6 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
           printWindow.close();
         });
       } else {
-        // Fallback
         setTimeout(() => {
           printWindow.print();
           printWindow.close();
@@ -647,7 +797,6 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
   };
 
   const onFinalSubmit = async (formData: EditorForm) => {
-    // Initialize the payload
     const body = {
       content: formData.editorContent,
       i_note: stepperData?.info?.iNote?.iNote,
@@ -658,10 +807,7 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
     if (stepperData && !editingForm) {
       body.i_note = stepperData.info?.iNote?.iNote || 0;
       body.indent_no = stepperData.user?.IndentNo || "";
-    }
-
-    // CASE 2: Editing an EXISTING I-Note (Data comes from Table Row)
-    else if (editingForm) {
+    } else if (editingForm) {
       body.i_note = editingForm.i_note;
       body.id = editingForm.id;
       body.content = formData.editorContent;
@@ -685,10 +831,10 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
 
         if (res?.data) {
           toast.success("Saved Successfully");
-          refetch(); // Refresh the table
+          refetch(); 
           setShowEditor(false);
-          setEditingForm(null); // Clear edit state
-          setStepperData(null); // Clear stepper state
+          setEditingForm(null); 
+          setStepperData(null); 
           reset({ editorContent: "" });
         }
       }
@@ -700,7 +846,6 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
 
   const [manipulate, setManipulate] = useState<boolean>(false);
 
-  // Handle modal close with proper cleanup
   const handleEditorClose = useCallback(() => {
     setShowEditor(false);
     setEditingForm(null);
@@ -722,7 +867,6 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
           buttonType="one"
           onClick={() => {
             setManipulate(true);
-            // setAddModal(true);
           }}
         />
       </div>
@@ -749,8 +893,6 @@ figure.table:nth-of-type(4) table th:nth-child(5) {
           loading={loadingAction === deleteTarget.id?.toString()}
         />
       )}
-
-      {/* 3. Render the RichTextEditor instead of dangerouslySetInnerHTML */}
 
       {showEditor && (
         <Modal
