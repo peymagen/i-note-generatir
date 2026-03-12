@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect ,useRef} from "react";
 import { toast } from "react-toastify";
 import Button from "../../component/Button/Button";
 import styles from "./Stepper.module.css";
@@ -35,6 +35,14 @@ const StepThree: React.FC<StepThreeProps> = ({
     },
     { refetchOnMountOrArgChange: true },
   );
+  const hasToasted = useRef(false); //to track if we've already shown an error toast for this data fetch
+
+  useEffect(() => {
+    if (data && !data?.data?.success && !hasToasted.current) {
+      hasToasted.current = true;   // ← mark as shown
+      toast.error(data?.data?.message || "Failed to fetch products");
+    }
+  }, [data]);
 
   /* ---------------------------------------------------------
    * USER INTERACTION STATE (ONLY)

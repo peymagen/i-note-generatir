@@ -147,9 +147,17 @@ export const getItemByIndentNoAndOrderDate = async (
       indentNo,
       orderDate,
     ]);
+    if(!rows.length) {
+      return {
+        success: false,
+        data:rows,
+        message: "Record not found",
+      };
+    }
     return {
       success: true,
       data: rows,
+      message:"Record fetched successfully",
     };
   } catch (error: any) {
     console.error("Error in getItemByIndentNoAndOrderDate:", error);

@@ -72,6 +72,16 @@ const StepTwo: React.FC<StepTwoProps> = ({
       triggerVendor(vendorCode, false).unwrap(),
       triggerConsignee(consigneeCode, false).unwrap(),
     ]);
+
+    if (!vendorRes.data.success) {
+      toast.error("Vendor not found");
+      return;
+    }
+
+    if (!moRes.data.success) {
+      toast.error("Mo not found");
+      return;
+    }
     const dbData = {
       vendor: Array.isArray(vendorRes.data.data[0])
         ? vendorRes.data.data[0]

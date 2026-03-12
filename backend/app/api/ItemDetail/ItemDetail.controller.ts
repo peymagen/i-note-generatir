@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import * as service from "./ItemDetail.service";
+import { createResponse } from "../../common/helper/response.hepler";
+
 
 export const uploadExcel = async (req: Request, res: Response) => {
   try {
@@ -82,7 +84,12 @@ export const getItemByIndentNo = async (req: Request, res: Response) => {
       indentNo,
       orderDate
     );
-    res.status(200).json({ success: true, data: records });
+    if(records.success){  
+      res.send(createResponse(records,"Record fetched successfully"))
+     }
+    else {
+      res.send(createResponse(records,"No record found with the given indent number and order date"))
+    }
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }

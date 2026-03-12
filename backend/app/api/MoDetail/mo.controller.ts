@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import * as service from "./mo.service";
+import { createResponse } from "../../common/helper/response.hepler";
 
 export const uploadExcel = async (req: Request, res: Response) => {
   try {
@@ -192,17 +193,12 @@ export const getDatabyCon  = async(req:Request,res:Response)=>{
     }
     const data = await service.getDatabyCon(code)
     
+
     if(data.success){
-      res.status(200).json({
-        success:true,
-        data:data
-      })
+      res.send(createResponse(data,"Record fetched successfully"))
     }
     else{
-      res.status(404).json({
-        success:false,
-        message:"No record found with the given consignee code"
-      })
+      res.send(createResponse(data,"No record found with the given consignee code"))
     }
   }
 
