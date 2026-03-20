@@ -14,7 +14,7 @@ const port = Number(process.env.PORT) ?? 5000;
 
 const app: Express = express();
 
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true })); // For form submissions without files
 app.use(cors());
 

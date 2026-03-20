@@ -23,7 +23,7 @@ import { DataTable } from "../../component/DataTable/DataTable";
 import { toast } from "react-toastify";
 import Manipulate from "./Manipulate";
 import { saveAs } from "file-saver";
-import * as htmlDocx from 'html-docx-js-typescript'
+import { useGetExportMutation } from "../../store/services/exportDoc";
 
 // Define a type for the editor form
 type final = {
@@ -111,6 +111,8 @@ const Inote = () => {
   const [save] = usePostFinalMutation();
   const [update] = useUpdateFinalPageMutation();
   const [deleteFinalPage] = useDeleteFinalPageMutation();
+  const [getExport] = useGetExportMutation();
+
 
   const [editingForm, setEditingForm] = useState<final | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<final | null>(null);
@@ -774,282 +776,77 @@ figure.table:nth-of-type(5) tbody td:nth-child(9) {
 
   //word print handler
 const handleWordExport = (content: string, filename: string = "document.docx") => {
-  const fontUrl = `${window.location.origin}/Shivaji01-Normal.ttf`;
-
+  // Keep only the essential text transformations (underlines)
   const underlineStatic = [
     "DETAILS OF STORES INSPECTED",
-    "Description of stores",
+    "Description of stores", 
     "Remark",
   ];
-
+ 
   let updatedContent = content;
-
-  // --- Same content processing as handlePrint ---
+ 
+  // Apply underlines to static text
   underlineStatic.forEach((word) => {
     const regex = new RegExp(word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
     updatedContent = updatedContent.replace(regex, `<u>${word}</u>`);
   });
-
+ 
+  // Underline Hindi description headers
   updatedContent = updatedContent.replace(
     /सामान का विवरण[\s\S]*?(?=<\/td>)/g,
     (match) => `<u>${match}</u>`,
   );
-
+ 
+  // Underline INSPECTION NOTE
   updatedContent = updatedContent.replace(
     /<strong>\s*INSPECTION NOTE\s*<\/strong>/g,
     `<strong><u>INSPECTION NOTE</u></strong>`,
   );
-
-  // Replace large blocks of empty paras with a Word page break
-  updatedContent = updatedContent.replace(
-    /(<p>&nbsp;<\/p>\s*){16,}/g,
-    '<p style="page-break-before: always; margin: 0;">&nbsp;</p><p style="page-break-after: always; margin: 0;">&nbsp;</p>'
-  );
-
+ 
   updatedContent = updatedContent.replace(
     /<strong>INSPECTION NOTE NO\.[^<]*<\/strong>/g,
     (match) => `<strong><u>${match.replace(/<\/?strong>/g, "")}</u></strong>`,
   );
-
-  // Hindi wrapping with inline style
-  updatedContent = updatedContent.replace(
-    /([\u0900-\u097F]+)/g,
-    `<span style="font-family: 'Shivaji01', Arial, sans-serif;">$1</span>`,
-  );
-
-  // --- DOM manipulation to inline ALL styles ---
+ 
+  // Page breaks
+ updatedContent = updatedContent.replace(
+  /(<p>&nbsp;<\/p>\s*){16,}/g,
+  (match) => {
+    const count = (match.match(/<p>&nbsp;<\/p>/g) ?? []).length;
+    return `<div class="page-break" data-lines="${count}"></div>`;
+  }
+);
+ 
+  // Inline vendor address in second list item
   const parser = new DOMParser();
   const doc = parser.parseFromString(`<body>${updatedContent}</body>`, "text/html");
-
-
-  const shiftTableLeft = (figure: Element, shiftPx: number, extraWidthPx: number) => {
-    const outerTable = doc.createElement("table");
-    outerTable.style.border = "none";
-    outerTable.style.borderCollapse = "collapse";
-    outerTable.style.marginLeft = `-${shiftPx}px`;
-    outerTable.style.width = `${extraWidthPx}px`;  // fixed px, not calc()
-    
-    const tr = doc.createElement("tr");
-    const td = doc.createElement("td");
-    td.style.border = "none";
-    td.style.padding = "0";
-    
-    outerTable.appendChild(tr);
-    tr.appendChild(td);
-    figure.parentNode?.insertBefore(outerTable, figure);
-    td.appendChild(figure);
-  };
-
-
-  const figureTables = doc.querySelectorAll("figure.table");
-
-  figureTables.forEach((figure, figIndex) => {
-    const table = figure.querySelector("table") as HTMLElement;
-    if (!table) return;
-
-    const allCells = table.querySelectorAll("td, th") as NodeListOf<HTMLElement>;
-
-    // Default border for ALL tables/cells unless overridden below
-    table.style.width = "100%";
-    table.style.borderCollapse = "collapse";
-
-    // ── Figure 1 (index 0): Header — NO borders ──
-    if (figIndex === 0) {
-      table.style.fontSize = "10pt";
-      table.style.border = "none";
-      allCells.forEach((cell) => {
-        cell.style.border = "none";
-      });
-    }
-
-    // ── Figure 2 (index 1): Small info table — WITH borders ──
-    else if (figIndex === 1) {
-      table.style.fontSize = "9pt";
-      allCells.forEach((cell) => {
-        cell.style.padding = "3pt 4pt";
-        cell.style.lineHeight = "1.4";
-        cell.style.border = "1px solid black";
-      });
-    }
-
-    // ── Figure 3 (index 2): Header section 2 — NO borders ──
-    else if (figIndex === 2) {
-      table.style.fontSize = "10pt";
-      table.style.border = "none";
-      allCells.forEach((cell) => {
-        cell.style.border = "none";
-      });
-    }
-
-    // ── Figure 4 (index 3): Hindi inspection table (inside ol li 9) ──
-    // This is the table with निवदा/सामान headers — borders on all cells
-    else if (figIndex === 3) {
-      table.style.fontSize = "7pt";
-      table.style.border = "none";
-      allCells.forEach((cell) => {
-        cell.style.border = "none";
-        cell.style.padding = "3pt";
-        cell.style.fontSize = "6.5pt";
-        cell.style.textAlign = "center";
-        cell.style.lineHeight = "1";
-        cell.style.wordBreak = "break-word";
-
-      });
-      const rows = table.querySelectorAll("tr");
-      const firstRow = rows[0];
-      const lastRow = rows[rows.length - 1];
-
-      if (firstRow) {
-        firstRow.querySelectorAll("td, th").forEach((cell) => {
-          (cell as HTMLElement).style.borderTop = "1px solid black";
-        });
-      }
-
-      // Bottom border on last row cells
-      if (lastRow) {
-        lastRow.querySelectorAll("td, th").forEach((cell) => {
-          (cell as HTMLElement).style.borderBottom = "1px solid black";
-        });
-      }
-      shiftTableLeft(figure, 60, 740);
-
-    }
-
-    // ── Figure 5 (index 4): Big inspection table (7.5pt, column widths) ──
-    else if (figIndex === 4) {
-      table.style.fontSize = "8pt";
-      table.style.border = "none";
-       allCells.forEach((cell) => {
-        cell.style.border = "none";
-        cell.style.padding = "4px";
-        cell.style.wordBreak = "break-word";
-        cell.style.whiteSpace = "normal";
-      });
-      const rows = table.querySelectorAll("tr");
-      const firstRow = rows[0];
-      const lastRow = rows[rows.length - 1];
-
-      if (firstRow) {
-        firstRow.querySelectorAll("td, th").forEach((cell) => {
-          (cell as HTMLElement).style.borderTop = "1px solid black";
-        });
-      }
-
-      // Bottom border on last row cells
-      if (lastRow) {
-        lastRow.querySelectorAll("td, th").forEach((cell) => {
-          (cell as HTMLElement).style.borderBottom = "1px solid black";
-        });
-      }
-      shiftTableLeft(figure, 60, 740);
-    }
-
-    // ── Figure 6 (index 5): Remark/note table — WITH borders ──
-    else if (figIndex === 5) {
-  table.style.border = "none";
-  allCells.forEach((cell) => {
-    cell.style.border = "none";
-    cell.style.padding = "2pt";
-    cell.style.fontSize = "9pt";
-
-    // Force font size on all inner elements too
-    cell.querySelectorAll("p, span, strong, br").forEach((el) => {
-      (el as HTMLElement).style.fontSize = "8.4pt";
-    });
-  });
-  shiftTableLeft(figure, 60, 740);
-}
-
-    // ── Figure 7 (index 6): Receipt certificate table ──
-    else if (figIndex === 6) {
-      table.style.fontSize = "9pt";
-      table.style.border = "none";
-      allCells.forEach((cell) => {
-        cell.style.border = "none";
-      });
-      shiftTableLeft(figure, 60, 740);
-    }
-
-    // ── Figure 8 (index 7): Item/Reason/Amount table — WITH borders ──
-    else if (figIndex === 7) {
-      table.style.fontSize = "10pt";
-      allCells.forEach((cell) => {
-        cell.style.border = "1px solid black";
-        cell.style.padding = "4pt";
-      });
-    }
-
-    // ── Figure 9 (index 8): Annexure table — WITH borders ──
-    else if (figIndex === 8) {
-      table.style.fontSize = "10pt";
-      const headerCells = table.querySelectorAll("thead th, thead td") as NodeListOf<HTMLElement>;
-      headerCells.forEach((cell) => {
-        cell.style.border = "1px solid black";
-        cell.style.padding = "3pt 4pt";
-        cell.style.textAlign = "center";
-        cell.style.verticalAlign = "top";
-        cell.style.fontSize = "8pt";
-        cell.style.fontWeight = "normal";
-        cell.style.wordBreak = "break-word";
-      });
-      table.querySelectorAll("tbody td").forEach((cell) => {
-        (cell as HTMLElement).style.border = "1px solid black";
-        (cell as HTMLElement).style.padding = "3pt 4pt";
-        (cell as HTMLElement).style.fontSize = "8pt";
-      });
-    }
-  });
-
-  // Style ol li items
-  doc.querySelectorAll("ol li").forEach((li) => {
-    (li as HTMLElement).style.fontSize = "7.8pt";
-    (li as HTMLElement).style.lineHeight = "1.1";
-    (li as HTMLElement).style.marginBottom = "1pt";
-  });
-
-  // li:nth-child(2) — inline vendor address
+ 
   const secondLi = doc.querySelector("ol li:nth-child(2)") as HTMLElement;
   if (secondLi) {
     secondLi.querySelectorAll("div").forEach((div) => {
-      (div as HTMLElement).style.display = "inline";
       div.querySelectorAll("p").forEach((p) => {
-        (p as HTMLElement).style.display = "inline";
-        (p as HTMLElement).style.whiteSpace = "nowrap";
-        (p as HTMLElement).style.margin = "0";
-        (p as HTMLElement).style.padding = "0";
+        const span = doc.createElement("span");
+        span.innerHTML = p.innerHTML;
+        p.replaceWith(span);
       });
-      div.querySelectorAll("br").forEach((br) => br.remove());
+      div.querySelectorAll("br").forEach((br) => {
+        const space = doc.createTextNode(" ");
+        br.replaceWith(space);
+      });
     });
   }
-
+ 
   const processedContent = doc.body.innerHTML;
-
-  const styledHtml = `<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <style>
-      @font-face {
-        font-family: 'Shivaji01';
-        src: url('${fontUrl}') format('truetype');
-      }
-      body { font-family: Arial, sans-serif; }
-      p { font-size: 8pt; margin: 11px 0; }
-      h3 { font-size: 18pt; margin: 12px 0 8px 0; font-weight: bold; }
-      table { width: 100%; border-collapse: collapse; }
-      table, th, td { border: 1px solid black; }
-      td { vertical-align: top; }
-      u { text-decoration: underline; }
-    </style>
-  </head>
-  <body>${processedContent}</body>
-</html>`;
-
-  htmlDocx.asBlob(styledHtml, {
-    orientation: "portrait",
-    margins: { top: 720, right: 720, bottom: 720, left: 720 },
-  }).then((result) => {
-    saveAs(result as unknown as Blob, filename);
+ 
+  // Send to backend - NO CSS wrapper needed!
+  getExport({ html: processedContent, filename })
+  .unwrap()
+  .then((blob) => {
+    saveAs(blob, filename);
+  })
+  .catch((err) => {
+    console.error("DOCX export error:", err);
+    toast.error("Failed to export Word document");
   });
 };
 

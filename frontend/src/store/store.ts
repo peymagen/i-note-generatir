@@ -9,6 +9,7 @@ import {vendorDetail} from './services/vendor-detail';
 import {moDetailApi} from './services/mo-detail';
 import {iNote} from './services/i-note';
 import {final} from './services/final'
+import exportDoc from './services/exportDoc';
 
 export const store = configureStore({
   reducer: {
@@ -21,7 +22,8 @@ export const store = configureStore({
     [vendorDetail.reducerPath]:vendorDetail.reducer,
     [moDetailApi.reducerPath]:moDetailApi.reducer,
     [iNote.reducerPath]:iNote.reducer,
-    [final.reducerPath]:final.reducer
+    [final.reducerPath]:final.reducer,
+    [exportDoc.reducerPath]:exportDoc.reducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false,immutableCheck: false,  })
@@ -34,7 +36,8 @@ export const store = configureStore({
         vendorDetail.middleware,
         moDetailApi.middleware,
         iNote.middleware,
-        final.middleware
+        final.middleware,
+        exportDoc.middleware
       ),
 });
 
