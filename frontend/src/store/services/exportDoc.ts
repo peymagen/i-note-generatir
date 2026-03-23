@@ -16,7 +16,7 @@ export const exportApi = createApi({
           html: payload.html,
           filename: payload.filename || "document.docx",
         },
-        responseHandler: (response) => response.blob(),z
+        responseHandler: (response) => response.blob(),
       }),
       
     }),
