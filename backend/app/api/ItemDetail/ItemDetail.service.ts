@@ -138,14 +138,21 @@ export const getItemByIndentNoAndOrderDate = async (
 ) => {
   try {
     const query = `       
-      SELECT *, I.id ItemId, D.id DetailId FROM items_details I RIGHT JOIN PO_DETAILS D ON I.ItemCode = D.ItemCode
+      SELECT *, I.id ItemId, D.id DetailId 
+      FROM items_details I 
+      RIGHT JOIN PO_DETAILS D 
+        ON I.ItemCode = D.ItemCode
       WHERE I.IndentNo = ? 
       AND I.OrderDate = ? 
+      AND D.IndentNo = ?
+      And D.OrderDate = ? 
       ORDER BY I.OrderLineNo ASC
     `;
     const [rows] = await pool.execute<RowDataPacket[]>(query, [
       indentNo,
       orderDate,
+      indentNo,  
+      orderDate
     ]);
     if(!rows.length) {
       return {
