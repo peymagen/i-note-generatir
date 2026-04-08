@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect ,useRef} from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import Button from "../../component/Button/Button";
 import styles from "./Stepper.module.css";
@@ -12,9 +12,6 @@ interface StepThreeProps {
   onBack: () => void;
 }
 
-/* ---------------------------------------------------------
- * LOCAL UI STATE TYPE
- * ------------------------------------------------------- */
 type ProductUIState = {
   selected: boolean;
   acceptedQty: number;
@@ -39,7 +36,7 @@ const StepThree: React.FC<StepThreeProps> = ({
 
   useEffect(() => {
     if (data && !data?.data?.success && !hasToasted.current) {
-      hasToasted.current = true;   // ← mark as shown
+      hasToasted.current = true;   // mark as shown
       toast.error(data?.data?.message || "Failed to fetch products");
     }
   }, [data]);
@@ -76,6 +73,18 @@ const StepThree: React.FC<StepThreeProps> = ({
   }, [data, uiState]);
 
   /* ---------------------------------------------------------
+   * DERIVED: which products are selectable (available > 0)
+   * ------------------------------------------------------- */
+  const selectableProducts = useMemo(
+    () => products.filter((p) => p.availableQty - (p.QtyFullFill || 0) > 0),
+    [products],
+  );
+
+  const allSelected =
+    selectableProducts.length > 0 &&
+    selectableProducts.every((p) => p.selected);
+
+  /* ---------------------------------------------------------
    * HANDLERS
    * ------------------------------------------------------- */
   const toggleSelect = (id: number, available: number) => {
@@ -86,6 +95,24 @@ const StepThree: React.FC<StepThreeProps> = ({
         acceptedQty: prev[id]?.acceptedQty ?? available,
       },
     }));
+  };
+
+  const toggleSelectAll = () => {
+    const nextSelected = !allSelected;
+
+    setUiState((prev) => {
+      const updated = { ...prev };
+
+      selectableProducts.forEach((p) => {
+        const available = p.availableQty - (p.QtyFullFill || 0);
+        updated[p.id] = {
+          selected: nextSelected,
+          acceptedQty: prev[p.id]?.acceptedQty ?? available,
+        };
+      });
+
+      return updated;
+    });
   };
 
   const updateQty = (id: number, value: number, max: number) => {
@@ -143,7 +170,16 @@ const StepThree: React.FC<StepThreeProps> = ({
         <table className={styles.table}>
           <thead>
             <tr>
-              <th className={styles.checkCol}></th>
+              <th className={styles.checkCol}>
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={toggleSelectAll}
+                  disabled={selectableProducts.length === 0}
+                  className={styles.checkbox}
+                  title="Select All"
+                />
+              </th>
               <th>OL</th>
               <th>Product</th>
               <th>Available Qty</th>
