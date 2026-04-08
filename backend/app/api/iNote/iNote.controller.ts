@@ -7,7 +7,6 @@ import { type Request, type Response } from "express";
 
 export const getInote = asyncHandler(async (req: Request, res: Response) => {
     try{
-        console.log("calling INote")
         const result = await service.getlastRow();
         res.send(createResponse(result));
     }
@@ -16,6 +15,25 @@ export const getInote = asyncHandler(async (req: Request, res: Response) => {
         res.status(500).send(createResponse(err));
     }
 });
+
+export const insertLatestInote = asyncHandler(async (req: Request, res: Response) => {
+    try{
+        const i_note =  req.body;
+        console.log(i_note);
+        const result = await service.insertLatestInote(i_note);
+        console.log(result);
+        res.send(createResponse(result));
+    }
+    catch(err){
+        console.log(err);
+        res.status(500).json({
+        success: false,
+        message: "Not inserted",
+      });
+        
+    }
+});
+
 
 export const getLastnote = asyncHandler(async (req: Request, res: Response) => {
     try{

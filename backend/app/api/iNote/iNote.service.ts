@@ -1,29 +1,33 @@
 import { type Inote } from "./iNote.dto";
 import { pool } from "../../common/services/sql.service";
 import { type RowDataPacket, type ResultSetHeader } from "mysql2";
-import { Response } from "express";
 
 
 export const getlastRow = async () => {
     try {
-        
-        const [rows] = await pool.query<RowDataPacket[]>("SELECT id FROM i_note LIMIT 1");
-
-        if (rows.length === 0) {
-            await pool.query<ResultSetHeader>("INSERT INTO i_note (iNote) VALUES (default)");
-        } else {
-            await pool.query<ResultSetHeader>(
-                "INSERT INTO i_note (iNote) SELECT iNote + 1 FROM i_note ORDER BY id DESC LIMIT 1"
-            );
-        }
-        const [latestRows] = await pool.query<RowDataPacket[]>(
+        const [rows] = await pool.query<RowDataPacket[]>(
             "SELECT * FROM i_note ORDER BY id DESC LIMIT 1"
         );
-        
-        return latestRows[0];
+        console.log("Rows from getlastRow:", rows);
+
+        if (rows.length === 0) {
+            return { iNote: 1 };
+        }
+
+        return { iNote: rows[0].iNote + 1 };
 
     } catch (error) {
         console.error("Error in getlastRow:", error);
+    }
+};
+
+export const insertLatestInote = async (iNote: Inote) => {
+    try {
+        const sql = "INSERT INTO i_note (iNote) VALUES (?)";
+        const [result] = await pool.execute<ResultSetHeader>(sql, [iNote.iNote]); // ← .iNote
+        return { action: "created", id: result.insertId };
+    } catch (error) {
+        console.error("Error in insertLatestInote:", error);
         throw error;
     }
 };

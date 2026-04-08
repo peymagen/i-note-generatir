@@ -12,6 +12,14 @@ router.get("/",
     catchError,
     controller.getInote
 );
+router.post(
+    "/",
+    upload.none(),
+    roleAuth(),
+    validator.createINote,  
+    catchError,
+    controller.insertLatestInote
+)
 router.get(
     "/current",
     upload.none(),

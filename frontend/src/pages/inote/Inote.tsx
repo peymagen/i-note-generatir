@@ -24,6 +24,10 @@ import { toast } from "react-toastify";
 import Manipulate from "./Manipulate";
 import { saveAs } from "file-saver";
 import { useGetExportMutation } from "../../store/services/exportDoc";
+import { useUpdateQtyFullFillMutation } from "../../store/services/po-details";
+import {
+  usePostInoteMutation,
+} from "../../store/services/i-note";
 
 // Define a type for the editor form
 type final = {
@@ -112,6 +116,8 @@ const Inote = () => {
   const [update] = useUpdateFinalPageMutation();
   const [deleteFinalPage] = useDeleteFinalPageMutation();
   const [getExport] = useGetExportMutation();
+   const [updateAvaailableQty] = useUpdateQtyFullFillMutation();
+   const [insertLatestInote] =usePostInoteMutation();
 
 
   const [editingForm, setEditingForm] = useState<final | null>(null);
@@ -851,53 +857,70 @@ const handleWordExport = (content: string, filename: string = "document.docx") =
 };
 
   const onFinalSubmit = async (formData: EditorForm) => {
-    const body = {
-      content: formData.editorContent,
-      i_note: stepperData?.info?.iNote?.iNote,
-      indent_no: stepperData?.user?.IndentNo,
-      id: undefined as number | undefined,
-    };
+  const body = {
+    content: formData.editorContent,
+    i_note: stepperData?.info?.iNote?.iNote,
+    indent_no: stepperData?.user?.IndentNo,
+    id: undefined as number | undefined,
+  };
 
-    if (stepperData && !editingForm) {
-      body.i_note = stepperData.info?.iNote?.iNote || 0;
-      body.indent_no = stepperData.user?.IndentNo || "";
-    } else if (editingForm) {
-      body.i_note = editingForm.i_note;
-      body.id = editingForm.id;
-      body.content = formData.editorContent;
-      body.indent_no = (editingForm as final).indent_no || "";
-    }
+  if (stepperData && !editingForm) {
+    body.i_note = stepperData.info?.iNote?.iNote || 0;
+    body.indent_no = stepperData.user?.IndentNo || "";
+  } else if (editingForm) {
+    body.i_note = editingForm.i_note;
+    body.id = editingForm.id;
+    body.content = formData.editorContent;
+    body.indent_no = (editingForm as final).indent_no || "";
+  }
 
-    try {
-      if (editingForm) {
-        const res = await update(body).unwrap();
+  try {
+    if (editingForm) {
+      const res = await update(body).unwrap();
 
-        if (res?.data) {
-          toast.success("Updated Successfully");
+      if (res?.data) {
+        toast.success("Updated Successfully");
+        refetch();
+        setShowEditor(false);
+        setEditingForm(null);
+        setStepperData(null);
+        reset({ editorContent: "" });
+      }
+    } else {
+      const res = await save(body).unwrap();
+      if (res?.data) {
+        try {
+          if (stepperData?.info?.iNote) {
+            await insertLatestInote(stepperData.info.iNote).unwrap();
+          }
+          if (stepperData?.products?.length) {
+            await updateAvaailableQty({ products: stepperData.products }).unwrap();
+          }
+
+          toast.success("Saved Successfully");
           refetch();
           setShowEditor(false);
           setEditingForm(null);
           setStepperData(null);
           reset({ editorContent: "" });
-        }
-      } else {
-        const res = await save(body).unwrap();
 
-        if (res?.data) {
-          toast.success("Saved Successfully");
-          refetch(); 
-          setShowEditor(false);
-          setEditingForm(null); 
-          setStepperData(null); 
-          reset({ editorContent: "" });
+        } catch (error) {
+          console.error("Post-save operations failed, rolling back:", error);
+          try {
+            await deleteFinalPage(res.data.pageId).unwrap();
+            toast.error("Failed to complete save. Please try again.");
+          } catch (rollbackError) {
+            console.error("Rollback failed:", rollbackError);
+            toast.error("Critical error: Please contact support.");
+          }
         }
       }
-    } catch (error) {
-      console.error("Save failed", error);
-      toast.error("Failed to save I-Note");
     }
-  };
-
+  } catch (error) {
+    console.error("Save failed:", error);
+    toast.error("Failed to save I-Note");
+  }
+};
   const [manipulate, setManipulate] = useState<boolean>(false);
 
   const handleEditorClose = useCallback(() => {

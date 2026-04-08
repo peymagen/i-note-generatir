@@ -9,6 +9,13 @@ export const iNote = createApi({
     getInote:builder.query({
       query: () => ({ url: "/inote", method: "GET" }),
     }),
+    postInote:builder.mutation({
+      query: (data) => ({
+        url: "/inote",
+        method: "POST",
+        body: data,
+      }),
+    }),
     getLastInote:builder.query({
       query: () => ({ url: "/inote/current", method: "GET" }),
     }),
@@ -25,5 +32,6 @@ export const iNote = createApi({
 
 export const { 
   useGetInoteQuery,
+  usePostInoteMutation,
   useGetLastInoteQuery,
   useCreteUpdateInoteMutation } = iNote;

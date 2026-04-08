@@ -6,7 +6,7 @@ import type { formData, StepperState, formOne, VendorFormData, MoFormData, iNote
 import * as detail from "../../types/poDetail";
 import * as header from "../../types/poHeader";
 import StepThree from "./StepThree";
-import { useUpdateQtyFullFillMutation } from "../../store/services/po-details";
+// import { useUpdateQtyFullFillMutation } from "../../store/services/po-details";
 import styles from "./Stepper.module.css";
 
 interface StepperFormProps {
@@ -60,7 +60,7 @@ const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
     setVendorCode(dbData.header[0]?.VendorCode || "");
     setCurrentStep(2);
   };
-  const [updateAvaailableQty] = useUpdateQtyFullFillMutation();
+  // const [updateAvaailableQty] = useUpdateQtyFullFillMutation();
 
   const handleStepTwoComplete = (
     stepTwoFields: Partial<formData>,
@@ -85,9 +85,6 @@ const StepperForm: React.FC<StepperFormProps> = ({ onComplete }) => {
       ...masterState,
       products,
     };
-    await updateAvaailableQty({
-      products: products,
-    }).unwrap();
 
     setMasterState(finalState);
     onComplete(finalState);
