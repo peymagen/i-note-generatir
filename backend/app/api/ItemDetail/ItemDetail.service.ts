@@ -140,7 +140,7 @@ export const getItemByIndentNoAndOrderDate = async (
     const query = `       
       SELECT *, I.id ItemId, D.id DetailId 
       FROM items_details I 
-      RIGHT JOIN PO_DETAILS D 
+      RIGHT JOIN po_details D 
         ON I.ItemCode = D.ItemCode
       WHERE I.IndentNo = ? 
       AND I.OrderDate = ? 
