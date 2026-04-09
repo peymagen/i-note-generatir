@@ -351,7 +351,7 @@ export const searchPO = async (IndentNo?: string, OrderDate?: string) => {
     // console.log("Indent Number:", headerRows[0].IndentNo);
     const foundIndentNo = headerRows[0].IndentNo;
    
-    const detailQuery = `SELECT * FROM PO_DETAILS WHERE IndentNo = ?`;
+    const detailQuery = `SELECT * FROM po_details WHERE IndentNo = ?`;
 
     const [detailRows]: any = await pool.query(detailQuery, [foundIndentNo]);
 
