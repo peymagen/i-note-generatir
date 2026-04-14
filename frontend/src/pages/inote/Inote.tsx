@@ -365,7 +365,7 @@ const Inote = () => {
         <button
           className={`${styles.iconBtn} ${styles.edit}`}
           title="Print I-Note"
-          onClick={() => handlePrint(row.content)}
+          onClick={() => handlePrint(row.content,row.i_note)}
         >
           <FaRegFilePdf  size={18}/>
         </button>
@@ -378,7 +378,7 @@ const Inote = () => {
         <button
           className={`${styles.iconBtn} ${styles.edit}`}
           title="Print I-Note"
-          onClick={() => handleWordExport(row.content)}
+          onClick={() => handleWordExport(row.content, `I-Note-${row.i_note}.docx`)}
         >
           <FaRegFileWord size={18} />
         </button>
@@ -392,7 +392,7 @@ const Inote = () => {
     setAddModal(false);
   };
 
-  const handlePrint = (content: string) => {
+  const handlePrint = (content: string, iNoteNumber?: number) => {
     const printWindow = window.open("", "", "width=800,height=600");
     if (!printWindow) return;
 
@@ -438,7 +438,8 @@ const Inote = () => {
 
     printWindow.document.write(`
     <html>
-      <head>       
+      <head>   
+      <title>I-Note-${iNoteNumber || 'document'}</title>    
         <style>
           @font-face {
           font-family: 'Shivaji01';
@@ -1006,7 +1007,7 @@ const handleWordExport = (content: string, filename: string = "document.docx") =
                 {!editingForm && (
                   <Button
                     label="Print"
-                    onClick={() => handlePrint(watch("editorContent"))}
+                    onClick={() => handlePrint(watch("editorContent"), stepperData?.info?.iNote?.iNote)}
                     buttonType="two"
                   />
                 )}
