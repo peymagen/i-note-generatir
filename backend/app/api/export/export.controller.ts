@@ -224,7 +224,7 @@ function getTableConfig(figIndex: number): TableConfig {
   if (figIndex === 3) return {
     fontSize: 15, borders: NO_BORDERS, borderStyle: "top-bottom-only",
     alignment: AlignmentType.CENTER,
-    margins: { top: 20, bottom: 20, left: 20, right: 20 },
+    margins: { top: 20, bottom: 20, left: 15, right: 15 },
     boldHeaders: false, headerShading: false,
   };
   if (figIndex === 4 || figIndex === 10) return {
@@ -281,7 +281,7 @@ function getColWidths(figIndex: number, colCount: number): number[] {
     return [Math.round(CONTENT_W * 0.25), Math.round(CONTENT_W * 0.50), Math.round(CONTENT_W * 0.25)];
   }
   if (figIndex === 3 && colCount === 9) {
-    return [650, 3240, 850, 1050, 1050, 1550, 1050, 1050, 750];
+    return [600, 3800, 750, 800, 800, 1300, 800, 1950, 440];
   }
   if ((figIndex === 4 || figIndex === 10) && colCount >= 9) {
     const base = [550, 3340, 750, 950, 950, 1450, 1000, 1450, 800];
