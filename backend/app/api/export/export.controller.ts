@@ -403,10 +403,10 @@ async function buildTable(figureNode: any, figIndex: number): Promise<Table | nu
   });
 }
 
-// Build table 7 as TWO separate tables (left table: cols 0-2, right table: cols 4-6)
 // ─── Parse the full HTML body into docx elements ─────────────────────────────
 async function parseHTML(html: string): Promise<DocxChild[]> {
   const body = new JSDOM(html).window.document.body;
+
   const out: DocxChild[] = [];
   let figIdx = 0;
   let olIndex = 0;  // Track which <ol> we're in for unique numbering
@@ -474,14 +474,17 @@ async function parseHTML(html: string): Promise<DocxChild[]> {
         for (const child of li.childNodes) {
           if (child.nodeType === 3) {
             // Text node
-            const text = (child.textContent ?? "").trim();
-            if (text) {
-              allRuns.push(makeRun(text, 19.5));
+            const text = (child.textContent ?? "");
+            if (text.trim()) {
+              allRuns.push(makeRun(text, 18.5));
               fullText += text;
             }
           } else if (child.nodeType === 1) {
             const ct = child.tagName.toLowerCase();
-            if (ct === "p") {
+            if (ct === "br") {
+              // ✅ FIX: Direct <br> inside <li> — insert line break
+              allRuns.push(new TextRun({ text: "", break: 1 }));
+            } else if (ct === "p") {
               // Include <p> content inline (don't create new paragraph)
               allRuns.push(...collectRuns(child, 19.5));
               fullText += (child.textContent ?? "").trim();
@@ -490,8 +493,10 @@ async function parseHTML(html: string): Promise<DocxChild[]> {
               const table = await buildTable(child, figIdx++);
               if (table) tablesToAdd.push(table);
             } else {
-              // Other inline tags
-              allRuns.push(...collectRuns(child, 19.5));
+              const isBold = ct === "strong" || ct === "b";
+              const isItalic = ct === "em" || ct === "i";
+              const isUnderline = ct === "u";
+              allRuns.push(...collectRuns(child, 19.5, isBold, isItalic, isUnderline));
               fullText += (child.textContent ?? "").trim();
             }
           }
