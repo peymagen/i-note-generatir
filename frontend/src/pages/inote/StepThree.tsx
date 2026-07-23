@@ -136,6 +136,7 @@ const StepThree: React.FC<StepThreeProps> = ({
         return {
           ...p,
           acceptedQty: ui.acceptedQty + (p.QtyFullFill || 0),
+          incrementQty: ui.acceptedQty,
           selected: true,
         };
       })

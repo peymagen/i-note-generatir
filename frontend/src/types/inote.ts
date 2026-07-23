@@ -53,6 +53,7 @@ export interface ProductItem {
   acceptedQty: number;
   selected: boolean;
   QtyFullFill: number;
+  incrementQty: number;
 }
 
 export interface StepperState {

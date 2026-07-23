@@ -78,5 +78,9 @@ export const update = asyncHandler(async (req: Request, res: Response) => {
 
 export const delteHandler = asyncHandler(async (req: Request, res: Response) => {
     const result = await service.deletePageById(Number(req.params.id));
+    if (result && result.success === false) {
+      res.status(500).json(result);
+      return;
+    }
     res.send(createResponse(result, "Page deleted sucssefully"));
 })
