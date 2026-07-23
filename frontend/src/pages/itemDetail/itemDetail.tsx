@@ -176,6 +176,18 @@ const handleDelete = async () => {
 
 
 
+  const handleSelectedRows = useCallback((rows: unknown) => {
+    const ids = (rows as itemDetail[])
+      .map((row) => row.id!)
+      .filter(Boolean);
+    setSelectedItems(prev => {
+      if (prev.length === ids.length && prev.every((val, i) => val === ids[i])) {
+        return prev;
+      }
+      return ids;
+    });
+  }, []);
+
   return (
     <div className={styles.container}>
 
@@ -208,12 +220,7 @@ const handleDelete = async () => {
           columns={columns}
           actions={actions}
           hasCheckbox={true}
-          onSelectedRows={(rows) => {
-            const ids = (rows as itemDetail[])
-              .map((row) => row.id!)
-              .filter(Boolean);
-            setSelectedItems(ids);
-          }}
+          onSelectedRows={handleSelectedRows}
        />
       </div>
 

@@ -166,6 +166,19 @@ const handleDelete = async () => {
             {label:"ReReferenced Item Code",accessor:"ReReferencedItemCode"},
             
     ]
+  const handleSelectedRows = useCallback((rows: unknown) => {
+    const ids = (rows as PoDetailItem[])
+      .map((row) => row.id!)
+      .filter(Boolean);
+    setSelectedItems(prev => {
+      // Prevent unnecessary state updates if arrays are identical
+      if (prev.length === ids.length && prev.every((val, i) => val === ids[i])) {
+        return prev;
+      }
+      return ids;
+    });
+  }, []);
+
   return (
     <div className={styles.container}>
 
@@ -198,12 +211,7 @@ const handleDelete = async () => {
           columns={columns}
           actions={actions}
           hasCheckbox={true}
-          onSelectedRows={(rows) => {
-            const ids = (rows as PoDetailItem[])
-              .map((row) => row.id!)
-              .filter(Boolean);
-            setSelectedItems(ids);
-          }}
+          onSelectedRows={handleSelectedRows}
         />
       </div>
       {isDeletingMultiple && (
