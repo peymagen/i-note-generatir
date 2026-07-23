@@ -863,6 +863,12 @@ const handleWordExport = (content: string, filename: string = "document.docx") =
     i_note: stepperData?.info?.iNote?.iNote,
     indent_no: stepperData?.user?.IndentNo,
     id: undefined as number | undefined,
+    products_data: stepperData?.products ? JSON.stringify(
+      stepperData.products.map(p => ({
+        id: p.id,
+        incrementQty: p.incrementQty || 0
+      }))
+    ) : undefined,
   };
 
   if (stepperData && !editingForm) {
