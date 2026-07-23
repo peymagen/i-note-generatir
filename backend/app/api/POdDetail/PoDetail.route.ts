@@ -47,4 +47,6 @@ router.delete("/:id", roleAuth(), catchError, controller.deleteDataById);
 
 router.post("/", roleAuth(), catchError, controller.addData);
 
+router.post("/delete-bulk", roleAuth(), validator.bulkDeleteValidation ,catchError, controller.deleteBulk);
+
 export default router;

@@ -80,7 +80,15 @@ export const poHeaderApi = createApi({
         url: `/po-header/search?IndentNo=${IndentNo}&OrderDate=${OrderDate}`,
         method: "GET",
       }),
-    })
+    }),
+
+    deleteBulkPoHeader: builder.mutation({
+      query: (ids: number[]) => ({
+        url: "/po-header/delete-bulk",
+        method: "POST",
+        body: { ids },
+      }),
+    }),
 
     
   }),
@@ -94,6 +102,7 @@ export const {
   useAddPoHeaderMutation,
   useDeletePoHeaderMutation,
   useLazyGetIndentDateQuery,
+  useDeleteBulkPoHeaderMutation,
   } = poHeaderApi;
 
 export default poHeaderApi;

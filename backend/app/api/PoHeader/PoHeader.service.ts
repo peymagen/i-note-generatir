@@ -443,3 +443,18 @@ export const getPaginatedDataWithGlobalSearch = async (
     throw new Error("Failed to fetch data" + error);
   }
 };
+
+
+export const delteBulk = async(ids:number[])=>{
+  try {
+    const query = `DELETE FROM po_header WHERE id IN (${ids.join(",")})`;
+    await pool.execute(query);
+    return {
+      success: true,
+      message: "Data deleted successfully",
+    };
+  } catch (error: any) {
+    console.error("Error in delteBulk:", error);
+    throw new Error("Failed to delete data" + error);
+  }
+}

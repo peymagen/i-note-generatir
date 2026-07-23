@@ -60,4 +60,6 @@ router.post(
   controller.addData
 );
 
+router.post("/delete-bulk", roleAuth(), validator.bulkDeleteValidation, catchError, controller.deleteBulk);
+
 export default router;

@@ -95,4 +95,7 @@ export const createPoHeader = [
     .isString().withMessage("State must be a string")
 ];
 
-
+export const bulkDeleteValidation = [
+  body("ids").isArray({ min: 1 }).withMessage("ids must be a non-empty array"),
+  body("ids.*").isInt().withMessage("each id must be an integer"),
+];

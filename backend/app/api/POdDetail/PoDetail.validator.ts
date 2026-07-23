@@ -133,3 +133,9 @@ export const updatePoDetail = [
     .optional()
     .isString().withMessage("Re-Referenced Item Code must be a string or null")
 ];
+
+
+export const bulkDeleteValidation = [
+  body("ids").isArray({ min: 1 }).withMessage("ids must be a non-empty array"),
+  body("ids.*").isInt().withMessage("each id must be an integer"),
+];
