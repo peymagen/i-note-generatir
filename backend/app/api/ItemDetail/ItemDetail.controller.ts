@@ -244,3 +244,27 @@ export const getItemPageSearch = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const deleteBulk = async (req: Request, res: Response) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid or empty IDs array",
+      });
+      return;
+    }
+
+    const result = await service.delteBulk(ids);
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete bulk records",
+      error: error.message,
+    });
+  }
+};
+
+

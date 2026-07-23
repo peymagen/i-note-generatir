@@ -3,6 +3,7 @@ import { DataTable } from "../../component/DataTable/DataTable";
 import {
   useGetAllItemDetailsQuery,
   useDeleteItemDetailMutation,
+  useDeleteBulkItemDetailsMutation,
 } from "../../store/services/item-details";
 import styles from "./ItemDetail.module.css";
 import { toast } from "react-toastify";
@@ -33,9 +34,12 @@ const ItemDetail = () => {
   const [editingForm, setEditingForm] = useState<itemDetail | null>(null);
   const [addModal, setAddModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<itemDetail | null>(null);
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [isDeletingMultiple, setIsDeletingMultiple] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
   const [deleteItem] = useDeleteItemDetailMutation(); 
+  const [deleteBulkItems] = useDeleteBulkItemDetailsMutation();
 
 
 
@@ -67,6 +71,30 @@ const ItemDetail = () => {
   );
 
 
+
+const handleDeleteMultiple = async () => {
+  if (selectedItems.length === 0) {
+    toast.error("No items selected");
+    return;
+  }
+  try {
+    setLoadingAction("multiple");
+    const response = await deleteBulkItems(selectedItems).unwrap();
+    console.log("Delete response:", response); 
+    toast.success(response.message);
+    setLoadingAction(null);
+    setIsDeletingMultiple(false);
+    setSelectedItems([]);
+    refetch();
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      toast.error(err.message);
+    } else {
+      toast.error("Delete failed");
+    }
+    setLoadingAction(null);
+  }
+};
 
 const handleDelete = async () => {
   if(!deleteTarget?.id){
@@ -159,8 +187,12 @@ const handleDelete = async () => {
           onClick={() => {console.log("clicked")
           setAddModal(true)}}
         />
-        
-
+        <Button
+          label="Delete Selected"
+          buttonType="one"
+          onClick={() => setIsDeletingMultiple(true)}
+          disabled={selectedItems.length === 0}
+        />
       </div>
       {/* Title */}
       <h1 className={styles.pageTitle}>Item Details</h1>
@@ -175,7 +207,14 @@ const handleDelete = async () => {
           isNavigate={true}   
           columns={columns}
           actions={actions}
-        />
+          hasCheckbox={true}
+          onSelectedRows={(rows) => {
+            const ids = (rows as itemDetail[])
+              .map((row) => row.id!)
+              .filter(Boolean);
+            setSelectedItems(ids);
+          }}
+       />
       </div>
 
       {deleteTarget && (
@@ -185,6 +224,16 @@ const handleDelete = async () => {
           onCancel={() => setDeleteTarget(null)}
           onConfirm={handleDelete}
           loading={loadingAction === deleteTarget.id?.toString()}
+        />
+      )}
+
+      {isDeletingMultiple && (
+        <ConfirmDialog
+          title="Delete Selected Items"
+          message={`Are you sure you want to delete ${selectedItems.length} items? This action cannot be undone.`}
+          onCancel={() => setIsDeletingMultiple(false)}
+          onConfirm={handleDeleteMultiple}
+          loading={loadingAction === "multiple"}
         />
       )}
 

@@ -28,5 +28,9 @@ export const itemImportValidation = [
   body("INCATYN").optional({ values: 'falsy' }).isString(),
 ];
 
+export const bulkDeleteValidation = [
+  body("ids").isArray({ min: 1 }).withMessage("ids must be a non-empty array"),
+  body("ids.*").isInt().withMessage("each id must be an integer"),
+];
 
 export const itemImportSchema = itemImportValidation;

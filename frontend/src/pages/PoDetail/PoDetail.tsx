@@ -2,7 +2,8 @@ import { useState, useCallback, useMemo } from "react";
 import { DataTable } from "../../component/DataTable/DataTable"; 
 import {
     useGetAllPODataQuery,
-  useDeletePoDetailMutation
+  useDeletePoDetailMutation,
+  useDeleteBulkPoDetailsMutation
 } from "../../store/services/po-details";
 import styles from "./PoDetail.module.css";
 import { toast } from "react-toastify";
@@ -21,7 +22,9 @@ const PoDetail = () => {
   const [page, setPage] = useState<number | undefined>(undefined);
   const limit = 50;
   const [search, setSearch] = useState<string | undefined>(undefined);
-  
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [isDeletingMultiple, setIsDeletingMultiple] = useState(false);
+  const [deleteBulkItems] = useDeleteBulkPoDetailsMutation();
     const {data, isLoading, refetch} = useGetAllPODataQuery(
     { page, limit ,search},
     {
@@ -64,7 +67,29 @@ const PoDetail = () => {
       [items, totalRecords, page, search]
     );
  
-  
+const handleDeleteMultiple = async () => {
+  if (selectedItems.length === 0) {
+    toast.error("No items selected");
+    return;
+  }
+  try {
+    setLoadingAction("multiple");
+    const response = await deleteBulkItems(selectedItems).unwrap();
+    console.log("Delete response:", response); 
+    toast.success(response.message);
+    setLoadingAction(null);
+    setIsDeletingMultiple(false);
+    setSelectedItems([]);
+    refetch();
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      toast.error(err.message);
+    } else {
+      toast.error("Delete failed");
+    }
+    setLoadingAction(null);
+  }
+};
 const handleDelete = async () => {
   if(!deleteTarget?.id){
     return;
@@ -151,6 +176,12 @@ const handleDelete = async () => {
               buttonType= "three"
               onClick={() => {setAddModal(true)}}
             />
+        <Button
+          label="Delete Selected"
+          buttonType="one"
+          onClick={() => setIsDeletingMultiple(true)}
+          disabled={selectedItems.length === 0}
+        />
         
       </div>
 
@@ -166,9 +197,24 @@ const handleDelete = async () => {
           isNavigate={true}  
           columns={columns}
           actions={actions}
+          hasCheckbox={true}
+          onSelectedRows={(rows) => {
+            const ids = (rows as PoDetailItem[])
+              .map((row) => row.id!)
+              .filter(Boolean);
+            setSelectedItems(ids);
+          }}
         />
       </div>
-
+      {isDeletingMultiple && (
+        <ConfirmDialog
+          title="Delete Selected Items"
+          message={`Are you sure you want to delete ${selectedItems.length} items? This action cannot be undone.`}
+          onCancel={() => setIsDeletingMultiple(false)}
+          onConfirm={handleDeleteMultiple}
+          loading={loadingAction === "multiple"}
+        />
+      )}
       {deleteTarget && (
                     <ConfirmDialog
                       title="Delete Item"

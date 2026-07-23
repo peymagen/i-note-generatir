@@ -108,6 +108,14 @@ export const itemDetail = createApi({
         body: data,
       }),
     }),
+
+    deleteBulkItemDetails: builder.mutation({
+      query: (ids: number[]) => ({
+        url: "/item-detail/delete-bulk",
+        method: "POST",
+        body: { ids },
+      }),
+    }),
   }),
 });
 
@@ -119,6 +127,7 @@ export const {
   useUpdateItemDetailMutation,
   useDeleteItemDetailMutation,
   useAddItemDetailMutation,
+  useDeleteBulkItemDetailsMutation,
 } = itemDetail;
 
 export default itemDetail;

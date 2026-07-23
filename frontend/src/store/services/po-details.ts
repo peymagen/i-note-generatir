@@ -90,6 +90,14 @@ export const poDetailApi = createApi({
         body: body,
       }),
     }),
+
+    deleteBulkPoDetails: builder.mutation({
+      query: (ids: number[]) => ({
+        url: "/po-detail/delete-bulk",
+        method: "POST",
+        body: { ids },
+      }),
+    }),
   }),
 });
 
@@ -102,6 +110,7 @@ export const {
   useDeletePoDetailMutation,
   useUpdateQtyFullFillMutation,
   useLazyGetByIndentQuery,
+  useDeleteBulkPoDetailsMutation,
 } = poDetailApi;
 
 export default poDetailApi;

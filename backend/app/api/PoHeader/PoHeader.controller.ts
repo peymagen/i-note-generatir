@@ -242,7 +242,7 @@ export const getItemPageSearch = async (req: Request, res: Response) => {
     const pageParam = req.query.page;
     const limitParam = req.query.limit;
     const search = req.query.search?.toString();
-    console.log("Hello",pageParam)
+    // console.log("Hello",pageParam)
     
     const page =
       pageParam !== undefined ? Number(pageParam) : undefined;
@@ -286,6 +286,29 @@ export const getItemPageSearch = async (req: Request, res: Response) => {
      res.status(500).json({
       success: false,
       message: error.message || "Failed to fetch item details",
+    });
+  }
+};
+
+
+export const deleteBulk = async (req: Request, res: Response) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid or empty IDs array",
+      });
+      return;
+    }
+
+    const result = await service.delteBulk(ids);
+    res.status(200).json(result);
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete bulk records",
+      error: error.message,
     });
   }
 };
